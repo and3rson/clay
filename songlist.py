@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urwid
 from player import player
 
@@ -12,9 +13,9 @@ class SongListItem(urwid.Pile):
 
     STATE_ICONS = {
         0: ' ',
-        1: '\u2505',
-        2: '\u25B6',
-        3: '\u25A0'
+        1: u'\u2505',
+        2: u'\u25B6',
+        3: u'\u25A0'
     }
 
     def __init__(self, track, index):
@@ -36,7 +37,7 @@ class SongListItem(urwid.Pile):
             'line1_focus'
         )
 
-        super().__init__([
+        super(SongListItem, self).__init__([
             self.content
         ])
         self.update_text()
@@ -50,8 +51,8 @@ class SongListItem(urwid.Pile):
 
     def update_text(self):
         self.line1.set_text(
-            '{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
-                index=self.index,
+            u'{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
+                index=self.index + 1,
                 icon=self.get_state_icon(self.state),
                 title=self.track.title,
                 minutes=self.track.duration // (1000 * 60),
@@ -59,7 +60,7 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            '      {}'.format(self.track.artist)
+            u'      {}'.format(self.track.artist)
         )
         if self.state == SongListItem.STATE_IDLE:
             self.content.set_attr('line1')
@@ -72,7 +73,7 @@ class SongListItem(urwid.Pile):
         if key == 'enter':
             urwid.emit_signal(self, 'activate', self)
             return
-        return super().keypress(size, key)
+        return super(SongListItem, self).keypress(size, key)
 
     # def render(self, size, focus=False):
     #     # if focus:
@@ -99,7 +100,7 @@ class SongListBox(urwid.ListBox):
         player.track_changed += self.track_changed
         player.media_state_changed += self.media_state_changed
 
-        return super().__init__(self.walker)
+        return super(SongListBox, self).__init__(self.walker)
 
     def tracks_to_songlist(self, tracks):
         current_track = player.get_current_track()
@@ -113,7 +114,7 @@ class SongListBox(urwid.ListBox):
         return items
 
     def item_activated(self, songitem):
-        player.load_playlist(self.tracks, songitem.index)
+        player.load_queue(self.tracks, songitem.index)
 
     def track_changed(self, track):
         for songitem in self.walker:

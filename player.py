@@ -5,34 +5,9 @@ import json
 
 import vlc
 from eventhook import EventHook
-import gp
-from gp import gp
 
 
-class Track(object):
-    def __init__(self, id, title, artist, duration):
-        self.id = id
-        self.title = title
-        self.artist = artist
-        self.duration = duration
-
-    @classmethod
-    def from_data(cls, data, many=False):
-        if many:
-            return [cls.from_data(one) for one in data]
-
-        return Track(
-            id=data['id'],
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis'])
-        )
-
-    def get_url(self, callback):
-        gp.get_stream_url(self.id, callback=callback, extra=dict(track=self))
-
-
-class Playlist(object):
+class Queue(object):
     def __init__(self):
         self.random = False
         self.repeat_one = False
@@ -109,10 +84,10 @@ class Player(object):
             self._media_position_changed
         )
 
-        self.playlist = Playlist()
+        self.queue = Queue()
 
     def broadcast_state(self):
-        track = self.playlist.get_current_track()
+        track = self.queue.get_current_track()
         if track is None:
             data = dict(
                 playing=False,
@@ -145,29 +120,29 @@ class Player(object):
             self.get_play_progress()
         )
 
-    def load_playlist(self, data, current_index):
-        self.playlist.load(data, current_index)
+    def load_queue(self, data, current_index):
+        self.queue.load(data, current_index)
         self._play()
 
     def get_is_random(self):
-        return self.playlist.random
+        return self.queue.random
 
     def get_is_repeat_one(self):
-        return self.playlist.repeat_one
+        return self.queue.repeat_one
 
     def set_random(self, value):
-        self.playlist.random = value
+        self.queue.random = value
         self.playback_flags_changed.fire()
 
     def set_repeat_one(self, value):
-        self.playlist.repeat_one = value
+        self.queue.repeat_one = value
         self.playback_flags_changed.fire()
 
     def get_queue(self):
-        return self.playlist.get_tracks()
+        return self.queue.get_tracks()
 
     def _play(self):
-        track = self.playlist.get_current_track()
+        track = self.queue.get_current_track()
         if track is None:
             return
         track.get_url(callback=self._play_ready)
@@ -200,14 +175,14 @@ class Player(object):
         return int(self.mp.get_length() // 1000)
 
     def next(self, force=False):
-        self.playlist.next(force)
+        self.queue.next(force)
         self._play()
 
     def get_current_track(self):
-        return self.playlist.get_current_track()
+        return self.queue.get_current_track()
 
     # def prev(self):
-    #     self.playlist.prev()
+    #     self.queue.prev()
     #     self._play()
 
     def seek(self, delta):

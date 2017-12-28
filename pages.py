@@ -22,7 +22,7 @@ class StartUp(urwid.Filler):
                 'Please set your credentials on the settings page.'
             )
 
-        super().__init__(
+        super(StartUp, self).__init__(
             urwid.Pile([
                 urwid.Padding(
                     urwid.AttrWrap(urwid.BigText(
@@ -59,7 +59,7 @@ class StartUp(urwid.Filler):
 
 class Error(urwid.Filler):
     def __init__(self, app, error):
-        super().__init__(
+        super(Error, self).__init__(
             urwid.Text('Error:\n\n{}'.format(str(error))),
             valign='top'
         )

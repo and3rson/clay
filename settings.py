@@ -1,4 +1,5 @@
 import os
+import errno
 import yaml
 
 import appdirs
@@ -51,7 +52,13 @@ class Settings(urwid.Columns):
     @classmethod
     def get_config_filename(cls):
         filedir = appdirs.user_config_dir('clay', 'Clay')
-        os.makedirs(filedir, exist_ok=True)
+
+        try:
+            os.makedirs(filedir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
         path = os.path.join(filedir, 'config.json')
         if not os.path.exists(path):
             with open(path, 'w') as f:

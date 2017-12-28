@@ -1,17 +1,17 @@
+# -*- coding: utf-8 -*-
 import urwid
 from gp import gp
-from player import Track
 from songlist import SongListBox
 
 
-class PlaylistListItem(urwid.Columns):
+class MyPlaylistListItem(urwid.Columns):
     signals = ['activate']
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, playlist):
+        self.playlist = playlist
         self.text = urwid.SelectableIcon(' ☰ {} ({})'.format(
-            self.data['name'],
-            len(self.data['tracks'])
+            self.playlist.name,
+            len(self.playlist.tracks)
         ), cursor_position=3)
         self.text.set_layout('left', 'clip', None)
         self.content = urwid.AttrWrap(
@@ -28,14 +28,10 @@ class PlaylistListItem(urwid.Columns):
         return super().keypress(size, key)
 
     def get_tracks(self):
-        return Track.from_data([
-            item['track']
-            for item
-            in self.data['tracks']
-        ], many=True)
+        return self.playlist.tracks
 
 
-class PlaylistListBox(urwid.ListBox):
+class MyPlaylistListBox(urwid.ListBox):
     signals = ['activate']
 
     def __init__(self, app):
@@ -59,18 +55,18 @@ class PlaylistListBox(urwid.ListBox):
 
         items = []
         for playlist in playlists:
-            playlistlistitem = PlaylistListItem(playlist)
+            myplaylistlistitem = MyPlaylistListItem(playlist)
             urwid.connect_signal(
-                playlistlistitem, 'activate', self.item_activated
+                myplaylistlistitem, 'activate', self.item_activated
             )
-            items.append(playlistlistitem)
+            items.append(myplaylistlistitem)
 
         self.walker[:] = items
 
         self.app.redraw()
 
-    def item_activated(self, playlistlistitem):
-        urwid.emit_signal(self, 'activate', playlistlistitem)
+    def item_activated(self, myplaylistlistitem):
+        urwid.emit_signal(self, 'activate', myplaylistlistitem)
 
 
 class MyPlaylists(urwid.Columns):
@@ -80,21 +76,21 @@ class MyPlaylists(urwid.Columns):
     def __init__(self, app):
         self.app = app
 
-        self.playlistlist = PlaylistListBox(app)
+        self.myplaylistlist = MyPlaylistListBox(app)
         self.songlist = SongListBox(app)
         self.songlist.populate([])
 
         urwid.connect_signal(
-            self.playlistlist, 'activate', self.playlistlistitem_activated
+            self.myplaylistlist, 'activate', self.myplaylistlistitem_activated
         )
 
         return super().__init__([
-            self.playlistlist,
+            self.myplaylistlist,
             self.songlist
         ])
 
-    def playlistlistitem_activated(self, playlistlistitem):
+    def myplaylistlistitem_activated(self, myplaylistlistitem):
         self.songlist.populate(
-            playlistlistitem.get_tracks()
+            myplaylistlistitem.get_tracks()
         )
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import sys
 
@@ -43,16 +44,16 @@ PALETTE = [
 
 class PlayProgress(urwid.ProgressBar):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(PlayProgress, self).__init__(*args, **kwargs)
         self.track = None
 
     def get_text(self):
         if self.track is None:
-            return 'Idle'
+            return u'Idle'
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
-        return '  {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
-            '>' if player.is_playing else 'X',
+        return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
+            u'|>' if player.is_playing else u'||',
             # '\u25B6' if player.is_playing else '\u25A0',
             self.track.artist,
             self.track.title,
@@ -60,11 +61,11 @@ class PlayProgress(urwid.ProgressBar):
             progress % 60,
             total // 60,
             total % 60,
-            'S' if player.get_is_random() else ' ',
-            'R' if player.get_is_repeat_one() else ' '
+            u'S' if player.get_is_random() else ' ',
+            u'R' if player.get_is_repeat_one() else ' '
             # '⋍' if player.get_is_random() else ' ',
             # '⟲' if player.get_is_repeat_one() else ' '
-        ).encode('utf-8')
+        )
 
     def set_track(self, track):
         self.track = track
@@ -78,7 +79,7 @@ class AppWidget(urwid.Frame):
         def __init__(self, page_class):
             self.page_class = page_class
             # self.attrwrap = urwid.AttrWrap(urwid.Text(), 'panel')
-            super().__init__(
+            super(AppWidget.Tab, self).__init__(
                 self.get_title()
             )
 
@@ -133,7 +134,7 @@ class AppWidget(urwid.Frame):
             self.seekbar
         ])
         self.current_page = StartUp(self)
-        super().__init__(
+        super(AppWidget, self).__init__(
             header=self.header,
             footer=self.panel,
             body=self.current_page
@@ -207,7 +208,7 @@ class AppWidget(urwid.Frame):
         elif key == 'ctrl q':
             sys.exit(0)
         else:
-            super().keypress(size, key)
+            super(AppWidget, self).keypress(size, key)
 
 
 def main():

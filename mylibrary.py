@@ -1,7 +1,6 @@
 import urwid
 from gp import gp
 from songlist import SongListBox
-from player import Track
 
 
 class MyLibrary(urwid.Columns):
@@ -12,16 +11,16 @@ class MyLibrary(urwid.Columns):
         self.app = app
         self.songlist = SongListBox(app)
 
-        gp.get_all_songs(callback=self.on_get_all_songs)
+        gp.get_all_tracks(callback=self.on_get_all_songs)
 
-        return super().__init__([
+        return super(MyLibrary, self).__init__([
             self.songlist
         ])
 
-    def on_get_all_songs(self, results, error):
+    def on_get_all_songs(self, tracks, error):
         if error:
             self.app.set_page('Error', error)
             return
-        self.songlist.populate(Track.from_data(results, many=True))
+        self.songlist.populate(tracks)
         self.app.redraw()
 
