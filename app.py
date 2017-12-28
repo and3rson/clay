@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys
+
 import urwid
 
 from player import player
@@ -202,6 +204,8 @@ class AppWidget(urwid.Frame):
             player.set_random(not player.get_is_random())
         elif key == 'ctrl r':
             player.set_repeat_one(not player.get_is_repeat_one())
+        elif key == 'ctrl q':
+            sys.exit(0)
         else:
             super().keypress(size, key)
 
