@@ -43,26 +43,36 @@ It's being actively developed, but is still in the early alpha version, so many 
 
 1. Source the 'activate.sh' script. It will initialize the Python virtual env and install the dependencies:
 
-    $ source activate.sh
+    ```bash
+    source activate.sh
+    ```
 
 2. Run the player:
 
-    $ ./app.py
+    ```bash
+    ./app.py
+    ```
 
 ## Method 2 (manual)
 
 1. Create & activate virtualenv:
 
-    $ virtualenv .env
-    $ source .env/bin/activate
+    ```bash
+    virtualenv .env
+    source .env/bin/activate
+    ```
 
 2. Install the requirements:
 
-    $ pip install -r requirements.txt
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 3. Run the player:
 
-    $ ./app.py
+    ```bash
+    ./app.py
+    ```
 
 # Configuration
 
