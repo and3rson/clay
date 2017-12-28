@@ -15,8 +15,8 @@ It's being actively developed, but is still in the early alpha version, so many 
 - Python 3.x (native)
 - [gmusicapi] (PYPI)
 - [urwid] (PYPI)
-- [pyyaml] (PYPI)
-- lib[vlc] (native, distributed with VLC player)
+- [PyYAML] (PYPI)
+- lib[VLC] (native, distributed with VLC player)
 
 # What works
 - Playback
@@ -27,7 +27,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 - Caching (partially)
 - Basic error handling
 
-# What is developer
+# What is being developed
 
 - Search
 - Add to playlist

@@ -122,8 +122,7 @@ class AppWidget(urwid.Frame):
             'progress_remaining',
             'progress',
             current=0,
-            done=100,
-            satt='bg'
+            done=100
         )
         self.panel = urwid.Pile([
             urwid.Divider('\u2500'),
