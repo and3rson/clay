@@ -10,7 +10,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 
 (Click the image below to see the screencast.)
 
-[![Screencast](./images/clay.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
+[![asciicast](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
 
 # Requirements
 
