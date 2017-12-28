@@ -8,7 +8,7 @@ This project is neither affiliated nor endorsed by Google.
 
 It's being actively developed, but is still in the early alpha version, so many features are missing and/or may be bugged.
 
-![Screencast](./images/clay.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
+[![Screencast](./images/clay.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
 
 # Requirements
 
