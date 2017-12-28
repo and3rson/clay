@@ -12,9 +12,9 @@ class SongListItem(urwid.Pile):
 
     STATE_ICONS = {
         0: ' ',
-        1: '\uF141',
-        2: '\uF04B',
-        3: '\uF04C'
+        1: '\u2505',
+        2: '\u25B6',
+        3: '\u25A0'
     }
 
     def __init__(self, track, index):
@@ -22,8 +22,9 @@ class SongListItem(urwid.Pile):
         self.index = index
         self.state = SongListItem.STATE_IDLE
         self.line1 = urwid.SelectableIcon('', cursor_position=6)
+        self.line1.set_layout('left', 'clip', None)
         self.line2 = urwid.AttrWrap(
-            urwid.Text(''),
+            urwid.Text('', wrap='clip'),
             'line2'
         )
         self.content = urwid.AttrWrap(

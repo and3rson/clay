@@ -9,11 +9,13 @@ class PlaylistListItem(urwid.Columns):
 
     def __init__(self, data):
         self.data = data
+        self.text = urwid.SelectableIcon(' ☰ {} ({})'.format(
+            self.data['name'],
+            len(self.data['tracks'])
+        ), cursor_position=3)
+        self.text.set_layout('left', 'clip', None)
         self.content = urwid.AttrWrap(
-            urwid.SelectableIcon('  {} ({})'.format(
-                self.data['name'],
-                len(self.data['tracks'])
-            ), cursor_position=3),
+            self.text,
             'default',
             'selected'
         )

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from collections import OrderedDict
-
 import urwid
 
 from player import player
@@ -51,16 +49,20 @@ class PlayProgress(urwid.ProgressBar):
             return 'Idle'
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
-        return '    {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
+        return '  {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
+            '>' if player.is_playing else 'X',
+            # '\u25B6' if player.is_playing else '\u25A0',
             self.track.artist,
             self.track.title,
             progress // 60,
             progress % 60,
             total // 60,
             total % 60,
-            '' if player.get_is_random() else ' ',
-            '' if player.get_is_repeat_one() else ' ',
-        )
+            'S' if player.get_is_random() else ' ',
+            'R' if player.get_is_repeat_one() else ' '
+            # '⋍' if player.get_is_random() else ' ',
+            # '⟲' if player.get_is_repeat_one() else ' '
+        ).encode('utf-8')
 
     def set_track(self, track):
         self.track = track
@@ -136,6 +138,7 @@ class AppWidget(urwid.Frame):
         )
 
         player.media_position_changed += self.media_position_changed
+        player.media_state_changed += self.media_state_changed
         player.track_changed += self.track_changed
         player.playback_flags_changed += self.playback_flags_changed
 
@@ -147,6 +150,9 @@ class AppWidget(urwid.Frame):
         # sleep(0.2)
 
         # self.set_page(MyLibrary())
+
+    def media_state_changed(self, is_playing):
+        self.seekbar.update()
 
     def track_changed(self, track):
         self.seekbar.set_track(track)
