@@ -1,6 +1,6 @@
 import urwid
-from songlist import SongListBox
-from player import player
+from clay.songlist import SongListBox
+from clay.player import player
 
 
 class Queue(urwid.Columns):

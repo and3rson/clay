@@ -52,7 +52,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 2. Run the player:
 
     ```bash
-    ./app.py
+    ./clay/app.py
     ```
 
 ## Method 2 (manual)
@@ -73,7 +73,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 3. Run the player:
 
     ```bash
-    ./app.py
+    ./clay/app.py
     ```
 
 # Configuration

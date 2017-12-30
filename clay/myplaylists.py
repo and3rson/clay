@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import urwid
-from gp import gp
-from songlist import SongListBox
+from clay.gp import gp
+from clay.songlist import SongListBox
 
 
 class MyPlaylistListItem(urwid.Columns):
@@ -38,7 +38,7 @@ class MyPlaylistListBox(urwid.ListBox):
         self.app = app
 
         self.walker = urwid.SimpleListWalker([
-            urwid.Text('Loading playlists...')
+            urwid.Text('\n \uf01e Loading playlists...', align='center')
         ])
 
         gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
@@ -78,7 +78,7 @@ class MyPlaylists(urwid.Columns):
 
         self.myplaylistlist = MyPlaylistListBox(app)
         self.songlist = SongListBox(app)
-        self.songlist.populate([])
+        self.songlist.set_placeholder('\n Select a playlist.')
 
         urwid.connect_signal(
             self.myplaylistlist, 'activate', self.myplaylistlistitem_activated

@@ -1,7 +1,7 @@
 import urwid
-from settings import Settings
-from gp import gp
-from meta import VERSION
+from clay.settings import Settings
+from clay.gp import gp
+from clay.meta import VERSION
 
 
 class StartUp(urwid.Filler):

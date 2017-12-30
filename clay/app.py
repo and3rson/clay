@@ -5,12 +5,14 @@ import sys
 
 import urwid
 
-from player import player
-from pages import StartUp, Error
-from mylibrary import MyLibrary
-from myplaylists import MyPlaylists
-from playerqueue import Queue
-from settings import Settings
+from clay.player import player
+from clay.widgets import PlayProgress
+from clay.pages import StartUp, Error
+from clay.mylibrary import MyLibrary
+from clay.myplaylists import MyPlaylists
+from clay.playerqueue import Queue
+from clay.settings import Settings
+from clay import hotkeys
 
 
 loop = None
@@ -40,38 +42,6 @@ PALETTE = [
     ('input', '', '', '', '#FFF', '#444'),
     ('input_focus', '', '', '', '#FFF', '#F54'),
 ]
-
-
-class PlayProgress(urwid.ProgressBar):
-    def __init__(self, *args, **kwargs):
-        super(PlayProgress, self).__init__(*args, **kwargs)
-        self.track = None
-
-    def get_text(self):
-        if self.track is None:
-            return u'Idle'
-        progress = player.get_play_progress_seconds()
-        total = player.get_length_seconds()
-        return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
-            u'|>' if player.is_playing else u'||',
-            # '\u25B6' if player.is_playing else '\u25A0',
-            self.track.artist,
-            self.track.title,
-            progress // 60,
-            progress % 60,
-            total // 60,
-            total % 60,
-            u'S' if player.get_is_random() else ' ',
-            u'R' if player.get_is_repeat_one() else ' '
-            # '⋍' if player.get_is_random() else ' ',
-            # '⟲' if player.get_is_repeat_one() else ' '
-        )
-
-    def set_track(self, track):
-        self.track = track
-
-    def update(self):
-        self._invalidate()
 
 
 class AppWidget(urwid.Frame):
@@ -193,7 +163,9 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page_class)
                 return
 
-        if key == 'ctrl w':
+        if key == 'ctrl q':
+            player.seek_absolute(0)
+        elif key == 'ctrl w':
             player.play_pause()
         elif key == 'ctrl e':
             player.next(True)

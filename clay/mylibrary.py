@@ -1,6 +1,6 @@
 import urwid
-from gp import gp
-from songlist import SongListBox
+from clay.gp import gp
+from clay.songlist import SongListBox
 
 
 class MyLibrary(urwid.Columns):
@@ -10,6 +10,7 @@ class MyLibrary(urwid.Columns):
     def __init__(self, app):
         self.app = app
         self.songlist = SongListBox(app)
+        self.songlist.set_placeholder('\n \uf01e Loading song list...')
 
         gp.get_all_tracks(callback=self.on_get_all_songs)
 

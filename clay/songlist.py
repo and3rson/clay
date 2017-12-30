@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import urwid
-from player import player
+from clay.player import player
 
 
 class SongListItem(urwid.Pile):
@@ -75,6 +75,19 @@ class SongListItem(urwid.Pile):
             return
         return super(SongListItem, self).keypress(size, key)
 
+    def mouse_event(self, size, event, button, x, y, focus):
+        if button == 1 and focus:
+            urwid.emit_signal(self, 'activate', self)
+            return
+        return super().mouse_event(size, event, button, x, y, focus)
+
+    @property
+    def is_currently_played(self):
+        return self.state in (
+            SongListItem.STATE_PLAYING,
+            SongListItem.STATE_PAUSED
+        )
+
     # def render(self, size, focus=False):
     #     # if focus:
     #     #     self.line1.attr = 'line1_focus'
@@ -93,31 +106,40 @@ class SongListBox(urwid.ListBox):
 
         self.current_item = None
         self.tracks = []
-        self.walker = urwid.SimpleFocusListWalker([
-            urwid.Text('\n  Loading song list...', align='center')
-        ])
+        self.walker = urwid.SimpleFocusListWalker([])
 
         player.track_changed += self.track_changed
         player.media_state_changed += self.media_state_changed
 
         return super(SongListBox, self).__init__(self.walker)
 
+    def set_placeholder(self, text):
+        self.walker[:] = [urwid.Text(text, align='center')]
+
     def tracks_to_songlist(self, tracks):
         current_track = player.get_current_track()
         items = []
+        current_index = None
         for index, track in enumerate(tracks):
             songitem = SongListItem(track, index)
             if current_track is not None and current_track.id == track.id:
                 songitem.set_state(SongListItem.STATE_PLAYING)
+                if current_index is None:
+                    current_index = index
             urwid.connect_signal(songitem, 'activate', self.item_activated)
             items.append(songitem)
-        return items
+        return (items, current_index)
 
     def item_activated(self, songitem):
-        player.load_queue(self.tracks, songitem.index)
+        if songitem.is_currently_played:
+            player.play_pause()
+        else:
+            player.load_queue(self.tracks, songitem.index)
 
     def track_changed(self, track):
         for songitem in self.walker:
+            if isinstance(songitem, urwid.Text):
+                continue
             if songitem.track.id == track.id:
                 songitem.set_state(SongListItem.STATE_PLAYING)
             elif songitem.state != SongListItem.STATE_IDLE:
@@ -129,6 +151,8 @@ class SongListBox(urwid.ListBox):
             return
 
         for songitem in self.walker:
+            if isinstance(songitem, urwid.Text):
+                continue
             if songitem.track.id == current_track.id:
                 songitem.set_state(
                     SongListItem.STATE_PLAYING
@@ -158,12 +182,21 @@ class SongListBox(urwid.ListBox):
 
     def populate(self, tracks):
         self.tracks = tracks
-        self.walker[:] = self.tracks_to_songlist(self.tracks)
-        # self.walker.set_focus(5)
+        self.walker[:], current_index = self.tracks_to_songlist(self.tracks)
+        if current_index is not None:
+            self.walker.set_focus(current_index)
 
     # def keypress(self, size, key):
     #     # print(key)
     #     super().keypress(size, key)
     #     # if key == 'up':
     #     #     self.walker.set_focus(
+
+    def mouse_event(self, size, event, button, x, y, focus):
+        if button == 4:
+            self.keypress(size, 'up')
+        elif button == 5:
+            self.keypress(size, 'down')
+        else:
+            super().mouse_event(size, event, button, x, y, focus)
 

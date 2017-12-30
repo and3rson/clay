@@ -3,8 +3,8 @@ from random import randint
 # import dbus
 import json
 
-import vlc
-from eventhook import EventHook
+from clay import vlc
+from clay.eventhook import EventHook
 
 
 class Queue(object):
@@ -187,6 +187,9 @@ class Player(object):
 
     def seek(self, delta):
         self.mp.set_position(self.get_play_progress() + delta)
+
+    def seek_absolute(self, position):
+        self.mp.set_position(position)
 
 
 player = Player()
