@@ -21,6 +21,18 @@ class Queue(object):
             current_track = self.tracks[0]
         self.current_track = current_track
 
+    def append(self, track):
+        self.tracks.append(track)
+
+    def remove(self, track):
+        if track not in self.tracks:
+            return
+
+        index = self.tracks.index(track)
+        self.tracks.remove(track)
+        if index < self.current_track:
+            self.current_track -= 1
+
     def get_current_track(self):
         if self.current_track is None:
             return None
@@ -54,6 +66,8 @@ class Player(object):
     media_state_changed = EventHook()
     track_changed = EventHook()
     playback_flags_changed = EventHook()
+    queue_changed = EventHook()
+    track_removed = EventHook()
 
     def __init__(self):
         self.mp = vlc.MediaPlayer()
@@ -122,7 +136,17 @@ class Player(object):
 
     def load_queue(self, data, current_index):
         self.queue.load(data, current_index)
+        self.queue_changed.fire()
         self._play()
+
+    def append_to_queue(self, track):
+        self.queue.append(track)
+        self.queue_changed.fire()
+
+    def remove_from_queue(self, track):
+        self.queue.remove(track)
+        self.queue_changed.fire()
+        self.track_removed.fire(track)
 
     def get_is_random(self):
         return self.queue.random

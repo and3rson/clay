@@ -4,7 +4,11 @@ from clay.player import player
 
 
 class SongListItem(urwid.Pile):
-    signals = ['activate']
+    signals = [
+        'activate',
+        'append-requested',
+        'unappend-requested'
+    ]
 
     STATE_IDLE = 0
     STATE_LOADING = 1
@@ -73,6 +77,11 @@ class SongListItem(urwid.Pile):
         if key == 'enter':
             urwid.emit_signal(self, 'activate', self)
             return
+        elif key == 'ctrl a':
+            urwid.emit_signal(self, 'append-requested', self)
+        elif key == 'ctrl u':
+            if not self.is_currently_played:
+                urwid.emit_signal(self, 'unappend-requested', self)
         return super(SongListItem, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, x, y, focus):
@@ -126,7 +135,15 @@ class SongListBox(urwid.ListBox):
                 songitem.set_state(SongListItem.STATE_PLAYING)
                 if current_index is None:
                     current_index = index
-            urwid.connect_signal(songitem, 'activate', self.item_activated)
+            urwid.connect_signal(
+                songitem, 'activate', self.item_activated
+            )
+            urwid.connect_signal(
+                songitem, 'append-requested', self.item_append_requested
+            )
+            urwid.connect_signal(
+                songitem, 'unappend-requested', self.item_unappend_requested
+            )
             items.append(songitem)
         return (items, current_index)
 
@@ -136,12 +153,19 @@ class SongListBox(urwid.ListBox):
         else:
             player.load_queue(self.tracks, songitem.index)
 
+    def item_append_requested(self, songitem):
+        player.append_to_queue(songitem.track)
+
+    def item_unappend_requested(self, songitem):
+        player.remove_from_queue(songitem.track)
+
     def track_changed(self, track):
-        for songitem in self.walker:
+        for i, songitem in enumerate(self.walker):
             if isinstance(songitem, urwid.Text):
                 continue
             if songitem.track.id == track.id:
                 songitem.set_state(SongListItem.STATE_PLAYING)
+                self.set_focus(i)
             elif songitem.state != SongListItem.STATE_IDLE:
                 songitem.set_state(SongListItem.STATE_IDLE)
 
@@ -185,6 +209,12 @@ class SongListBox(urwid.ListBox):
         self.walker[:], current_index = self.tracks_to_songlist(self.tracks)
         if current_index is not None:
             self.walker.set_focus(current_index)
+
+    def remove_track(self, track):
+        for songlistitem in self.walker:
+            if songlistitem.track == track:
+                self.walker.remove(songlistitem)
+        # TODO: Fix showing current song improperly because of shift
 
     # def keypress(self, size, key):
     #     # print(key)

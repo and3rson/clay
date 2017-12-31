@@ -13,7 +13,7 @@ class PlayProgress(urwid.ProgressBar):
             return u'Idle'
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
-        return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}] {} {}'.format(
+        return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
             '\u25B6' if player.is_playing else '\u25A0',
             self.track.artist,
@@ -24,8 +24,8 @@ class PlayProgress(urwid.ProgressBar):
             total % 60,
             # u'S' if player.get_is_random() else ' ',
             # u'R' if player.get_is_repeat_one() else ' '
-            '⋍' if player.get_is_random() else ' ',
-            '⟲' if player.get_is_repeat_one() else ' '
+            # '⋍' if player.get_is_random() else ' ',
+            # '⟲' if player.get_is_repeat_one() else ' '
         )
 
     def set_track(self, track):

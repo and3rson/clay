@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+sys.path.append('.')
 
 import urwid
 
@@ -12,7 +13,7 @@ from clay.mylibrary import MyLibrary
 from clay.myplaylists import MyPlaylists
 from clay.playerqueue import Queue
 from clay.settings import Settings
-from clay import hotkeys
+# from clay import hotkeys
 
 
 loop = None
@@ -41,6 +42,9 @@ PALETTE = [
 
     ('input', '', '', '', '#FFF', '#444'),
     ('input_focus', '', '', '', '#FFF', '#F54'),
+
+    ('flag', '', '', '', '#AAA', ''),
+    ('flag-active', '', '', '', '#F54', ''),
 ]
 
 
@@ -83,7 +87,6 @@ class AppWidget(urwid.Frame):
                 Settings
             ]
         ]
-        print(self.tabs)
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
             urwid.AttrWrap(urwid.Columns([
@@ -99,8 +102,15 @@ class AppWidget(urwid.Frame):
             current=0,
             done=100
         )
+        self.shuffle_el = urwid.AttrWrap(urwid.Text(' ⋍ SHUF '), 'flag')
+        self.repeat_el = urwid.AttrWrap(urwid.Text(' ⟲ REP '), 'flag')
         self.panel = urwid.Pile([
-            urwid.Divider('\u2500'),
+            urwid.Columns([
+                urwid.Divider('\u2500'),
+                ('pack', self.shuffle_el),
+                # ('pack', urwid.Text(' ')),
+                ('pack', self.repeat_el)
+            ]),
             self.seekbar
         ])
         self.current_page = StartUp(self)
@@ -131,6 +141,12 @@ class AppWidget(urwid.Frame):
         self.seekbar.set_track(track)
 
     def playback_flags_changed(self):
+        self.shuffle_el.attr = 'flag-active' \
+            if player.get_is_random() \
+            else 'flag'
+        self.repeat_el.attr = 'flag-active' \
+            if player.get_is_repeat_one() \
+            else 'flag'
         self.seekbar.update()
 
     def set_page(self, page_class, *args):
