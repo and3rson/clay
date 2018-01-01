@@ -1,5 +1,6 @@
 from gmusicapi.clients import Mobileclient
 from threading import Thread, Lock
+from clay.eventhook import EventHook
 
 gp = None
 
@@ -95,6 +96,8 @@ class GP(object):
         self.mc = Mobileclient()
         self.invalidate_caches()
 
+        self.auth_state_changed = EventHook()
+
     def invalidate_caches(self):
         self.cached_tracks = None
         self.cached_playlists = None
@@ -105,15 +108,20 @@ class GP(object):
         self.mc.logout()
         self.invalidate_caches()
         # TODO: Move device_id to settings
-        return self.mc.login(email, password, device_id)
+        prev_auth_state = self.is_authenticated
+        result = self.mc.login(email, password, device_id)
+        if prev_auth_state != self.is_authenticated:
+            self.auth_state_changed.fire(self.is_authenticated)
+        return result
 
-    @async
     @synchronized
-    def get_all_tracks(self):
+    def get_all_tracks_sync(self):
         if self.cached_tracks:
             return self.cached_tracks
         self.cached_tracks = Track.from_data(self.mc.get_all_songs(), True)
         return self.cached_tracks
+
+    get_all_tracks = async(get_all_tracks_sync)
 
     @async
     def get_stream_url(self, id):
@@ -124,8 +132,7 @@ class GP(object):
     def get_all_user_playlist_contents(self):
         if self.cached_playlists:
             return self.cached_playlists
-        if not self.cached_tracks:
-            self.cached_tracks = self.mc.get_all_tracks()
+        self.get_all_tracks_sync()
 
         self.cached_playlists = Playlist.from_data(
             self.mc.get_all_user_playlist_contents(),
@@ -136,6 +143,9 @@ class GP(object):
     def get_cached_tracks_map(self):
         return {track.id: track for track in self.cached_tracks}
 
+    @property
+    def is_authenticated(self):
+        return self.mc.is_authenticated()
 
 gp = GP()
 

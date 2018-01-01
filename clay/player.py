@@ -67,6 +67,7 @@ class Player(object):
     track_changed = EventHook()
     playback_flags_changed = EventHook()
     queue_changed = EventHook()
+    track_appended = EventHook()
     track_removed = EventHook()
 
     def __init__(self):
@@ -141,7 +142,8 @@ class Player(object):
 
     def append_to_queue(self, track):
         self.queue.append(track)
-        self.queue_changed.fire()
+        self.track_appended.fire(track)
+        # self.queue_changed.fire()
 
     def remove_from_queue(self, track):
         self.queue.remove(track)

@@ -12,11 +12,19 @@ class Queue(urwid.Columns):
         self.songlist = SongListBox(app)
 
         self.songlist.populate(player.get_queue())
+        player.queue_changed += self.queue_changed
+        player.track_appended += self.track_appended
         player.track_removed += self.track_removed
 
         return super().__init__([
             self.songlist
         ])
+
+    def queue_changed(self):
+        self.songlist.populate(player.get_queue())
+
+    def track_appended(self, track):
+        self.songlist.append_track(track)
 
     def track_removed(self, track):
         self.songlist.remove_track(track)

@@ -22,9 +22,9 @@ class SongListItem(urwid.Pile):
         3: u'\u25A0'
     }
 
-    def __init__(self, track, index):
+    def __init__(self, track):
         self.track = track
-        self.index = index
+        self.index = 0
         self.state = SongListItem.STATE_IDLE
         self.line1 = urwid.SelectableIcon('', cursor_position=6)
         self.line1.set_layout('left', 'clip', None)
@@ -97,6 +97,10 @@ class SongListItem(urwid.Pile):
             SongListItem.STATE_PAUSED
         )
 
+    def set_index(self, index):
+        self.index = index
+        self.update_text()
+
     # def render(self, size, focus=False):
     #     # if focus:
     #     #     self.line1.attr = 'line1_focus'
@@ -130,7 +134,7 @@ class SongListBox(urwid.ListBox):
         items = []
         current_index = None
         for index, track in enumerate(tracks):
-            songitem = SongListItem(track, index)
+            songitem = SongListItem(track)
             if current_track is not None and current_track.id == track.id:
                 songitem.set_state(SongListItem.STATE_PLAYING)
                 if current_index is None:
@@ -207,14 +211,24 @@ class SongListBox(urwid.ListBox):
     def populate(self, tracks):
         self.tracks = tracks
         self.walker[:], current_index = self.tracks_to_songlist(self.tracks)
+        self.update_indexes()
         if current_index is not None:
             self.walker.set_focus(current_index)
+
+    def append_track(self, track):
+        tracks, current_index = self.tracks_to_songlist([track])
+        self.walker.append(tracks[0])
+        self.update_indexes()
 
     def remove_track(self, track):
         for songlistitem in self.walker:
             if songlistitem.track == track:
                 self.walker.remove(songlistitem)
-        # TODO: Fix showing current song improperly because of shift
+        self.update_indexes()
+
+    def update_indexes(self):
+        for i, songlistitem in enumerate(self.walker):
+            songlistitem.set_index(i)
 
     # def keypress(self, size, key):
     #     # print(key)

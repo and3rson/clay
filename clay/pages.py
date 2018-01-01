@@ -8,20 +8,6 @@ class StartUp(urwid.Filler):
     def __init__(self, app):
         self.app = app
 
-        if Settings.is_config_valid():
-            config = Settings.get_config()
-            gp.login(
-                config['username'],
-                config['password'],
-                config['device_id'],
-                callback=self.on_login
-            )
-        else:
-            self.app.set_page(
-                'Error',
-                'Please set your credentials on the settings page.'
-            )
-
         super(StartUp, self).__init__(
             urwid.Pile([
                 urwid.Padding(
@@ -38,6 +24,8 @@ class StartUp(urwid.Filler):
             # urwid.Text('Loading...'),
             # valign='top'
         )
+
+        self.start()
 
     def on_login(self, success, error):
         if error:
@@ -56,11 +44,30 @@ class StartUp(urwid.Filler):
 
         self.app.set_page('MyLibrary')
 
+    def start(self):
+        if Settings.is_config_valid():
+            config = Settings.get_config()
+            gp.login(
+                config['username'],
+                config['password'],
+                config['device_id'],
+                callback=self.on_login
+            )
+        else:
+            self.app.set_page(
+                'Error',
+                'Please set your credentials on the settings page.'
+            )
+
 
 class Error(urwid.Filler):
-    def __init__(self, app, error):
+    def __init__(self, app):
+        self.text = urwid.Text('Error'),
         super(Error, self).__init__(
-            urwid.Text('Error:\n\n{}'.format(str(error))),
+            self.text,
             valign='top'
         )
+
+    def set_error(self, error):
+        self.text = 'Error:\n\n{}'.format(str(error))
 

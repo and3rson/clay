@@ -50,8 +50,8 @@ PALETTE = [
 
 class AppWidget(urwid.Frame):
     class Tab(urwid.Text):
-        def __init__(self, page_class):
-            self.page_class = page_class
+        def __init__(self, page):
+            self.page = page
             # self.attrwrap = urwid.AttrWrap(urwid.Text(), 'panel')
             super(AppWidget.Tab, self).__init__(
                 self.get_title()
@@ -64,28 +64,24 @@ class AppWidget(urwid.Frame):
 
         def get_title(self):
             return ' {} {} '.format(
-                self.page_class.key,
-                self.page_class.name
+                self.page.key,
+                self.page.name
             )
 
     def __init__(self):
         self.pages = [
-            StartUp,
-            Error,
-            MyLibrary,
-            MyPlaylists,
-            Queue,
-            Settings
+            StartUp(self),
+            Error(self),
+            MyLibrary(self),
+            MyPlaylists(self),
+            Queue(self),
+            Settings(self)
         ]
         self.tabs = [
-            AppWidget.Tab(page_class)
-            for page_class
-            in [
-                MyLibrary,
-                MyPlaylists,
-                Queue,
-                Settings
-            ]
+            AppWidget.Tab(page)
+            for page
+            in self.pages
+            if hasattr(page, 'key')
         ]
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
@@ -113,7 +109,7 @@ class AppWidget(urwid.Frame):
             ]),
             self.seekbar
         ])
-        self.current_page = StartUp(self)
+        self.current_page = self.pages[0]
         super(AppWidget, self).__init__(
             header=self.header,
             footer=self.panel,
@@ -149,23 +145,28 @@ class AppWidget(urwid.Frame):
             else 'flag'
         self.seekbar.update()
 
-    def set_page(self, page_class, *args):
-        if isinstance(page_class, str):
-            page_class = [
-                page
-                for page
-                in self.pages
-                if page.__name__ == page_class
-            ][0]
-        self.current_page = page_class(self, *args)
-        self.contents['body'] = (self.current_page, None)
+    def set_page(self, classname, *args):
+        # if isinstance(page_class, str):
+        #     page_class = [
+        #         page
+        #         for page
+        #         in self.pages
+        #         if page.__name__ == page_class
+        #     ][0]
+        # self.current_page = page_class(self, *args)
+        page = [page for page in self.pages if page.__class__.__name__ == classname][0]
+        self.current_page = page
+        self.contents['body'] = (page, None)
 
         for tab in self.tabs:
             tab.set_active(False)
-            if tab.page_class == page_class:
+            if tab.page == page:
                 tab.set_active(True)
 
         self.redraw()
+
+        if hasattr(page, 'start'):
+            page.start()
 
     def redraw(self):
         if loop:
@@ -175,8 +176,8 @@ class AppWidget(urwid.Frame):
         if isinstance(self.current_page, StartUp):
             return
         for tab in self.tabs:
-            if 'meta {}'.format(tab.page_class.key) == key:
-                self.set_page(tab.page_class)
+            if 'meta {}'.format(tab.page.key) == key:
+                self.set_page(tab.page.__class__.__name__)
                 return
 
         if key == 'ctrl q':

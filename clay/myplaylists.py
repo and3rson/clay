@@ -38,20 +38,28 @@ class MyPlaylistListBox(urwid.ListBox):
         self.app = app
 
         self.walker = urwid.SimpleListWalker([
-            urwid.Text('\n \uf01e Loading playlists...', align='center')
+            urwid.Text('Not ready')
         ])
 
-        gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
+        gp.auth_state_changed += self.auth_state_changed
 
         super().__init__(self.walker)
 
+    def auth_state_changed(self, is_auth):
+        self.walker[:] = [
+            urwid.Text('\n \uf01e Loading playlists...', align='center')
+        ]
+
+        gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
+
     def on_get_playlists(self, playlists, error):
         if error:
-            self.app.set_page(
-                'Error',
-                str(error)
-            )
-            return
+            raise error
+            # self.app.set_page(
+            #     'Error',
+            #     str(error)
+            # )
+            # return
 
         items = []
         for playlist in playlists:
