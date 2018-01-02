@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'clay=clay.__main__:main'
+            'clay=clay.app:main'
         ]
     }
 )

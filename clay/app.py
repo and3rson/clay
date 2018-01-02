@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=wrong-import-position
+# pylint: disable=too-many-instance-attributes
+"""
+Main app entrypoint.
+"""
 
 import sys
-sys.path.append('.')
+sys.path.append('.')  # noqa
 
 import urwid
 
 from clay.player import player
 from clay.widgets import PlayProgress
-from clay.pages import StartUp, Error
+from clay.pages import StartUp
 from clay.mylibrary import MyLibrary
 from clay.myplaylists import MyPlaylists
 from clay.playerqueue import Queue
 from clay.settings import Settings
+from clay.notifications import NotificationArea
 # from clay import hotkeys
-
-
-loop = None
 
 PALETTE = [
     ('logo', '', '', '', '#F54', ''),
@@ -45,24 +48,39 @@ PALETTE = [
 
     ('flag', '', '', '', '#AAA', ''),
     ('flag-active', '', '', '', '#F54', ''),
+
+    ('notification', '', '', '', '#F54', '#222'),
 ]
 
 
 class AppWidget(urwid.Frame):
+    """
+    Root widget.
+
+    Handles tab switches, global keypresses etc.
+    """
     class Tab(urwid.Text):
+        """
+        Represents a single tab in header tabbar.
+        """
         def __init__(self, page):
             self.page = page
-            # self.attrwrap = urwid.AttrWrap(urwid.Text(), 'panel')
             super(AppWidget.Tab, self).__init__(
                 self.get_title()
             )
 
         def set_active(self, active):
+            """
+            Mark tab visually as active.
+            """
             self.set_text(
                 [('panel_focus' if active else 'panel', self.get_title())]
             )
 
         def get_title(self):
+            """
+            Render tab title.
+            """
             return ' {} {} '.format(
                 self.page.key,
                 self.page.name
@@ -71,7 +89,6 @@ class AppWidget(urwid.Frame):
     def __init__(self):
         self.pages = [
             StartUp(self),
-            Error(self),
             MyLibrary(self),
             MyPlaylists(self),
             Queue(self),
@@ -83,6 +100,7 @@ class AppWidget(urwid.Frame):
             in self.pages
             if hasattr(page, 'key')
         ]
+        NotificationArea.set_app(self)
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
             urwid.AttrWrap(urwid.Columns([
@@ -90,6 +108,7 @@ class AppWidget(urwid.Frame):
                 for tab
                 in self.tabs
             ], dividechars=1), 'panel'),
+            NotificationArea.get()
             # urwid.Divider('\u2500')
         ])
         self.seekbar = PlayProgress(
@@ -116,27 +135,48 @@ class AppWidget(urwid.Frame):
             body=self.current_page
         )
 
+        self.loop = None
+
         player.media_position_changed += self.media_position_changed
         player.media_state_changed += self.media_state_changed
         player.track_changed += self.track_changed
         player.playback_flags_changed += self.playback_flags_changed
 
+    def set_loop(self, loop):
+        """
+        Assign a MainLoop to this app.
+        """
+        self.loop = loop
+
     def media_position_changed(self, progress):
+        """
+        Update slider in seekbar.
+        Called when current play position changes.
+        """
         if progress < 0:
             progress = 0
         self.seekbar.set_completion(progress * 100)
-        loop.draw_screen()
-        # sleep(0.2)
+        self.loop.draw_screen()
 
-        # self.set_page(MyLibrary())
-
-    def media_state_changed(self, is_playing):
+    def media_state_changed(self, _):
+        """
+        Update seekbar.
+        Called when playback is paused/unpaused.
+        """
         self.seekbar.update()
 
     def track_changed(self, track):
+        """
+        Update displayed track in seekbar.
+        Called when current track changes.
+        """
         self.seekbar.set_track(track)
 
     def playback_flags_changed(self):
+        """
+        Update seekbar flags.
+        Called when random/repeat flags change.
+        """
         self.shuffle_el.attr = 'flag-active' \
             if player.get_is_random() \
             else 'flag'
@@ -145,15 +185,10 @@ class AppWidget(urwid.Frame):
             else 'flag'
         self.seekbar.update()
 
-    def set_page(self, classname, *args):
-        # if isinstance(page_class, str):
-        #     page_class = [
-        #         page
-        #         for page
-        #         in self.pages
-        #         if page.__name__ == page_class
-        #     ][0]
-        # self.current_page = page_class(self, *args)
+    def set_page(self, classname):
+        """
+        Switch to a different tab.
+        """
         page = [page for page in self.pages if page.__class__.__name__ == classname][0]
         self.current_page = page
         self.contents['body'] = (page, None)
@@ -169,12 +204,18 @@ class AppWidget(urwid.Frame):
             page.start()
 
     def redraw(self):
-        if loop:
-            loop.draw_screen()
+        """
+        Redraw screen.
+        Needs to be called by other widgets if UI was changed from a different thread.
+        """
+        if self.loop:
+            self.loop.draw_screen()
 
     def keypress(self, size, key):
-        if isinstance(self.current_page, StartUp):
-            return
+        """
+        Handle keypress.
+        Can switch tabs, control playbackm, flags, notifications and app state.
+        """
         for tab in self.tabs:
             if 'meta {}'.format(tab.page.key) == key:
                 self.set_page(tab.page.__class__.__name__)
@@ -196,18 +237,22 @@ class AppWidget(urwid.Frame):
             player.set_repeat_one(not player.get_is_repeat_one())
         elif key == 'ctrl q':
             sys.exit(0)
+        elif key == 'esc':
+            NotificationArea.close_all()
         else:
             super(AppWidget, self).keypress(size, key)
 
 
 def main():
-    global loop
+    """
+    Application entrypoint.
+    """
     app_widget = AppWidget()
     loop = urwid.MainLoop(app_widget, PALETTE)
+    app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()
 
 
 if __name__ == '__main__':
     main()
-

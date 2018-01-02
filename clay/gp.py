@@ -15,7 +15,6 @@ def async(fn):
                 result = fn(*args, **kwargs)
             except Exception as e:
                 callback(None, e, **extra)
-                raise
             else:
                 callback(result, None, **extra)
 
@@ -146,6 +145,7 @@ class GP(object):
     @property
     def is_authenticated(self):
         return self.mc.is_authenticated()
+
 
 gp = GP()
 

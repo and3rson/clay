@@ -1,0 +1,31 @@
+[flake8]
+# ignore = D203
+max-line-length=120
+
+ignore =
+    # blank line at end of file
+    W391
+
+exclude =
+    # Generated stuff
+    gen,
+    # Coverage HTML report
+    htmlcov,
+    # Logs
+    log,
+    # Requirements
+    requirements,
+    # Temporary stuff
+    tmp,
+    # Virtual envs
+    .env,
+    .env2,
+    .env3,
+    .env36,
+    .venv,
+    .git,
+    wsgi.py,
+    utils,
+    # VLC bindings
+    vlc.py
+
