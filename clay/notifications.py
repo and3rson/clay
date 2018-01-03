@@ -19,7 +19,7 @@ class Notification(urwid.Columns):
         ])
 
     def update(self, message):
-        self.text.text = Notification.TEMPLATE.format(message)
+        self.text.set_text(Notification.TEMPLATE.format(message))
 
     def close(self):
         for notification, props in reversed(self.area.contents):

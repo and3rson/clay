@@ -170,9 +170,7 @@ class SongListBox(urwid.ListBox):
         player.remove_from_queue(songitem.track)
 
     def item_station_requested(self, songitem):
-        # TODO: Implement me
-        # player.start_station()
-        pass
+        player.create_station_from_track(songitem.track)
 
     def track_changed(self, track):
         for i, songitem in enumerate(self.walker):

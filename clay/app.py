@@ -238,7 +238,7 @@ class AppWidget(urwid.Frame):
             player.set_random(not player.get_is_random())
         elif key == 'ctrl r':
             player.set_repeat_one(not player.get_is_repeat_one())
-        elif key == 'ctrl q':
+        elif key == 'ctrl x':
             sys.exit(0)
         elif key == 'esc':
             NotificationArea.close_newest()

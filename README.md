@@ -24,15 +24,15 @@ It's being actively developed, but is still in the early alpha version, so many 
 - Playback
 - Music library
 - Playlists
-- Queue
+- Radio stations
+- Queue management
+- Notifications
 - Configuration
 - Caching (partially)
-- Basic error handling
 
 # What is being developed
 
 - Search
-- Add to playlist
 - Like/dislike
 - Caching
 - Other functionality that is supported by [gmusicapi]
@@ -83,14 +83,31 @@ Also be aware that this app has not been tested with 2FA yet.
 
 # Controls
 
+## General
+
 - `<UP|DOWN|LEFT|RIGHT>` - nagivate around
 - `<ALT> + 1..9` - switch active tab
-- `<ENTER>` - play selected track
+
+## Songs
+
+- `<ENTER>` - play highlighted track
 - `<CTRL> w` - play/pause
 - `<CTRL> e` - play next song
-- `<SHIFT> <LEFT|RIGHT>` - seek backward/forward by 5% of the song duration
+- `<CTRL> a` - append highlighted song to the queue
+- `<CTRL> u` - remove highlighted song from the queue
+- `<CTRL> p` - start station from highlighted song
+
+## Playback
+
 - `<CTRL> s` - toggle shuffle
 - `<CTRL> r` - toggle song repeat
+- `<SHIFT> <LEFT|RIGHT>` - seek backward/forward by 5% of the song duration
+- `<CTRL> q` - seek to song beginning
+
+## Misc
+
+- `<ESC>` - close most recent notification (we should remap this to something else)
+- `<CTRL> x` - exit app
 
 # Credits
 

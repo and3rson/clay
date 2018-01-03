@@ -18,7 +18,7 @@ class Queue(object):
     def load(self, tracks, current_track=None):
         self.tracks = tracks[:]
         if current_track is None and len(self.tracks):
-            current_track = self.tracks[0]
+            current_track = 0
         self.current_track = current_track
 
     def append(self, track):
@@ -126,7 +126,7 @@ class Player(object):
             self.get_play_progress()
         )
 
-    def load_queue(self, data, current_index):
+    def load_queue(self, data, current_index=None):
         self.queue.load(data, current_index)
         self.queue_changed.fire()
         self._play()
@@ -140,6 +140,22 @@ class Player(object):
         self.queue.remove(track)
         self.queue_changed.fire()
         self.track_removed.fire(track)
+
+    def create_station_from_track(self, track):
+        self._create_station_notification = NotificationArea.notify('Creating station...')
+        track.create_station(callback=self._create_station_from_track_ready)
+
+    def _create_station_from_track_ready(self, station, error):
+        if error:
+            self._create_station_notification.update('Failed to create station: {}'.format(str(error)))
+            return
+
+        if not station.get_tracks():
+            self._create_station_notification.update('Newly created station is empty :(')
+            return
+
+        self.load_queue(station.get_tracks())
+        self._create_station_notification.update('Station ready!')
 
     def get_is_random(self):
         return self.queue.random

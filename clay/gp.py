@@ -36,26 +36,48 @@ def synchronized(fn):
 
 
 class Track(object):
-    def __init__(self, id, title, artist, duration):
+    TYPE_UPLOADED = 'uploaded'
+    TYPE_STORE = 'store'
+
+    def __init__(self, id, title, artist, duration, type):
         self.id = id
         self.title = title
         self.artist = artist
         self.duration = duration
+        self.type = type
 
     @classmethod
     def from_data(cls, data, many=False):
         if many:
             return [cls.from_data(one) for one in data]
 
+        if 'id' in data:
+            track_id = data['id']
+            track_type = 'uploaded'
+        elif 'storeId' in data:
+            track_id = data['storeId']
+            track_type = 'store'
+        else:
+            raise Exception('Track is missing both "id" and "storeId"! Where does it come from?')
+
         return Track(
-            id=data['id'],
+            id=track_id,
             title=data['title'],
             artist=data['artist'],
-            duration=int(data['durationMillis'])
+            duration=int(data['durationMillis']),
+            type=track_type
         )
 
     def get_url(self, callback):
         gp.get_stream_url(self.id, callback=callback, extra=dict(track=self))
+
+    @async
+    @synchronized
+    def create_station(self):
+        station_id = gp.mc.create_station(name=u'Station - {}'.format(self.title), track_id=self.id)
+        station = Station(station_id)
+        station.load_tracks()
+        return station
 
 
 class Playlist(object):
@@ -91,13 +113,18 @@ class Playlist(object):
 
 
 class Station(object):
-    def __init__(self):
-        pass
+    def __init__(self, id):
+        self.id = id
+        self.tracks = []
 
-    @classmethod
-    def from_data(cls, data):
-        print(data)
-        raise Exception(str(data))
+    def load_tracks(self):
+        data = gp.mc.get_station_tracks(self.id, 100)
+        # import json
+        # raise Exception(json.dumps(data, indent=4))
+        self.tracks = Track.from_data(data, many=True)
+
+    def get_tracks(self):
+        return self.tracks
 
 
 class GP(object):
@@ -149,14 +176,15 @@ class GP(object):
         )
         return self.cached_playlists
 
-    @async
-    @synchronized
-    def create_station(self, name, track_id=None, artist_id=None, album_id=None, genre_id=None):
-        kwargs = dict(track_id=track_id, artist_id=artist_id, album_id=album_id, genre_id=genre_id)
-        # kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        # if len(kwargs) != 1:
-        #     raise Exception('Must provide one of artist_id, album_id or genre_id')
-        return Station.from_data(self.mc.create_station(name, **kwargs))
+    # @async
+    # @synchronized
+    # def create_station(self, name, track_id=None, artist_id=None, album_id=None, genre_id=None):
+    #     kwargs = dict(track_id=track_id, artist_id=artist_id, album_id=album_id, genre_id=genre_id)
+    #     # kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    #     # if len(kwargs) != 1:
+    #     #     raise Exception('Must provide one of artist_id, album_id or genre_id')
+    #     station_id = Station.from_data(self.mc.create_station(name, **kwargs))
+    #     return station_id
 
     def get_cached_tracks_map(self):
         return {track.id: track for track in self.cached_tracks}
