@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import urwid
 from clay.player import player
 

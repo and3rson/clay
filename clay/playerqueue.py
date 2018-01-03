@@ -16,7 +16,7 @@ class Queue(urwid.Columns):
         player.track_appended += self.track_appended
         player.track_removed += self.track_removed
 
-        return super().__init__([
+        return super(Queue, self).__init__([
             self.songlist
         ])
 

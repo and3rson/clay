@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 import urwid
 from clay.gp import gp
 from clay.songlist import SongListBox
+from clay.notifications import NotificationArea
 
 
 class MyPlaylistListItem(urwid.Columns):
@@ -9,7 +9,7 @@ class MyPlaylistListItem(urwid.Columns):
 
     def __init__(self, playlist):
         self.playlist = playlist
-        self.text = urwid.SelectableIcon(' ☰ {} ({})'.format(
+        self.text = urwid.SelectableIcon(u' \u2630 {} ({})'.format(
             self.playlist.name,
             len(self.playlist.tracks)
         ), cursor_position=3)
@@ -19,13 +19,13 @@ class MyPlaylistListItem(urwid.Columns):
             'default',
             'selected'
         )
-        super().__init__([self.content])
+        super(MyPlaylistListItem, self).__init__([self.content])
 
     def keypress(self, size, key):
         if key == 'enter':
             urwid.emit_signal(self, 'activate', self)
             return
-        return super().keypress(size, key)
+        return super(MyPlaylistListItem, self).keypress(size, key)
 
     def get_tracks(self):
         return self.playlist.tracks
@@ -43,18 +43,19 @@ class MyPlaylistListBox(urwid.ListBox):
 
         gp.auth_state_changed += self.auth_state_changed
 
-        super().__init__(self.walker)
+        super(MyPlaylistListBox, self).__init__(self.walker)
 
     def auth_state_changed(self, is_auth):
         self.walker[:] = [
-            urwid.Text('\n \uf01e Loading playlists...', align='center')
+            urwid.Text(u'\n \uf01e Loading playlists...', align='center')
         ]
 
         gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
 
     def on_get_playlists(self, playlists, error):
         if error:
-            raise error
+            NotificationArea.notify('Failed to get playlists: {}'.format(str(error)))
+            return
             # self.app.set_page(
             #     'Error',
             #     str(error)
@@ -92,7 +93,7 @@ class MyPlaylists(urwid.Columns):
             self.myplaylistlist, 'activate', self.myplaylistlistitem_activated
         )
 
-        return super().__init__([
+        return super(MyPlaylists, self).__init__([
             self.myplaylistlist,
             self.songlist
         ])

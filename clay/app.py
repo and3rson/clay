@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # pylint: disable=wrong-import-position
 # pylint: disable=too-many-instance-attributes
 """
@@ -7,12 +6,13 @@ Main app entrypoint.
 """
 
 import sys
-sys.path.append('.')  # noqa
+sys.path.insert(0, '.')  # noqa
+sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 
 from clay.player import player
-from clay.widgets import PlayProgress
+from clay.playbar import PlayBar
 from clay.pages import StartUp
 from clay.mylibrary import MyLibrary
 from clay.myplaylists import MyPlaylists
@@ -111,22 +111,22 @@ class AppWidget(urwid.Frame):
             NotificationArea.get()
             # urwid.Divider('\u2500')
         ])
-        self.seekbar = PlayProgress(
+        self.playbar = PlayBar(
             'progress_remaining',
             'progress',
             current=0,
             done=100
         )
-        self.shuffle_el = urwid.AttrWrap(urwid.Text(' ⋍ SHUF '), 'flag')
-        self.repeat_el = urwid.AttrWrap(urwid.Text(' ⟲ REP '), 'flag')
+        self.shuffle_el = urwid.AttrWrap(urwid.Text(u' \u22cd SHUF '), 'flag')
+        self.repeat_el = urwid.AttrWrap(urwid.Text(u' \u27f2 REP '), 'flag')
         self.panel = urwid.Pile([
             urwid.Columns([
-                urwid.Divider('\u2500'),
+                urwid.Divider(u'\u2500'),
                 ('pack', self.shuffle_el),
                 # ('pack', urwid.Text(' ')),
                 ('pack', self.repeat_el)
             ]),
-            self.seekbar
+            self.playbar
         ])
         self.current_page = self.pages[0]
         super(AppWidget, self).__init__(
@@ -150,31 +150,33 @@ class AppWidget(urwid.Frame):
 
     def media_position_changed(self, progress):
         """
-        Update slider in seekbar.
+        Update slider in playbar.
         Called when current play position changes.
         """
         if progress < 0:
             progress = 0
-        self.seekbar.set_completion(progress * 100)
+        self.playbar.set_completion(progress * 100)
         self.loop.draw_screen()
 
     def media_state_changed(self, _):
         """
-        Update seekbar.
+        Update playbar.
         Called when playback is paused/unpaused.
         """
-        self.seekbar.update()
+        self.playbar.update()
+        self.loop.draw_screen()
 
     def track_changed(self, track):
         """
-        Update displayed track in seekbar.
+        Update displayed track in playbar.
         Called when current track changes.
         """
-        self.seekbar.set_track(track)
+        self.playbar.set_track(track)
+        self.loop.draw_screen()
 
     def playback_flags_changed(self):
         """
-        Update seekbar flags.
+        Update playbar flags.
         Called when random/repeat flags change.
         """
         self.shuffle_el.attr = 'flag-active' \
@@ -183,7 +185,8 @@ class AppWidget(urwid.Frame):
         self.repeat_el.attr = 'flag-active' \
             if player.get_is_repeat_one() \
             else 'flag'
-        self.seekbar.update()
+        self.playbar.update()
+        self.loop.draw_screen()
 
     def set_page(self, classname):
         """

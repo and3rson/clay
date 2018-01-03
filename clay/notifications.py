@@ -5,10 +5,10 @@ class NotificationArea(urwid.Pile):
     instance = None
     app = None
 
-    TEMPLATE = ' \u26A1 {}'
+    TEMPLATE = u' \u26A1 {}'
 
     def __init__(self):
-        super().__init__([])
+        super(NotificationArea, self).__init__([])
 
     @classmethod
     def get(cls):

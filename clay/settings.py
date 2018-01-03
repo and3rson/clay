@@ -23,7 +23,7 @@ class Settings(urwid.Columns):
         self.device_id = urwid.Edit(
             edit_text=config.get('device_id', '')
         )
-        return super().__init__([urwid.ListBox(urwid.SimpleListWalker([
+        return super(Settings, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
             urwid.Text('Settings'),
             urwid.Divider(' '),
             urwid.Text('Username'),

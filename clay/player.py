@@ -1,10 +1,10 @@
 from random import randint
 
-# import dbus
 import json
 
 from clay import vlc
 from clay.eventhook import EventHook
+from clay.notifications import NotificationArea
 
 
 class Queue(object):
@@ -72,15 +72,6 @@ class Player(object):
 
     def __init__(self):
         self.mp = vlc.MediaPlayer()
-        # self.bus = dbus.SessionBus()
-        # try:
-        #     self.obj = self.bus.get_object('org.awesomewm.awful', '/org/dunai/clay')
-        # except dbus.DBusException as e:
-        #     print(e)
-        #     self.interface = None
-        # else:
-        #     self.interface = dbus.Interface(self.obj, 'org.dunai.clay')
-        # self.statusfile = open('/tmp/clay.json', 'w')
 
         self.mp.event_manager().event_attach(
             vlc.EventType.MediaPlayerPlaying,
@@ -177,7 +168,8 @@ class Player(object):
 
     def _play_ready(self, url, error, track):
         if error:
-            raise error
+            NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
+            return
         self.mp.set_media(vlc.Media(url))
         self.mp.play()
 
