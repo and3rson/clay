@@ -1,13 +1,39 @@
 import urwid
 
 
+class Notification(urwid.Columns):
+    TEMPLATE = u' \u26A1 {}'
+
+    def __init__(self, area, id, message):
+        self.area = area
+        self.id = id
+        self.text = urwid.Text(Notification.TEMPLATE.format(message))
+        super(Notification, self).__init__([
+            urwid.AttrWrap(
+                urwid.Columns([
+                    self.text,
+                    ('pack', urwid.Text('[Hit ESC to close] '))
+                ]),
+                'notification'
+            )
+        ])
+
+    def update(self, message):
+        self.text.text = Notification.TEMPLATE.format(message)
+
+    def close(self):
+        for notification, props in reversed(self.area.contents):
+            if notification is self:
+                self.area.contents.remove((notification, props))
+
+
 class NotificationArea(urwid.Pile):
     instance = None
     app = None
 
-    TEMPLATE = u' \u26A1 {}'
-
     def __init__(self):
+        self.last_id = 0
+        self.notifications = {}
         super(NotificationArea, self).__init__([])
 
     @classmethod
@@ -23,28 +49,34 @@ class NotificationArea(urwid.Pile):
 
     @classmethod
     def notify(cls, message):
-        cls.instance._notify(message)
+        return cls.instance._notify(message)
 
     @classmethod
     def close_all(cls):
         cls.instance._close_all()
 
+    @classmethod
+    def close_newest(cls):
+        cls.instance._close_newest()
+
     def _notify(self, message):
-        text = urwid.Text(self.__class__.TEMPLATE.format(message))
+        self.last_id += 1
+        notification = Notification(self, self.last_id, message)
         self.contents.append(
             (
-                urwid.AttrWrap(
-                    urwid.Columns([
-                        text,
-                        ('pack', urwid.Text('[Hit ESC to close] '))
-                    ]),
-                    'notification'
-                ),
+                notification,
                 ('weight', 1)
             )
         )
         self.__class__.app.redraw()
+        return notification
 
     def _close_all(self):
-        self.contents[:] = []
+        while len(self.contents):
+            self.contents[0][0].close()
+
+    def _close_newest(self):
+        if not len(self.contents):
+            return
+        self.contents[-1][0].close()
 

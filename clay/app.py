@@ -241,7 +241,7 @@ class AppWidget(urwid.Frame):
         elif key == 'ctrl q':
             sys.exit(0)
         elif key == 'esc':
-            NotificationArea.close_all()
+            NotificationArea.close_newest()
         else:
             super(AppWidget, self).keypress(size, key)
 

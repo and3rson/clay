@@ -90,6 +90,16 @@ class Playlist(object):
         return results
 
 
+class Station(object):
+    def __init__(self):
+        pass
+
+    @classmethod
+    def from_data(cls, data):
+        print(data)
+        raise Exception(str(data))
+
+
 class GP(object):
     def __init__(self):
         self.mc = Mobileclient()
@@ -138,6 +148,15 @@ class GP(object):
             True
         )
         return self.cached_playlists
+
+    @async
+    @synchronized
+    def create_station(self, name, track_id=None, artist_id=None, album_id=None, genre_id=None):
+        kwargs = dict(track_id=track_id, artist_id=artist_id, album_id=album_id, genre_id=genre_id)
+        # kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        # if len(kwargs) != 1:
+        #     raise Exception('Must provide one of artist_id, album_id or genre_id')
+        return Station.from_data(self.mc.create_station(name, **kwargs))
 
     def get_cached_tracks_map(self):
         return {track.id: track for track in self.cached_tracks}

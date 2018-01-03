@@ -6,7 +6,8 @@ class SongListItem(urwid.Pile):
     signals = [
         'activate',
         'append-requested',
-        'unappend-requested'
+        'unappend-requested',
+        'station-requested'
     ]
 
     STATE_IDLE = 0
@@ -81,6 +82,9 @@ class SongListItem(urwid.Pile):
         elif key == 'ctrl u':
             if not self.is_currently_played:
                 urwid.emit_signal(self, 'unappend-requested', self)
+        elif key == 'ctrl p':
+            if not self.is_currently_played:
+                urwid.emit_signal(self, 'station-requested', self)
         return super(SongListItem, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, x, y, focus):
@@ -147,6 +151,9 @@ class SongListBox(urwid.ListBox):
             urwid.connect_signal(
                 songitem, 'unappend-requested', self.item_unappend_requested
             )
+            urwid.connect_signal(
+                songitem, 'station-requested', self.item_station_requested
+            )
             items.append(songitem)
         return (items, current_index)
 
@@ -161,6 +168,11 @@ class SongListBox(urwid.ListBox):
 
     def item_unappend_requested(self, songitem):
         player.remove_from_queue(songitem.track)
+
+    def item_station_requested(self, songitem):
+        # TODO: Implement me
+        # player.start_station()
+        pass
 
     def track_changed(self, track):
         for i, songitem in enumerate(self.walker):

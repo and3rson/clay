@@ -11,6 +11,7 @@ class MyLibrary(urwid.Columns):
     def __init__(self, app):
         self.app = app
         self.songlist = SongListBox(app)
+        self.notification = None
 
         gp.auth_state_changed += self.auth_state_changed
 
@@ -22,6 +23,7 @@ class MyLibrary(urwid.Columns):
         if error:
             NotificationArea.notify('Failed to load my library: {}'.format(str(error)))
             return
+        # self.notification.close()
         self.songlist.populate(tracks)
         self.app.redraw()
 
@@ -30,4 +32,6 @@ class MyLibrary(urwid.Columns):
             self.songlist.set_placeholder(u'\n \uf01e Loading song list...')
 
             gp.get_all_tracks(callback=self.on_get_all_songs)
+
+            # self.notification = NotificationArea.notify('Loading library...')
 

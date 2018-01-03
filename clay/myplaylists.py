@@ -40,17 +40,21 @@ class MyPlaylistListBox(urwid.ListBox):
         self.walker = urwid.SimpleListWalker([
             urwid.Text('Not ready')
         ])
+        self.notification = None
 
         gp.auth_state_changed += self.auth_state_changed
 
         super(MyPlaylistListBox, self).__init__(self.walker)
 
     def auth_state_changed(self, is_auth):
-        self.walker[:] = [
-            urwid.Text(u'\n \uf01e Loading playlists...', align='center')
-        ]
+        if is_auth:
+            self.walker[:] = [
+                urwid.Text(u'\n \uf01e Loading playlists...', align='center')
+            ]
 
-        gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
+            gp.get_all_user_playlist_contents(callback=self.on_get_playlists)
+
+            # self.notification = NotificationArea.notify('Loading playlists...')
 
     def on_get_playlists(self, playlists, error):
         if error:
@@ -69,6 +73,8 @@ class MyPlaylistListBox(urwid.ListBox):
                 myplaylistlistitem, 'activate', self.item_activated
             )
             items.append(myplaylistlistitem)
+
+        # self.notification.close()
 
         self.walker[:] = items
 
