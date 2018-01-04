@@ -59,7 +59,7 @@ class Settings(urwid.Columns):
             if e.errno != errno.EEXIST:
                 raise
 
-        path = os.path.join(filedir, 'config.json')
+        path = os.path.join(filedir, 'config.yaml')
         if not os.path.exists(path):
             with open(path, 'w') as f:
                 f.write('{}')

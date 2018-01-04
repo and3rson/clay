@@ -5,6 +5,7 @@ import json
 from clay import vlc
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
+from clay.hotkeys import hotkey_manager
 
 
 class Queue(object):
@@ -89,6 +90,10 @@ class Player(object):
             vlc.EventType.MediaPlayerPositionChanged,
             self._media_position_changed
         )
+
+        hotkey_manager.play_pause += self.play_pause
+        hotkey_manager.next += self.next
+        hotkey_manager.prev += lambda: self.seek_absolute(0)
 
         self.queue = Queue()
 

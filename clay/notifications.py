@@ -7,7 +7,8 @@ class Notification(urwid.Columns):
     def __init__(self, area, id, message):
         self.area = area
         self.id = id
-        self.text = urwid.Text(Notification.TEMPLATE.format(message))
+        self.text = urwid.Text('')
+        self.update(message)
         super(Notification, self).__init__([
             urwid.AttrWrap(
                 urwid.Columns([
@@ -19,6 +20,10 @@ class Notification(urwid.Columns):
         ])
 
     def update(self, message):
+        message = message.split('\n')
+        message = '\n'.join([
+            message[0]
+        ] + ['    {}'.format(line) for line in message[1:]])
         self.text.set_text(Notification.TEMPLATE.format(message))
 
     def close(self):
@@ -49,15 +54,15 @@ class NotificationArea(urwid.Pile):
 
     @classmethod
     def notify(cls, message):
-        return cls.instance._notify(message)
+        return cls.get()._notify(message)
 
     @classmethod
     def close_all(cls):
-        cls.instance._close_all()
+        cls.get()._close_all()
 
     @classmethod
     def close_newest(cls):
-        cls.instance._close_newest()
+        cls.get()._close_newest()
 
     def _notify(self, message):
         self.last_id += 1
@@ -68,7 +73,8 @@ class NotificationArea(urwid.Pile):
                 ('weight', 1)
             )
         )
-        self.__class__.app.redraw()
+        if self.__class__.app is not None:
+            self.__class__.app.redraw()
         return notification
 
     def _close_all(self):

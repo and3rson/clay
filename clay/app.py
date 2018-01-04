@@ -19,7 +19,6 @@ from clay.myplaylists import MyPlaylists
 from clay.playerqueue import Queue
 from clay.settings import Settings
 from clay.notifications import NotificationArea
-# from clay import hotkeys
 
 PALETTE = [
     ('logo', '', '', '', '#F54', ''),
