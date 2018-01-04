@@ -239,7 +239,7 @@ class AppWidget(urwid.Frame):
             player.set_repeat_one(not player.get_is_repeat_one())
         elif key == 'ctrl x':
             sys.exit(0)
-        elif key == 'esc':
+        elif key == 'esc' or key == 'ctrl _':
             NotificationArea.close_newest()
         else:
             super(AppWidget, self).keypress(size, key)

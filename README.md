@@ -106,7 +106,7 @@ Also be aware that this app has not been tested with 2FA yet.
 
 ## Misc
 
-- `<ESC>` - close most recent notification (we should remap this to something else)
+- `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification
 - `<CTRL> x` - exit app
 
 # Credits
