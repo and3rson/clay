@@ -1,0 +1,15 @@
+language: python
+matrix:
+  include:
+  - python: 2.7
+    env: TOXENV=py27
+  - python: 3.6
+    env: TOXENV=py36
+before_install:
+  - "sudo apt-get update"
+  - "sudo apt-get install python-gi python3-gi"
+install:
+  - "pip install tox"
+script:
+  - "tox"
+

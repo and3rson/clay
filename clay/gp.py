@@ -12,7 +12,7 @@ from gmusicapi.clients import Mobileclient
 from clay.eventhook import EventHook
 
 
-def async(func):
+def asynchronous(func):
     """
     Decorates a function to become asynchronous.
 
@@ -141,7 +141,7 @@ class Track(object):
         station.load_tracks()
         return station
 
-    create_station_async = async(create_station)
+    create_station_async = asynchronous(create_station)
 
 
 class Playlist(object):
@@ -279,7 +279,7 @@ class GP(object):
             self.auth_state_changed.fire(self.is_authenticated)
         return result
 
-    login_async = async(login)
+    login_async = asynchronous(login)
 
     @synchronized
     def get_all_tracks(self):
@@ -291,7 +291,7 @@ class GP(object):
         self.cached_tracks = Track.from_data(self.mobile_client.get_all_songs(), True)
         return self.cached_tracks
 
-    get_all_tracks_async = async(get_all_tracks)
+    get_all_tracks_async = asynchronous(get_all_tracks)
 
     def get_stream_url(self, stream_id):
         """
@@ -299,7 +299,7 @@ class GP(object):
         """
         return self.mobile_client.get_stream_url(stream_id)
 
-    get_stream_url_async = async(get_stream_url)
+    get_stream_url_async = asynchronous(get_stream_url)
 
     @synchronized
     def get_all_user_playlist_contents(self, **_):
@@ -316,7 +316,7 @@ class GP(object):
         )
         return self.cached_playlists
 
-    get_all_user_playlist_contents_async = async(get_all_user_playlist_contents)
+    get_all_user_playlist_contents_async = asynchronous(get_all_user_playlist_contents)
 
     def get_cached_tracks_map(self):
         """

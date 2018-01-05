@@ -34,7 +34,7 @@ class MyPlaylistListItem(urwid.Columns):
         """
         if key == 'enter':
             urwid.emit_signal(self, 'activate', self)
-            return
+            return None
         return super(MyPlaylistListItem, self).keypress(size, key)
 
     def get_tracks(self):

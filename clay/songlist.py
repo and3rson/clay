@@ -102,7 +102,7 @@ class SongListItem(urwid.Pile):
         """
         if key == 'enter':
             urwid.emit_signal(self, 'activate', self)
-            return
+            return None
         elif key == 'ctrl a':
             urwid.emit_signal(self, 'append-requested', self)
         elif key == 'ctrl u':
@@ -118,8 +118,8 @@ class SongListItem(urwid.Pile):
         """
         if button == 1 and focus:
             urwid.emit_signal(self, 'activate', self)
-            return
-        return super().mouse_event(size, event, button, col, row, focus)
+            return None
+        return super(SongListItem, self).mouse_event(size, event, button, col, row, focus)
 
     @property
     def is_currently_played(self):
@@ -306,4 +306,4 @@ class SongListBox(urwid.ListBox):
         elif button == 5:
             self.keypress(size, 'down')
         else:
-            super().mouse_event(size, event, button, col, row, focus)
+            super(SongListBox, self).mouse_event(size, event, button, col, row, focus)

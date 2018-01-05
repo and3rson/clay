@@ -43,6 +43,7 @@ class Notification(urwid.Columns):
             message[0]
         ] + ['    {}'.format(line) for line in message[1:]])
         self.text.set_text(Notification.TEMPLATE.format(message))
+        self.area.__class__.app.redraw()
 
     def close(self):
         """
