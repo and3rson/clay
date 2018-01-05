@@ -11,7 +11,7 @@ sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 
-from clay.player import player
+from clay.player import Player
 from clay.playbar import PlayBar
 from clay.pages import StartUp
 from clay.mylibrary import MyLibrary
@@ -136,6 +136,7 @@ class AppWidget(urwid.Frame):
 
         self.loop = None
 
+        player = Player.get()
         player.media_position_changed += self.media_position_changed
         player.media_state_changed += self.media_state_changed
         player.track_changed += self.track_changed
@@ -178,6 +179,7 @@ class AppWidget(urwid.Frame):
         Update playbar flags.
         Called when random/repeat flags change.
         """
+        player = Player.get()
         self.shuffle_el.attr = 'flag-active' \
             if player.get_is_random() \
             else 'flag'
@@ -223,6 +225,7 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
+        player = Player.get()
         if key == 'ctrl q':
             player.seek_absolute(0)
         elif key == 'ctrl w':

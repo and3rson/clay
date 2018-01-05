@@ -1,11 +1,20 @@
+"""
+Generic pages.
+"""
 import urwid
+
 from clay.settings import Settings
-from clay.gp import gp
+from clay.gp import GP
 from clay.meta import VERSION
 from clay.notifications import NotificationArea
 
 
 class StartUp(urwid.Filler):
+    """
+    Initial page.
+
+    Shown when app is started or login credentials are changed.
+    """
     def __init__(self, app):
         self.app = app
 
@@ -13,7 +22,7 @@ class StartUp(urwid.Filler):
             urwid.Pile([
                 urwid.Padding(
                     urwid.AttrWrap(urwid.BigText(
-                        'Clay'.format(VERSION),
+                        'Clay',
                         urwid.font.HalfBlock5x4Font()
                     ), 'logo'),
                     'center',
@@ -29,6 +38,10 @@ class StartUp(urwid.Filler):
         self.start()
 
     def on_login(self, success, error):
+        """
+        Called once user authorization finishes.
+        If *error* is ``None``, switches app to "My library" page.'
+        """
         if error:
             NotificationArea.notify('Failed to log in: {}'.format(str(error)))
             return
@@ -43,9 +56,14 @@ class StartUp(urwid.Filler):
         self.app.set_page('MyLibrary')
 
     def start(self):
+        """
+        Called when this page is show.
+
+        Requests user authorization.
+        """
         if Settings.is_config_valid():
             config = Settings.get_config()
-            gp.login(
+            GP.get().login_async(
                 config['username'],
                 config['password'],
                 config['device_id'],
@@ -55,4 +73,3 @@ class StartUp(urwid.Filler):
             NotificationArea.notify(
                 'Please set your credentials on the settings page.'
             )
-

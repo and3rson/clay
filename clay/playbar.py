@@ -1,21 +1,30 @@
+"""
+PlayBar widget.
+"""
+# pylint: disable=protected-access
+# pylint: disable=invalid-name
 import urwid
 
-from clay.player import player
+from clay.player import Player
 
 
 class PlayBar(urwid.ProgressBar):
+    """
+    A widget that shows currently played track, playback progress and flags.
+    """
     def __init__(self, *args, **kwargs):
         super(PlayBar, self).__init__(*args, **kwargs)
         self.track = None
+        self.player = Player.get()
 
     def get_text(self):
         if self.track is None:
             return u'Idle'
-        progress = player.get_play_progress_seconds()
-        total = player.get_length_seconds()
+        progress = self.player.get_play_progress_seconds()
+        total = self.player.get_length_seconds()
         return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
-            u'\u25B6' if player.is_playing else u'\u25A0',
+            u'\u25B6' if self.player.is_playing else u'\u25A0',
             self.track.artist,
             self.track.title,
             progress // 60,
@@ -25,9 +34,18 @@ class PlayBar(urwid.ProgressBar):
         )
 
     def set_track(self, track):
+        """
+        Set displayed track.
+        """
         self.track = track
+        # TODO: Call ``self.update()``?
 
     def update(self):
+        """
+        Force update of this widget.
+        Called when something unrelated to completion value changes,
+        e.g. current track or playback flags.
+        """
         self._invalidate()
 
     def render(self, size, focus=False):
@@ -69,4 +87,3 @@ class PlayBar(urwid.ProgressBar):
             c._attr = [[(self.complete, ccol),
                         (self.normal, maxcol - ccol)]]
         return c
-

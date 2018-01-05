@@ -1,20 +1,45 @@
-from gmusicapi.clients import Mobileclient
+"""
+Google Play Music integration via gmusicapi.
+"""
+# pylint: disable=broad-except
+# pylint: disable=C0103
+# pylint: disable=too-many-arguments
+# pylint: disable=invalid-name
 from threading import Thread, Lock
+
+from gmusicapi.clients import Mobileclient
+
 from clay.eventhook import EventHook
 
-gp = None
 
+def async(func):
+    """
+    Decorates a function to become asynchronous.
 
-def async(fn):
+    Once called, runs original function in a new Thread.
+
+    Must be called with a 'callback' argument that will be called
+    once thread with original function finishes. Receives two args:
+    result and error.
+
+    - "result" contains function return value or None if there was an exception.
+    - "error" contains None or Exception if there was one.
+    """
     def wrapper(*args, **kwargs):
+        """
+        Inner function.
+        """
         callback = kwargs.pop('callback')
         extra = kwargs.pop('extra', dict())
 
         def process():
+            """
+            Thread body.
+            """
             try:
-                result = fn(*args, **kwargs)
-            except Exception as e:
-                callback(None, e, **extra)
+                result = func(*args, **kwargs)
+            except Exception as error:
+                callback(None, error, **extra)
             else:
                 callback(result, None, **extra)
 
@@ -22,13 +47,22 @@ def async(fn):
     return wrapper
 
 
-def synchronized(fn):
+def synchronized(func):
+    """
+    Decorates a function to become thread-safe by preventing
+    it from being executed multiple times before previous calls end.
+
+    Lock is acquired on entrance and is released on return or Exception.
+    """
     lock = Lock()
 
     def wrapper(*args, **kwargs):
+        """
+        Inner function.
+        """
         try:
             lock.acquire()
-            return fn(*args, **kwargs)
+            return func(*args, **kwargs)
         finally:
             lock.release()
 
@@ -36,18 +70,32 @@ def synchronized(fn):
 
 
 class Track(object):
+    """
+    Model that represents single track from Google Play Music.
+    """
     TYPE_UPLOADED = 'uploaded'
     TYPE_STORE = 'store'
 
-    def __init__(self, id, title, artist, duration, type):
-        self.id = id
+    def __init__(self, track_id, title, artist, duration, track_type):
+        self._id = track_id
         self.title = title
         self.artist = artist
         self.duration = duration
-        self.type = type
+        self.type = track_type
+
+    @property
+    def id(self):
+        """
+        "id" or "track_id" of this track.
+        """
+        return self._id
 
     @classmethod
     def from_data(cls, data, many=False):
+        """
+        Construct and return one or many :class:`.Track` instances
+        from Google Play Music API response.
+        """
         if many:
             return [cls.from_data(one) for one in data]
 
@@ -61,46 +109,82 @@ class Track(object):
             raise Exception('Track is missing both "id" and "storeId"! Where does it come from?')
 
         return Track(
-            id=track_id,
+            track_id=track_id,
             title=data['title'],
             artist=data['artist'],
             duration=int(data['durationMillis']),
-            type=track_type
+            track_type=track_type
         )
 
     def get_url(self, callback):
-        gp.get_stream_url(self.id, callback=callback, extra=dict(track=self))
+        """
+        Gets playable stream URL for this track.
 
-    @async
+        "callback" is called with "(url, error)" args after URL is fetched.
+
+        Keep in mind this URL is valid for a limited time.
+        """
+        GP.get().get_stream_url_async(self.id, callback=callback, extra=dict(track=self))
+
     @synchronized
     def create_station(self):
-        station_id = gp.mc.create_station(name=u'Station - {}'.format(self.title), track_id=self.id)
+        """
+        Creates a new station from this :class:`.Track`.
+
+        Returns :class:`.Station` instance.
+        """
+        station_id = GP.get().mobile_client.create_station(
+            name=u'Station - {}'.format(self.title),
+            track_id=self.id
+        )
         station = Station(station_id)
         station.load_tracks()
         return station
 
+    create_station_async = async(create_station)
+
 
 class Playlist(object):
-    def __init__(self, id, name, tracks):
-        self.id = id
+    """
+    Model that represents remotely stored (Google Play Music) playlist.
+    """
+    def __init__(self, playlist_id, name, tracks):
+        self._id = playlist_id
         self.name = name
         self.tracks = tracks
 
+    @property
+    def id(self):
+        """
+        Playlist ID.
+        """
+        return self._id
+
     @classmethod
     def from_data(cls, data, many=False):
+        """
+        Construct and return one or many :class:`.Playlist` instances
+        from Google Play Music API response.
+        """
         if many:
             return [cls.from_data(one) for one in data]
 
         return Playlist(
-            id=data['id'],
+            playlist_id=data['id'],
             name=data['name'],
             tracks=cls.playlist_items_to_tracks(data['tracks'])
         )
 
     @classmethod
-    def playlist_items_to_tracks(self, playlist_tracks):
+    def playlist_items_to_tracks(cls, playlist_tracks):
+        """
+        Converts Google Play Music API response with playlist tracks data
+        into list of :class:`Track` instances. Uses "My library" cache
+        to fulfil missing track IDs (Google does not provide proper track IDs
+        for tracks that are in both playlist and "my library").
+        """
         results = []
-        cached_tracks_map = gp.get_cached_tracks_map()
+        cached_tracks_map = GP.get().get_cached_tracks_map()
         for playlist_track in playlist_tracks:
             if 'track' in playlist_track:
                 track = dict(playlist_track['track'])
@@ -113,86 +197,137 @@ class Playlist(object):
 
 
 class Station(object):
-    def __init__(self, id):
-        self.id = id
-        self.tracks = []
+    """
+    Model that represents specific station on Google Play Music.
+    """
+    def __init__(self, station_id):
+        self._id = station_id
+        self._tracks = []
+        self._tracks_loaded = False
+
+    @property
+    def id(self):
+        """
+        Station ID.
+        """
+        return self._id
 
     def load_tracks(self):
-        data = gp.mc.get_station_tracks(self.id, 100)
-        # import json
-        # raise Exception(json.dumps(data, indent=4))
-        self.tracks = Track.from_data(data, many=True)
+        """
+        Fetch tracks related to this station and
+        populate it with :class:`Track` instances.
+        """
+        data = GP.get().mobile_client.get_station_tracks(self.id, 100)
+        self._tracks = Track.from_data(data, many=True)
+        self._tracks_loaded = True
 
     def get_tracks(self):
-        return self.tracks
+        """
+        Return a list of tracks in this station.
+        """
+        assert self._tracks_loaded, 'Must call ".load_tracks()" before ".get_tracks()"'
+        return self._tracks
 
 
 class GP(object):
+    """
+    Interface to :class:`gmusicapi.Mobileclient`. Implements
+    asynchronous API calls, caching and some other perks.
+
+    Singleton.
+    """
+    # TODO: Switch to urwid signals for more explicitness?
+    instance = None
+
     def __init__(self):
-        self.mc = Mobileclient()
+        assert self.__class__.instance is None, 'Can be created only once!'
+        self.mobile_client = Mobileclient()
+        self.cached_tracks = None
+        self.cached_playlists = None
+
         self.invalidate_caches()
 
         self.auth_state_changed = EventHook()
 
+    @classmethod
+    def get(cls):
+        """
+        Create new :class:`.GP` instance or return existing one.
+        """
+        if cls.instance is None:
+            cls.instance = GP()
+
+        return cls.instance
+
     def invalidate_caches(self):
+        """
+        Clear cached tracks & playlists.
+        """
         self.cached_tracks = None
         self.cached_playlists = None
 
-    @async
     @synchronized
-    def login(self, email, password, device_id):
-        self.mc.logout()
+    def login(self, email, password, device_id, **_):
+        """
+        Log in into Google Play Music.
+        """
+        self.mobile_client.logout()
         self.invalidate_caches()
-        # TODO: Move device_id to settings
         prev_auth_state = self.is_authenticated
-        result = self.mc.login(email, password, device_id)
+        result = self.mobile_client.login(email, password, device_id)
         if prev_auth_state != self.is_authenticated:
             self.auth_state_changed.fire(self.is_authenticated)
         return result
 
+    login_async = async(login)
+
     @synchronized
-    def get_all_tracks_sync(self):
+    def get_all_tracks(self):
+        """
+        Cache and return all tracks from "My library".
+        """
         if self.cached_tracks:
             return self.cached_tracks
-        self.cached_tracks = Track.from_data(self.mc.get_all_songs(), True)
+        self.cached_tracks = Track.from_data(self.mobile_client.get_all_songs(), True)
         return self.cached_tracks
 
-    get_all_tracks = async(get_all_tracks_sync)
+    get_all_tracks_async = async(get_all_tracks)
 
-    @async
-    def get_stream_url(self, id):
-        return self.mc.get_stream_url(id)
+    def get_stream_url(self, stream_id):
+        """
+        Returns playable stream URL of track by id.
+        """
+        return self.mobile_client.get_stream_url(stream_id)
 
-    @async
+    get_stream_url_async = async(get_stream_url)
+
     @synchronized
-    def get_all_user_playlist_contents(self):
+    def get_all_user_playlist_contents(self, **_):
+        """
+        Return list of :class:`.Playlist` instances.
+        """
         if self.cached_playlists:
             return self.cached_playlists
-        self.get_all_tracks_sync()
+        self.get_all_tracks()
 
         self.cached_playlists = Playlist.from_data(
-            self.mc.get_all_user_playlist_contents(),
+            self.mobile_client.get_all_user_playlist_contents(),
             True
         )
         return self.cached_playlists
 
-    # @async
-    # @synchronized
-    # def create_station(self, name, track_id=None, artist_id=None, album_id=None, genre_id=None):
-    #     kwargs = dict(track_id=track_id, artist_id=artist_id, album_id=album_id, genre_id=genre_id)
-    #     # kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    #     # if len(kwargs) != 1:
-    #     #     raise Exception('Must provide one of artist_id, album_id or genre_id')
-    #     station_id = Station.from_data(self.mc.create_station(name, **kwargs))
-    #     return station_id
+    get_all_user_playlist_contents_async = async(get_all_user_playlist_contents)
 
     def get_cached_tracks_map(self):
+        """
+        Return a dictionary of tracks where keys are strings with track IDs
+        and values are :class:`.Track` instances.
+        """
         return {track.id: track for track in self.cached_tracks}
 
     @property
     def is_authenticated(self):
-        return self.mc.is_authenticated()
-
-
-gp = GP()
-
+        """
+        Return True if user is authenticated on Google Play Music, false otherwise.
+        """
+        return self.mobile_client.is_authenticated()

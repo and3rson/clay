@@ -1,10 +1,18 @@
+"""
+Library page.
+"""
 import urwid
-from clay.gp import gp
+from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
 
 
 class MyLibrary(urwid.Columns):
+    """
+    My library page.
+
+    Displays :class:`clay.songlist.SongListBox` with all songs in library.
+    """
     name = 'Library'
     key = 1
 
@@ -13,13 +21,17 @@ class MyLibrary(urwid.Columns):
         self.songlist = SongListBox(app)
         self.notification = None
 
-        gp.auth_state_changed += self.auth_state_changed
+        GP.get().auth_state_changed += self.auth_state_changed
 
-        return super(MyLibrary, self).__init__([
+        super(MyLibrary, self).__init__([
             self.songlist
         ])
 
     def on_get_all_songs(self, tracks, error):
+        """
+        Called when all library songs are fetched from server.
+        Populate song list.
+        """
         if error:
             NotificationArea.notify('Failed to load my library: {}'.format(str(error)))
             return
@@ -28,10 +40,12 @@ class MyLibrary(urwid.Columns):
         self.app.redraw()
 
     def auth_state_changed(self, is_auth):
+        """
+        Called when auth state changes.
+        If *is_auth* is true, load all library songs.
+        """
         if is_auth:
             self.songlist.set_placeholder(u'\n \uf01e Loading song list...')
 
-            gp.get_all_tracks(callback=self.on_get_all_songs)
-
+            GP.get().get_all_tracks_async(callback=self.on_get_all_songs)
             # self.notification = NotificationArea.notify('Loading library...')
-
