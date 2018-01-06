@@ -1,5 +1,7 @@
 # Clay [alpha]
 
+[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay)
+
 Standalone command line player for Google Play Music.
 
 This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] libraries.
