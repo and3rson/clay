@@ -7,10 +7,12 @@ import sys
 import threading
 
 try:
+    # pylint: disable=import-error
     import gi
     gi.require_version('Keybinder', '3.0')  # noqa
     gi.require_version('Gtk', '3.0')  # noqa
     from gi.repository import Keybinder, Gtk
+    # pylint: enable=import-error
 except Exception as error:
     sys.stderr.write('Could not import Keybinder and Gtk. Error was: "{}"\n'.format(error))
     sys.stderr.write('Global shortcuts will not work.\n')
