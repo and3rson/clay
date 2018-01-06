@@ -17,6 +17,7 @@ from clay.pages import StartUp
 from clay.mylibrary import MyLibrary
 from clay.myplaylists import MyPlaylists
 from clay.playerqueue import Queue
+from clay.search import Search
 from clay.settings import Settings
 from clay.notifications import NotificationArea
 
@@ -91,6 +92,7 @@ class AppWidget(urwid.Frame):
             MyLibrary(self),
             MyPlaylists(self),
             Queue(self),
+            Search(self),
             Settings(self)
         ]
         self.tabs = [

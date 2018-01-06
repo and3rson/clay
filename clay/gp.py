@@ -144,6 +144,36 @@ class Track(object):
     create_station_async = asynchronous(create_station)
 
 
+class Artist(object):
+    """
+    Model that represents artist.
+    """
+    def __init__(self, artist_id, name):
+        self._id = artist_id
+        self.name = name
+
+    @property
+    def id(self):
+        """
+        Artist ID.
+        """
+        return self._id
+
+    @classmethod
+    def from_data(cls, data, many=False):
+        """
+        Construct and return one or many :class:`.Artist` instances
+        from Google Play Music API response.
+        """
+        if many:
+            return [cls.from_data(one) for one in data]
+
+        return Artist(
+            artist_id=data['artistId'],
+            name=data['name']
+        )
+
+
 class Playlist(object):
     """
     Model that represents remotely stored (Google Play Music) playlist.
@@ -227,6 +257,37 @@ class Station(object):
         """
         assert self._tracks_loaded, 'Must call ".load_tracks()" before ".get_tracks()"'
         return self._tracks
+
+
+class SearchResults(object):
+    """
+    Model that represents search results including artists & tracks.
+    """
+    def __init__(self, tracks, artists):
+        self.artists = artists
+        self.tracks = tracks
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Construct and return :class:`.SearchResults` instance from raw data.
+        """
+        return SearchResults(
+            tracks=Track.from_data([item['track'] for item in data['song_hits']], many=True),
+            artists=Artist.from_data([item['artist'] for item in data['artist_hits']], many=True)
+        )
+
+    def get_artists(self):
+        """
+        Return found artists.
+        """
+        return self.artists
+
+    def get_tracks(self):
+        """
+        Return found tracks.
+        """
+        return self.tracks
 
 
 class GP(object):
@@ -324,6 +385,15 @@ class GP(object):
         and values are :class:`.Track` instances.
         """
         return {track.id: track for track in self.cached_tracks}
+
+    def search(self, query):
+        """
+        Find tracks and return an instance of :class:`.SearchResults`.
+        """
+        results = self.mobile_client.search(query)
+        return SearchResults.from_data(results)
+
+    search_async = asynchronous(search)
 
     @property
     def is_authenticated(self):
