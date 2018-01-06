@@ -9,6 +9,11 @@ setup(
     author='Andrew Dunai',
     author_email='a@dun.ai',
     url='https://github.com/and3rson/clay',
+    install_required=[
+        'gmusicapi',
+        'PyYAML',
+        'urwid'
+    ],
     packages=find_packages(),
     entry_points={
         'console_scripts': [
