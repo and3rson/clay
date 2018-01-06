@@ -386,6 +386,6 @@ class Player(object):
     def seek_absolute(self, position):
         """
         Seek to absolute position.
-        *position* must be a ``float`` in range ```[0;1]`.
+        *position* must be a ``float`` in range ``[0;1]``.
         """
         self.media_player.set_position(position)
