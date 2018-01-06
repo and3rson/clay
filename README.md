@@ -1,6 +1,6 @@
 # Clay [alpha]
 
-[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay)
+[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest)
 
 Standalone command line player for Google Play Music.
 
@@ -13,6 +13,10 @@ It's being actively developed, but is still in the early alpha version, so many 
 (Click the image below to see the screencast.)
 
 [![asciicast](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
+
+# Documentation
+
+Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 
 # Requirements
 
