@@ -31,17 +31,21 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - Music library
 - Playlists
 - Radio stations
+- Song search
 - Queue management
 - Notifications
+- Global hotkeys
 - Configuration
 - Caching (partially)
 
 # What is being developed
 
-- Search
-- Like/dislike
-- Caching
+- Like/dislike tracks
+- Playlist editing
+- Library management
+- Artist/album search
 - Other functionality that is supported by [gmusicapi]
+- PYPI package
 
 # Installation
 
