@@ -15,11 +15,12 @@ Welcome to Clay's documentation!
     ref/player
     ref/songlist
     ref/playbar
+    ref/startup
     ref/mylibrary
     ref/myplaylists
     ref/playerqueue
     ref/settings
-    ref/pages
+    ref/page
     ref/notifications
     ref/hotkeys
     ref/eventhook

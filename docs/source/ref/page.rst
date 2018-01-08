@@ -1,7 +1,7 @@
 pages.py
 ########
 
-.. automodule:: clay.pages
+.. automodule:: clay.page
     :members:
     :private-members:
     :special-members:

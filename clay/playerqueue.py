@@ -5,14 +5,20 @@ import urwid
 
 from clay.songlist import SongListBox
 from clay.player import Player
+from clay.page import Page
 
 
-class Queue(urwid.Columns):
+class QueuePage(urwid.Columns, Page):
     """
     Queue page.
     """
-    name = 'Queue'
-    key = 3
+    @property
+    def name(self):
+        return 'Queue'
+
+    @property
+    def key(self):
+        return 3
 
     def __init__(self, app):
         self.app = app
@@ -24,7 +30,7 @@ class Queue(urwid.Columns):
         player.track_appended += self.track_appended
         player.track_removed += self.track_removed
 
-        super(Queue, self).__init__([
+        super(QueuePage, self).__init__([
             self.songlist
         ])
 
@@ -48,3 +54,6 @@ class Queue(urwid.Columns):
         Removes track from this queue widget.
         """
         self.songlist.remove_track(track)
+
+    def activate(self):
+        pass

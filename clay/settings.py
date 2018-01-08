@@ -6,16 +6,22 @@ import errno
 import yaml
 
 import appdirs
-
 import urwid
 
+from clay.page import Page
 
-class Settings(urwid.Columns):
+
+class SettingsPage(urwid.Columns, Page):
     """
     Settings page.
     """
-    name = 'Settings'
-    key = 9
+    @property
+    def name(self):
+        return 'Settings'
+
+    @property
+    def key(self):
+        return 9
 
     def __init__(self, app):
         self.app = app
@@ -29,7 +35,7 @@ class Settings(urwid.Columns):
         self.device_id = urwid.Edit(
             edit_text=config.get('device_id', '')
         )
-        super(Settings, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
+        super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
             urwid.Text('Settings'),
             urwid.Divider(' '),
             urwid.Text('Username'),
@@ -106,3 +112,6 @@ class Settings(urwid.Columns):
             for x
             in ('username', 'password', 'device_id')
         ])
+
+    def activate(self):
+        pass

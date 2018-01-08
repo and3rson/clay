@@ -2,19 +2,26 @@
 Library page.
 """
 import urwid
+
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
+from clay.page import Page
 
 
-class MyLibrary(urwid.Columns):
+class MyLibraryPage(urwid.Columns, Page):
     """
     My library page.
 
     Displays :class:`clay.songlist.SongListBox` with all songs in library.
     """
-    name = 'Library'
-    key = 1
+    @property
+    def name(self):
+        return 'Library'
+
+    @property
+    def key(self):
+        return 1
 
     def __init__(self, app):
         self.app = app
@@ -23,7 +30,7 @@ class MyLibrary(urwid.Columns):
 
         GP.get().auth_state_changed += self.auth_state_changed
 
-        super(MyLibrary, self).__init__([
+        super(MyLibraryPage, self).__init__([
             self.songlist
         ])
 
@@ -49,3 +56,6 @@ class MyLibrary(urwid.Columns):
 
             GP.get().get_all_tracks_async(callback=self.on_get_all_songs)
             # self.notification = NotificationArea.notify('Loading library...')
+
+    def activate(self):
+        pass

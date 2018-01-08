@@ -6,6 +6,7 @@ import urwid
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
+from clay.page import Page
 
 
 class MyPlaylistListItem(urwid.Columns):
@@ -106,7 +107,7 @@ class MyPlaylistListBox(urwid.ListBox):
         urwid.emit_signal(self, 'activate', myplaylistlistitem)
 
 
-class MyPlaylists(urwid.Columns):
+class MyPlaylistsPage(urwid.Columns, Page):
     """
     Playlists page.
 
@@ -115,8 +116,13 @@ class MyPlaylists(urwid.Columns):
     - List of playlists (:class:`.MyPlaylistListBox`)
     - List of songs in selected playlist (:class:`clay:songlist:SongListBox`)
     """
-    name = 'Playlists'
-    key = 2
+    @property
+    def name(self):
+        return 'Playlists'
+
+    @property
+    def key(self):
+        return 2
 
     def __init__(self, app):
         self.app = app
@@ -129,7 +135,7 @@ class MyPlaylists(urwid.Columns):
             self.myplaylistlist, 'activate', self.myplaylistlistitem_activated
         )
 
-        super(MyPlaylists, self).__init__([
+        super(MyPlaylistsPage, self).__init__([
             self.myplaylistlist,
             self.songlist
         ])
@@ -142,3 +148,6 @@ class MyPlaylists(urwid.Columns):
         self.songlist.populate(
             myplaylistlistitem.get_tracks()
         )
+
+    def activate(self):
+        pass

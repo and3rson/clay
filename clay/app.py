@@ -13,12 +13,12 @@ import urwid
 
 from clay.player import Player
 from clay.playbar import PlayBar
-from clay.pages import StartUp
-from clay.mylibrary import MyLibrary
-from clay.myplaylists import MyPlaylists
-from clay.playerqueue import Queue
-from clay.search import Search
-from clay.settings import Settings
+from clay.startup import StartUpPage
+from clay.mylibrary import MyLibraryPage
+from clay.myplaylists import MyPlaylistsPage
+from clay.playerqueue import QueuePage
+from clay.search import SearchPage
+from clay.settings import SettingsPage
 from clay.notifications import NotificationArea
 
 PALETTE = [
@@ -35,6 +35,8 @@ PALETTE = [
 
     ('panel', '', '', '', '#FFF', '#222'),
     ('panel_focus', '', '', '', '#FFF', '#F54'),
+    ('panel_divider', '', '', '', '#444', '#222'),
+    ('panel_divider_focus', '', '', '', '#444', '#F54'),
 
     ('line1', '', '', '', '#FFF', ''),
     ('line1_focus', '', '', '', '#FFF', '#444'),
@@ -68,38 +70,42 @@ class AppWidget(urwid.Frame):
             super(AppWidget.Tab, self).__init__(
                 self.get_title()
             )
+            self.set_active(False)
 
         def set_active(self, active):
             """
             Mark tab visually as active.
             """
             self.set_text(
-                [('panel_focus' if active else 'panel', self.get_title())]
+                [
+                    ('panel_divider_focus' if active else 'panel_divider', '\u23b8 '),
+                    ('panel_focus' if active else 'panel', self.get_title() + '  ')
+                ]
             )
 
         def get_title(self):
             """
             Render tab title.
             """
-            return ' {} {} '.format(
+            return '{} {}'.format(
                 self.page.key,
                 self.page.name
             )
 
     def __init__(self):
         self.pages = [
-            StartUp(self),
-            MyLibrary(self),
-            MyPlaylists(self),
-            Queue(self),
-            Search(self),
-            Settings(self)
+            StartUpPage(self),
+            MyLibraryPage(self),
+            MyPlaylistsPage(self),
+            QueuePage(self),
+            SearchPage(self),
+            SettingsPage(self)
         ]
         self.tabs = [
             AppWidget.Tab(page)
             for page
             in self.pages
-            if hasattr(page, 'key')
+            if page.key is not None
         ]
         NotificationArea.set_app(self)
         self.header = urwid.Pile([
@@ -108,7 +114,7 @@ class AppWidget(urwid.Frame):
                 ('pack', tab)
                 for tab
                 in self.tabs
-            ], dividechars=1), 'panel'),
+            ], dividechars=0), 'panel'),
             NotificationArea.get()
             # urwid.Divider('\u2500')
         ])
@@ -135,6 +141,7 @@ class AppWidget(urwid.Frame):
             footer=self.panel,
             body=self.current_page
         )
+        self.current_page.activate()
 
         self.loop = None
 
@@ -206,8 +213,7 @@ class AppWidget(urwid.Frame):
 
         self.redraw()
 
-        if hasattr(page, 'start'):
-            page.start()
+        page.activate()
 
     def redraw(self):
         """

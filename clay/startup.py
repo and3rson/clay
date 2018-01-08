@@ -1,15 +1,17 @@
 """
-Generic pages.
+Initial startup page.
 """
+# pylint: disable=too-many-ancestors
 import urwid
 
-from clay.settings import Settings
+from clay.page import Page
+from clay.settings import SettingsPage
 from clay.gp import GP
 from clay.meta import VERSION
 from clay.notifications import NotificationArea
 
 
-class StartUp(urwid.Filler):
+class StartUpPage(urwid.Filler, Page):
     """
     Initial page.
 
@@ -18,7 +20,7 @@ class StartUp(urwid.Filler):
     def __init__(self, app):
         self.app = app
 
-        super(StartUp, self).__init__(
+        super(StartUpPage, self).__init__(
             urwid.Pile([
                 urwid.Padding(
                     urwid.AttrWrap(urwid.BigText(
@@ -31,16 +33,20 @@ class StartUp(urwid.Filler):
                 urwid.AttrWrap(urwid.Text('Version {}'.format(VERSION), align='center'), 'line1'),
                 urwid.AttrWrap(urwid.Text('Authorizing...', align='center'), 'line2')
             ])
-            # urwid.Text('Loading...'),
-            # valign='top'
         )
 
-        self.start()
+    @property
+    def name(self):
+        pass
+
+    @property
+    def key(self):
+        pass
 
     def on_login(self, success, error):
         """
         Called once user authorization finishes.
-        If *error* is ``None``, switches app to "My library" page.'
+        If *error* is ``None``, switch app to "My library" page.'
         """
         if error:
             NotificationArea.notify('Failed to log in: {}'.format(str(error)))
@@ -53,16 +59,16 @@ class StartUp(urwid.Filler):
             )
             return
 
-        self.app.set_page('MyLibrary')
+        self.app.set_page('MyLibraryPage')
 
-    def start(self):
+    def activate(self):
         """
-        Called when this page is show.
+        Called when this page is shown.
 
-        Requests user authorization.
+        Request user authorization.
         """
-        if Settings.is_config_valid():
-            config = Settings.get_config()
+        if SettingsPage.is_config_valid():
+            config = SettingsPage.get_config()
             GP.get().login_async(
                 config['username'],
                 config['password'],

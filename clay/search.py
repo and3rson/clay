@@ -2,9 +2,11 @@
 Components for search page.
 """
 import urwid
+
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
+from clay.page import Page
 
 
 class ArtistListBox(urwid.ListBox):
@@ -39,14 +41,19 @@ class SearchBox(urwid.Columns):
         return super(SearchBox, self).keypress(size, key)
 
 
-class Search(urwid.Columns):
+class SearchPage(urwid.Columns, Page):
     """
     Search page.
 
     Allows to perform searches & displays search results.
     """
-    name = 'Search'
-    key = 4
+    @property
+    def name(self):
+        return 'Search'
+
+    @property
+    def key(self):
+        return 4
 
     def __init__(self, app):
         self.app = app
@@ -56,7 +63,7 @@ class Search(urwid.Columns):
 
         urwid.connect_signal(self.search_box, 'search-requested', self.perform_search)
 
-        super(Search, self).__init__([
+        super(SearchPage, self).__init__([
             urwid.Pile([
                 ('pack', self.search_box),
                 ('pack', urwid.Divider(u'\u2500')),
@@ -79,3 +86,6 @@ class Search(urwid.Columns):
             return
 
         self.songlist.populate(results.get_tracks())
+
+    def activate(self):
+        pass
