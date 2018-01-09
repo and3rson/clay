@@ -75,6 +75,9 @@ class SearchPage(urwid.Columns, Page):
         """
         Search tracks by query.
         """
+        self.songlist.set_placeholder(u' \U0001F50D Searching for "{}"...'.format(
+            query
+        ))
         GP.get().search_async(query, callback=self.search_finished)
 
     def search_finished(self, results, error):
@@ -86,6 +89,7 @@ class SearchPage(urwid.Columns, Page):
             return
 
         self.songlist.populate(results.get_tracks())
+        self.app.redraw()
 
     def activate(self):
         pass

@@ -272,6 +272,8 @@ class SongListBox(urwid.ListBox):
         self.update_indexes()
         if current_index is not None:
             self.walker.set_focus(current_index)
+        elif len(self.walker) >= 1:
+            self.walker.set_focus(0)
 
     def append_track(self, track):
         """

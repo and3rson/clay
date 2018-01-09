@@ -13,13 +13,13 @@ import urwid
 
 from clay.player import Player
 from clay.playbar import PlayBar
-from clay.startup import StartUpPage
 from clay.mylibrary import MyLibraryPage
 from clay.myplaylists import MyPlaylistsPage
 from clay.playerqueue import QueuePage
 from clay.search import SearchPage
 from clay.settings import SettingsPage
 from clay.notifications import NotificationArea
+from clay.gp import GP
 
 PALETTE = [
     ('logo', '', '', '', '#F54', ''),
@@ -94,7 +94,6 @@ class AppWidget(urwid.Frame):
 
     def __init__(self):
         self.pages = [
-            StartUpPage(self),
             MyLibraryPage(self),
             MyPlaylistsPage(self),
             QueuePage(self),
@@ -105,9 +104,12 @@ class AppWidget(urwid.Frame):
             AppWidget.Tab(page)
             for page
             in self.pages
-            if page.key is not None
         ]
+        self.current_page = None
+
         NotificationArea.set_app(self)
+        self._login_notification = None
+
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
             urwid.AttrWrap(urwid.Columns([
@@ -135,13 +137,13 @@ class AppWidget(urwid.Frame):
             ]),
             self.playbar
         ])
-        self.current_page = self.pages[0]
+        # self.current_page = self.pages[0]
         super(AppWidget, self).__init__(
             header=self.header,
             footer=self.panel,
-            body=self.current_page
+            body=urwid.Filler(urwid.Text('Loading...', align='center'))
         )
-        self.current_page.activate()
+        # self.current_page.activate()
 
         self.loop = None
 
@@ -150,6 +152,46 @@ class AppWidget(urwid.Frame):
         player.media_state_changed += self.media_state_changed
         player.track_changed += self.track_changed
         player.playback_flags_changed += self.playback_flags_changed
+
+        self.set_page('MyLibraryPage')
+        self.log_in()
+
+    def on_login(self, success, error):
+        """
+        Called once user authorization finishes.
+        If *error* is ``None``, switch app to "My library" page.'
+        """
+        if error:
+            self._login_notification.update('Failed to log in: {}'.format(str(error)))
+            return
+
+        if not success:
+            self._login_notification.update(
+                'Google Play Music login failed (API returned false)'
+            )
+            return
+
+        self._login_notification.close()
+
+    def log_in(self):
+        """
+        Called when this page is shown.
+
+        Request user authorization.
+        """
+        if SettingsPage.is_config_valid():
+            config = SettingsPage.get_config()
+            self._login_notification = NotificationArea.notify('Logging in...')
+            GP.get().login_async(
+                config['username'],
+                config['password'],
+                config['device_id'],
+                callback=self.on_login
+            )
+        else:
+            NotificationArea.notify(
+                'Please set your credentials on the settings page.'
+            )
 
     def set_loop(self, loop):
         """
@@ -226,7 +268,7 @@ class AppWidget(urwid.Frame):
     def keypress(self, size, key):
         """
         Handle keypress.
-        Can switch tabs, control playbackm, flags, notifications and app state.
+        Can switch tabs, control playback, flags, notifications and app state.
         """
         for tab in self.tabs:
             if 'meta {}'.format(tab.page.key) == key:

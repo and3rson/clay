@@ -55,6 +55,7 @@ class MyLibraryPage(urwid.Columns, Page):
             self.songlist.set_placeholder(u'\n \uf01e Loading song list...')
 
             GP.get().get_all_tracks_async(callback=self.on_get_all_songs)
+            self.app.redraw()
             # self.notification = NotificationArea.notify('Loading library...')
 
     def activate(self):

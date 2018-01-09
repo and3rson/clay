@@ -16,7 +16,7 @@ class Notification(urwid.Columns):
         self.area = area
         self._id = notification_id
         self.text = urwid.Text('')
-        self.update(message)
+        self._set_text(message)
         super(Notification, self).__init__([
             urwid.AttrWrap(
                 urwid.Columns([
@@ -34,16 +34,34 @@ class Notification(urwid.Columns):
         """
         return self._id
 
-    def update(self, message):
+    def _set_text(self, message):
         """
-        Update notification message.
+        Set contents for this notification.
         """
         message = message.split('\n')
         message = '\n'.join([
             message[0]
         ] + ['    {}'.format(line) for line in message[1:]])
         self.text.set_text(Notification.TEMPLATE.format(message))
+
+    def update(self, message):
+        """
+        Update notification message.
+        """
+        self._set_text(message)
+        if not self.is_alive:
+            self.area.append_notification(self)
         self.area.__class__.app.redraw()
+
+    @property
+    def is_alive(self):
+        """
+        Return True if notification is currently visible.
+        """
+        for notification, _ in self.area.contents:
+            if notification is self:
+                return True
+        return False
 
     def close(self):
         """
@@ -52,6 +70,9 @@ class Notification(urwid.Columns):
         for notification, props in reversed(self.area.contents):
             if notification is self:
                 self.area.contents.remove((notification, props))
+
+        if self.area.__class__.app is not None:
+            self.area.__class__.app.redraw()
 
 
 class NotificationArea(urwid.Pile):
@@ -117,6 +138,13 @@ class NotificationArea(urwid.Pile):
         """
         self.last_id += 1
         notification = Notification(self, self.last_id, message)
+        self.append_notification(notification)
+        return notification
+
+    def append_notification(self, notification):
+        """
+        Append an existing notification (that was probably closed).
+        """
         self.contents.append(
             (
                 notification,
@@ -125,7 +153,6 @@ class NotificationArea(urwid.Pile):
         )
         if self.__class__.app is not None:
             self.__class__.app.redraw()
-        return notification
 
     def do_close_all(self):
         """
