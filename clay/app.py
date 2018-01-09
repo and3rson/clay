@@ -79,7 +79,7 @@ class AppWidget(urwid.Frame):
             """
             self.set_text(
                 [
-                    ('panel_divider_focus' if active else 'panel_divider', '\u23b8 '),
+                    ('panel_divider_focus' if active else 'panel_divider', u'\u23b8 '),
                     ('panel_focus' if active else 'panel', self.get_title() + '  ')
                 ]
             )
