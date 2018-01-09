@@ -1,7 +1,7 @@
 playerqueue.py
 ##############
 
-.. automodule:: clay.playerqueue
+.. automodule:: clay.pages.playerqueue
     :members:
     :private-members:
     :special-members:

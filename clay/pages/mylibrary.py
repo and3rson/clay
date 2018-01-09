@@ -6,10 +6,10 @@ import urwid
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
-from clay.page import Page
+from clay.pages.page import AbstractPage
 
 
-class MyLibraryPage(urwid.Columns, Page):
+class MyLibraryPage(urwid.Columns, AbstractPage):
     """
     My library page.
 

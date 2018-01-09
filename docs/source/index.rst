@@ -11,14 +11,15 @@ Welcome to Clay's documentation!
     :caption: Contents:
 
     ref/app
+    ref/appsettings
     ref/gp
     ref/player
     ref/songlist
     ref/playbar
-    ref/startup
     ref/mylibrary
     ref/myplaylists
     ref/playerqueue
+    ref/search
     ref/settings
     ref/page
     ref/notifications

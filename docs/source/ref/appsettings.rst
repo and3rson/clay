@@ -1,7 +1,7 @@
-settings.py
-###########
+appsettings.py
+##############
 
-.. automodule:: clay.pages.settings
+.. automodule:: clay.settings
     :members:
     :private-members:
     :special-members:

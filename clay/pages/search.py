@@ -6,7 +6,7 @@ import urwid
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
-from clay.page import Page
+from clay.pages.page import AbstractPage
 
 
 class ArtistListBox(urwid.ListBox):
@@ -41,7 +41,7 @@ class SearchBox(urwid.Columns):
         return super(SearchBox, self).keypress(size, key)
 
 
-class SearchPage(urwid.Columns, Page):
+class SearchPage(urwid.Columns, AbstractPage):
     """
     Search page.
 

@@ -1,7 +1,7 @@
 myplaylists.py
 ##############
 
-.. automodule:: clay.myplaylists
+.. automodule:: clay.pages.myplaylists
     :members:
     :private-members:
     :special-members:

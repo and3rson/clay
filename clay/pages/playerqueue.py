@@ -5,10 +5,10 @@ import urwid
 
 from clay.songlist import SongListBox
 from clay.player import Player
-from clay.page import Page
+from clay.pages.page import AbstractPage
 
 
-class QueuePage(urwid.Columns, Page):
+class QueuePage(urwid.Columns, AbstractPage):
     """
     Queue page.
     """

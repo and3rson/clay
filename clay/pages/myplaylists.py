@@ -6,7 +6,7 @@ import urwid
 from clay.gp import GP
 from clay.songlist import SongListBox
 from clay.notifications import NotificationArea
-from clay.page import Page
+from clay.pages.page import AbstractPage
 
 
 class MyPlaylistListItem(urwid.Columns):
@@ -107,7 +107,7 @@ class MyPlaylistListBox(urwid.ListBox):
         urwid.emit_signal(self, 'activate', myplaylistlistitem)
 
 
-class MyPlaylistsPage(urwid.Columns, Page):
+class MyPlaylistsPage(urwid.Columns, AbstractPage):
     """
     Playlists page.
 

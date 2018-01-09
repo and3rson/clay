@@ -1,7 +1,7 @@
 mylibrary.py
 ############
 
-.. automodule:: clay.mylibrary
+.. automodule:: clay.pages.mylibrary
     :members:
     :private-members:
     :special-members:

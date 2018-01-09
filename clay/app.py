@@ -13,11 +13,12 @@ import urwid
 
 from clay.player import Player
 from clay.playbar import PlayBar
-from clay.mylibrary import MyLibraryPage
-from clay.myplaylists import MyPlaylistsPage
-from clay.playerqueue import QueuePage
-from clay.search import SearchPage
-from clay.settings import SettingsPage
+from clay.pages.mylibrary import MyLibraryPage
+from clay.pages.myplaylists import MyPlaylistsPage
+from clay.pages.playerqueue import QueuePage
+from clay.pages.search import SearchPage
+from clay.pages.settings import SettingsPage
+from clay.settings import Settings
 from clay.notifications import NotificationArea
 from clay.gp import GP
 
@@ -179,8 +180,8 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        if SettingsPage.is_config_valid():
-            config = SettingsPage.get_config()
+        if Settings.is_config_valid():
+            config = Settings.get_config()
             self._login_notification = NotificationArea.notify('Logging in...')
             GP.get().login_async(
                 config['username'],

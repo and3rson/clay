@@ -1,7 +1,7 @@
 settings.py
 ###########
 
-.. automodule:: clay.pages.settings
+.. automodule:: clay.pages.search
     :members:
     :private-members:
     :special-members:

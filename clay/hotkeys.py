@@ -21,7 +21,7 @@ except Exception as error:
 else:
     IS_INIT = True
 
-from clay.settings import SettingsPage
+from clay.settings import Settings
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
 
@@ -74,7 +74,7 @@ class HotkeyManager(object):
         """
         Load hotkey config from settings.
         """
-        config = SettingsPage.get_config()
+        config = Settings.get_config()
         hotkeys = config.get('hotkeys', {})
         for operation, default_key in HotkeyManager.DEFAULT_HOTKEYS.items():
             if operation not in hotkeys or not hotkeys[operation]:

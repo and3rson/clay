@@ -4,7 +4,7 @@ Generic page classes.
 # pylint: disable=too-few-public-methods
 
 
-class Page(object):
+class AbstractPage(object):
     """
     Represents app page.
     """
