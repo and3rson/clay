@@ -33,7 +33,7 @@ class SongListItem(urwid.Pile):
         self.track = track
         self.index = 0
         self.state = SongListItem.STATE_IDLE
-        self.line1 = urwid.SelectableIcon('', cursor_position=6)
+        self.line1 = urwid.SelectableIcon('', cursor_position=1000)
         self.line1.set_layout('left', 'clip', None)
         self.line2 = urwid.AttrWrap(
             urwid.Text('', wrap='clip'),
@@ -128,6 +128,7 @@ class SongListItem(urwid.Pile):
         or :attr:`.SongListItem.STATE_PAUSED`.
         """
         return self.state in (
+            SongListItem.STATE_LOADING,
             SongListItem.STATE_PLAYING,
             SongListItem.STATE_PAUSED
         )
@@ -175,7 +176,7 @@ class SongListBox(urwid.ListBox):
         for index, track in enumerate(tracks):
             songitem = SongListItem(track)
             if current_track is not None and current_track.id == track.id:
-                songitem.set_state(SongListItem.STATE_PLAYING)
+                songitem.set_state(SongListItem.STATE_LOADING)
                 if current_index is None:
                     current_index = index
             urwid.connect_signal(
@@ -238,12 +239,12 @@ class SongListBox(urwid.ListBox):
             if isinstance(songitem, urwid.Text):
                 continue
             if songitem.track.id == track.id:
-                songitem.set_state(SongListItem.STATE_PLAYING)
+                songitem.set_state(SongListItem.STATE_LOADING)
                 self.set_focus(i)
             elif songitem.state != SongListItem.STATE_IDLE:
                 songitem.set_state(SongListItem.STATE_IDLE)
 
-    def media_state_changed(self, is_playing):
+    def media_state_changed(self, is_loading, is_playing):
         """
         Called when player media state changes.
         Updates corresponding song item state (if found in this song list).
@@ -257,7 +258,9 @@ class SongListBox(urwid.ListBox):
                 continue
             if songitem.track.id == current_track.id:
                 songitem.set_state(
-                    SongListItem.STATE_PLAYING
+                    SongListItem.STATE_LOADING
+                    if is_loading
+                    else SongListItem.STATE_PLAYING
                     if is_playing
                     else SongListItem.STATE_PAUSED
                 )

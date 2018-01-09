@@ -24,7 +24,9 @@ class PlayBar(urwid.ProgressBar):
         total = self.player.get_length_seconds()
         return u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
-            u'\u25B6' if self.player.is_playing else u'\u25A0',
+            u'\u2505' if self.player.is_loading
+            else u'\u25B6' if self.player.is_playing
+            else u'\u25A0',
             self.track.artist,
             self.track.title,
             progress // 60,

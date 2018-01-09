@@ -2,6 +2,7 @@
 Media player built using libVLC.
 """
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
 from random import randint
 import json
 
@@ -146,6 +147,7 @@ class Player(object):
         hotkey_manager.prev += lambda: self.seek_absolute(0)
 
         self._create_station_notification = None
+        self._is_loading = False
         self.queue = Queue()
 
     @classmethod
@@ -173,6 +175,7 @@ class Player(object):
             )
         else:
             data = dict(
+                loading=self.is_loading,
                 playing=self.is_playing,
                 artist=track.artist,
                 title=track.title,
@@ -189,7 +192,7 @@ class Player(object):
         """
         assert event
         self.broadcast_state()
-        self.media_state_changed.fire(self.is_playing)
+        self.media_state_changed.fire(self.is_loading, self.is_playing)
 
     def _media_end_reached(self, event):
         """
@@ -311,6 +314,7 @@ class Player(object):
         track = self.queue.get_current_track()
         if track is None:
             return
+        self._is_loading = True
         track.get_url(callback=self._play_ready)
         self.broadcast_state()
         self.track_changed.fire(track)
@@ -320,12 +324,20 @@ class Player(object):
         Called once track's media stream URL request completes.
         If *error* is ``None``, tell libVLC to play media by *url*.
         """
+        self._is_loading = False
         if error:
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
             return
         assert track
         self.media_player.set_media(vlc.Media(url))
         self.media_player.play()
+
+    @property
+    def is_loading(self):
+        """
+        True if current libVLC state is :attr:`vlc.State.Playing`
+        """
+        return self._is_loading
 
     @property
     def is_playing(self):

@@ -41,7 +41,7 @@ class SearchBox(urwid.Columns):
         return super(SearchBox, self).keypress(size, key)
 
 
-class SearchPage(urwid.Columns, AbstractPage):
+class SearchPage(urwid.Pile, AbstractPage):
     """
     Search page.
 
@@ -64,11 +64,9 @@ class SearchPage(urwid.Columns, AbstractPage):
         urwid.connect_signal(self.search_box, 'search-requested', self.perform_search)
 
         super(SearchPage, self).__init__([
-            urwid.Pile([
-                ('pack', self.search_box),
-                ('pack', urwid.Divider(u'\u2500')),
-                self.songlist
-            ])
+            ('pack', self.search_box),
+            ('pack', urwid.Divider(u'\u2500')),
+            self.songlist
         ])
 
     def perform_search(self, query):
@@ -93,3 +91,12 @@ class SearchPage(urwid.Columns, AbstractPage):
 
     def activate(self):
         pass
+
+    def keypress(self, size, key):
+        if key == 'tab':
+            if self.focus == self.search_box:
+                self.focus_position = 2
+            else:
+                self.focus_position = 0
+        else:
+            return super().keypress(size, key)

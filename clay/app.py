@@ -210,7 +210,7 @@ class AppWidget(urwid.Frame):
         self.playbar.set_completion(progress * 100)
         self.loop.draw_screen()
 
-    def media_state_changed(self, _):
+    def media_state_changed(self, *_):
         """
         Update playbar.
         Called when playback is paused/unpaused.
