@@ -57,7 +57,7 @@ class SettingsPage(urwid.Columns, AbstractPage):
             password=self.password.edit_text,
             device_id=self.device_id.edit_text
         ))
-        self.app.set_page('MyLibrary')
+        self.app.set_page('MyLibraryPage')
         self.app.log_in()
 
     def activate(self):
