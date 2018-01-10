@@ -408,7 +408,7 @@ class SongListBox(urwid.Frame):
     def keypress(self, size, key):
         if key == 'meta m' and self.is_context_menu_visible:
             self.hide_context_menu()
-            return
+            return None
         return super().keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):

@@ -97,5 +97,6 @@ class SearchPage(urwid.Pile, AbstractPage):
                 self.focus_position = 2
             else:
                 self.focus_position = 0
+            return None
         else:
             return super(SearchPage, self).keypress(size, key)
