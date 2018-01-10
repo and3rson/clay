@@ -106,6 +106,7 @@ Also be aware that this app has not been tested with 2FA yet.
 - `<CTRL> a` - append highlighted song to the queue
 - `<CTRL> u` - remove highlighted song from the queue
 - `<CTRL> p` - start station from highlighted song
+- `<ALT> m` - show context menu for this song
 
 ## Playback
 

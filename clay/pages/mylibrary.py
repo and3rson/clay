@@ -28,7 +28,8 @@ class MyLibraryPage(urwid.Columns, AbstractPage):
         self.songlist = SongListBox(app)
         self.notification = None
 
-        GP.get().auth_state_changed += self.auth_state_changed
+        GP.get().auth_state_changed += self.get_all_songs
+        GP.get().caches_invalidated += self.get_all_songs
 
         super(MyLibraryPage, self).__init__([
             self.songlist
@@ -46,17 +47,16 @@ class MyLibraryPage(urwid.Columns, AbstractPage):
         self.songlist.populate(tracks)
         self.app.redraw()
 
-    def auth_state_changed(self, is_auth):
+    def get_all_songs(self, *_):
         """
-        Called when auth state changes.
-        If *is_auth* is true, load all library songs.
+        Called when auth state changes or GP caches are invalidated.
         """
-        if is_auth:
+        if GP.get().is_authenticated:
             self.songlist.set_placeholder(u'\n \uf01e Loading song list...')
 
             GP.get().get_all_tracks_async(callback=self.on_get_all_songs)
             self.app.redraw()
-            # self.notification = NotificationArea.notify('Loading library...')
+        # self.notification = NotificationArea.notify('Loading library...')
 
     def activate(self):
         pass

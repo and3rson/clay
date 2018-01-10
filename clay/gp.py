@@ -143,6 +143,14 @@ class Track(object):
 
     create_station_async = asynchronous(create_station)
 
+    def add_to_my_library(self):
+        """
+        Add a track to my library.
+        """
+        return GP.get().add_to_my_library(self)
+
+    add_to_my_library_async = asynchronous(add_to_my_library)
+
 
 class Artist(object):
     """
@@ -300,6 +308,8 @@ class GP(object):
     # TODO: Switch to urwid signals for more explicitness?
     instance = None
 
+    caches_invalidated = EventHook()
+
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
         self.mobile_client = Mobileclient()
@@ -326,6 +336,7 @@ class GP(object):
         """
         self.cached_tracks = None
         self.cached_playlists = None
+        self.caches_invalidated.fire()
 
     @synchronized
     def login(self, email, password, device_id, **_):
@@ -394,6 +405,15 @@ class GP(object):
         return SearchResults.from_data(results)
 
     search_async = asynchronous(search)
+
+    def add_to_my_library(self, track):
+        """
+        Add a track to my library.
+        """
+        result = self.mobile_client.add_store_tracks(track.id)
+        if result:
+            self.invalidate_caches()
+        return result
 
     @property
     def is_authenticated(self):

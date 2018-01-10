@@ -84,10 +84,9 @@ class SearchPage(urwid.Pile, AbstractPage):
         """
         if error:
             NotificationArea.notify('Failed to search: {}'.format(str(error)))
-            return
-
-        self.songlist.populate(results.get_tracks())
-        self.app.redraw()
+        else:
+            self.songlist.populate(results.get_tracks())
+            self.app.redraw()
 
     def activate(self):
         pass
@@ -99,4 +98,4 @@ class SearchPage(urwid.Pile, AbstractPage):
             else:
                 self.focus_position = 0
         else:
-            return super().keypress(size, key)
+            return super(SearchPage, self).keypress(size, key)

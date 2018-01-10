@@ -3,6 +3,7 @@ Components for song listing.
 """
 # pylint: disable=too-many-arguments
 import urwid
+from clay.notifications import NotificationArea
 from clay.player import Player
 
 
@@ -14,7 +15,8 @@ class SongListItem(urwid.Pile):
         'activate',
         'append-requested',
         'unappend-requested',
-        'station-requested'
+        'station-requested',
+        'context-menu-requested'
     ]
 
     STATE_IDLE = 0
@@ -96,6 +98,16 @@ class SongListItem(urwid.Pile):
             self.content.set_attr('line1_active')
             self.content.set_focus_attr('line1_active_focus')
 
+    @property
+    def full_title(self):
+        """
+        Return song artist and title.
+        """
+        return u'{} - {}'.format(
+            self.track.artist,
+            self.track.title
+        )
+
     def keypress(self, size, key):
         """
         Handle keypress.
@@ -110,6 +122,8 @@ class SongListItem(urwid.Pile):
                 urwid.emit_signal(self, 'unappend-requested', self)
         elif key == 'ctrl p':
             urwid.emit_signal(self, 'station-requested', self)
+        elif key == 'meta m':
+            urwid.emit_signal(self, 'context-menu-requested', self)
         return super(SongListItem, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
@@ -141,7 +155,58 @@ class SongListItem(urwid.Pile):
         self.update_text()
 
 
-class SongListBox(urwid.ListBox):
+class SongListBoxPopup(urwid.LineBox):
+    """
+    Widget that represents context popup for a song item.
+    """
+    signals = ['close']
+
+    def __init__(self, songitem):
+        self.songitem = songitem
+        super().__init__(
+            urwid.Pile([
+                urwid.AttrWrap(urwid.Text(songitem.full_title), 'panel'),
+                urwid.AttrWrap(urwid.Button(
+                    'Add to my library', on_press=self.add_to_my_library
+                ), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Button(
+                #     'Remove from my library', on_press=self.remove_from_my_library
+                # ), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Button('Remove from my library'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
+                # urwid.AttrWrap(urwid.Button('Add to player queue'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Button('Remove from player queue'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
+                # urwid.AttrWrap(urwid.Button('Add to playlist'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Button('Remove from playlist'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
+                # urwid.AttrWrap(urwid.Button('Like'), 'panel', 'panel_focus'),
+                # urwid.AttrWrap(urwid.Button('Dislike'), 'panel', 'panel_focus'),
+            ])
+        )
+        # raise(Exception(songitem.full_title))
+
+    def add_to_my_library(self, _):
+        """
+        Add related track to my library.
+        """
+        self.songitem.track.add_to_my_library_async(callback=self.on_add_to_my_library)
+        urwid.emit_signal(self, 'close')
+
+    @staticmethod
+    def on_add_to_my_library(result, error):
+        """
+        Show notification with song addition result.
+        """
+        if error or not result:
+            NotificationArea.notify('Error while adding track to my library: {}'.format(
+                str(error) if error else 'reason is unknown :('
+            ))
+        else:
+            NotificationArea.notify('Track added to library!')
+
+
+class SongListBox(urwid.Frame):
     """
     Displays :class:`.SongListItem` instances.
     """
@@ -158,7 +223,20 @@ class SongListBox(urwid.ListBox):
         player.track_changed += self.track_changed
         player.media_state_changed += self.media_state_changed
 
-        super(SongListBox, self).__init__(self.walker)
+        self.list_box = urwid.ListBox(self.walker)
+
+        self.overlay = urwid.Overlay(
+            top_w=None,
+            bottom_w=self.list_box,
+            align='center',
+            valign='middle',
+            width=30,
+            height='pack'
+        )
+
+        super(SongListBox, self).__init__(
+            body=self.list_box
+        )
 
     def set_placeholder(self, text):
         """
@@ -190,6 +268,9 @@ class SongListBox(urwid.ListBox):
             )
             urwid.connect_signal(
                 songitem, 'station-requested', self.item_station_requested
+            )
+            urwid.connect_signal(
+                songitem, 'context-menu-requested', self.context_menu_requested
             )
             items.append(songitem)
         return (items, current_index)
@@ -229,6 +310,28 @@ class SongListBox(urwid.ListBox):
         Requests new station creation.
         """
         Player.get().create_station_from_track(songitem.track)
+
+    def context_menu_requested(self, songitem):
+        """
+        Show context menu.
+        """
+        popup = SongListBoxPopup(songitem)
+        self.overlay.top_w = popup
+        urwid.connect_signal(popup, 'close', self.hide_context_menu)
+        self.contents['body'] = (self.overlay, None)
+
+    @property
+    def is_context_menu_visible(self):
+        """
+        Return ``True`` if context menu is currently being shown.
+        """
+        return self.contents['body'][0] is self.overlay
+
+    def hide_context_menu(self):
+        """
+        Hide context menu.
+        """
+        self.contents['body'] = (self.list_box, None)
 
     def track_changed(self, track):
         """
@@ -301,6 +404,12 @@ class SongListBox(urwid.ListBox):
         """
         for i, songlistitem in enumerate(self.walker):
             songlistitem.set_index(i)
+
+    def keypress(self, size, key):
+        if key == 'meta m' and self.is_context_menu_visible:
+            self.hide_context_menu()
+            return
+        return super().keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
