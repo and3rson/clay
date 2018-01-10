@@ -163,7 +163,7 @@ class SongListBoxPopup(urwid.LineBox):
 
     def __init__(self, songitem):
         self.songitem = songitem
-        super().__init__(
+        super(SongListBoxPopup, self).__init__(
             urwid.Pile([
                 urwid.AttrWrap(urwid.Text(songitem.full_title), 'panel'),
                 urwid.AttrWrap(urwid.Button(
@@ -409,7 +409,7 @@ class SongListBox(urwid.Frame):
         if key == 'meta m' and self.is_context_menu_visible:
             self.hide_context_menu()
             return None
-        return super().keypress(size, key)
+        return super(SongListBox).keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
