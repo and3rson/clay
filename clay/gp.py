@@ -6,6 +6,7 @@ Google Play Music integration via gmusicapi.
 # pylint: disable=too-many-arguments
 # pylint: disable=invalid-name
 from threading import Thread, Lock
+from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
 
@@ -76,82 +77,103 @@ class Track(object):
     TYPE_UPLOADED = 'uploaded'
     TYPE_STORE = 'store'
 
-    def __init__(self, id_, track_id, store_id, title, artist, duration):
-        self.id_ = id_
-        self.track_id = track_id
-        self.store_id = store_id
+    SOURCE_LIBRARY = 'library'
+    SOURCE_STATION = 'station'
+    SOURCE_PLAYLIST = 'playlist'
+    SOURCE_SEARCH = 'search'
+
+    def __init__(
+            self,
+            title, artist, duration, source,
+            library_id=None, store_id=None, playlist_item_id=None
+    ):
         self.title = title
         self.artist = artist
         self.duration = duration
+        self.source = source
+
+        self.library_id = library_id
+        self.store_id = store_id
+        self.playlist_item_id = playlist_item_id
 
     @property
     def id(self):
         """
-        "id" or "track_id" of this track.
+        Return ID for this track.
         """
-        if self.id_:
-            return self.id_
-        if self.track_id:
-            return self.track_id
-        if self.store_id:
-            return self.store_id
-        raise Exception('None of "id", "track_id" and "store_id" were set for this track!')
+        if self.library_id:
+            return self.library_id
+        return self.store_id
 
     def __eq__(self, other):
-        if self.track_id:
-            return self.track_id == other.track_id
-        if self.store_id:
-            return self.store_id == other.store_id
-        if self.id_:
-            return self.store_id == other.id_
-        return False
-
-    @property
-    def type(self):
-        """
-        Returns track type.
-        """
-        if self.track_id:
-            return 'playlist'
-        if self.store_id:
-            return 'store'
-        if self.id_:
-            return 'uploaded'
-        raise Exception('None of "id", "track_id" and "store_id" were set for this track!')
+        return (
+            (self.library_id and self.library_id == other.library_id) or
+            (self.store_id and self.store_id == other.store_id) or
+            (self.playlist_item_id and self.playlist_item_id == other.playlist_item_id)
+        )
 
     @classmethod
-    def from_data(cls, data, many=False):
+    def from_data(cls, data, source, many=False):
         """
         Construct and return one or many :class:`.Track` instances
         from Google Play Music API response.
         """
         if many:
-            return [cls.from_data(one) for one in data]
+            return [cls.from_data(one, source) for one in data]
 
-        if 'id' not in data and 'storeId' not in data and 'trackId' not in data:
-            raise Exception('Track is missing "id", "storeId" and "trackId"!')
-
-        return Track(
-            id_=data.get('id'),
-            track_id=data.get('trackId'),
-            store_id=data.get('storeId'),
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis'])
-        )
-
-    def copy(self):
-        """
-        Returns a copy of this instance.
-        """
-        return Track(
-            id_=self.id_,
-            track_id=self.track_id,
-            store_id=self.store_id,
-            title=self.title,
-            artist=self.artist,
-            duration=self.duration
-        )
+        if source == Track.SOURCE_SEARCH:
+            # Data contains a nested track representation.
+            return Track(
+                title=data['track']['title'],
+                artist=data['track']['artist'],
+                duration=int(data['track']['durationMillis']),
+                source=source,
+                store_id=data['track']['storeId']  # or data['trackId']
+            )
+        elif source == Track.SOURCE_STATION:
+            # Station tracks have all the info in place.
+            return Track(
+                title=data['title'],
+                artist=data['artist'],
+                duration=int(data['durationMillis']),
+                source=source,
+                store_id=data['storeId']
+            )
+        elif source == Track.SOURCE_LIBRARY:
+            # Data contains all info about track
+            # including ID in library and ID in store.
+            UUID(data['id'])
+            return Track(
+                title=data['title'],
+                artist=data['artist'],
+                duration=int(data['durationMillis']),
+                source=source,
+                store_id=data['storeId'],
+                library_id=data['id']
+            )
+        elif source == Track.SOURCE_PLAYLIST:
+            if 'track' in data:
+                # Data contains a nested track representation that can be used
+                # to construct new track.
+                return Track(
+                    title=data['track']['title'],
+                    artist=data['track']['artist'],
+                    duration=int(data['track']['durationMillis']),
+                    source=source,
+                    store_id=data['track']['storeId'],  # or data['trackId']
+                    playlist_item_id=data['id']
+                )
+            # We need to find a track in Library by trackId.
+            UUID(data['trackId'])
+            track = GP.get().get_track_by_id(data['trackId'])
+            return Track(
+                title=track.title,
+                artist=track.artist,
+                duration=track.duration,
+                source=source,
+                store_id=track.store_id
+            )
+        raise AssertionError()
 
     def get_url(self, callback):
         """
@@ -161,7 +183,7 @@ class Track(object):
 
         Keep in mind this URL is valid for a limited time.
         """
-        GP.get().get_stream_url_async(self.id, callback=callback, extra=dict(track=self))
+        GP.get().get_stream_url_async(self.store_id, callback=callback, extra=dict(track=self))
 
     @synchronized
     def create_station(self):
@@ -172,7 +194,7 @@ class Track(object):
         """
         station_id = GP.get().mobile_client.create_station(
             name=u'Station - {}'.format(self.title),
-            track_id=self.id
+            track_id=self.store_id
         )
         station = Station(station_id)
         station.load_tracks()
@@ -200,7 +222,7 @@ class Track(object):
         return u'<Track "{} - {}" from {}>'.format(
             self.artist,
             self.title,
-            self.type
+            self.source
         )
 
     __repr__ = __str__
@@ -236,6 +258,74 @@ class Artist(object):
         )
 
 
+class Station(object):
+    """
+    Model that represents specific station on Google Play Music.
+    """
+    def __init__(self, station_id):
+        self._id = station_id
+        self._tracks = []
+        self._tracks_loaded = False
+
+    @property
+    def id(self):
+        """
+        Station ID.
+        """
+        return self._id
+
+    def load_tracks(self):
+        """
+        Fetch tracks related to this station and
+        populate it with :class:`Track` instances.
+        """
+        data = GP.get().mobile_client.get_station_tracks(self.id, 100)
+        self._tracks = Track.from_data(data, Track.SOURCE_STATION, many=True)
+        self._tracks_loaded = True
+
+    def get_tracks(self):
+        """
+        Return a list of tracks in this station.
+        """
+        assert self._tracks_loaded, 'Must call ".load_tracks()" before ".get_tracks()"'
+        return self._tracks
+
+
+class SearchResults(object):
+    """
+    Model that represents search results including artists & tracks.
+    """
+    def __init__(self, tracks, artists):
+        self.artists = artists
+        self.tracks = tracks
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Construct and return :class:`.SearchResults` instance from raw data.
+        """
+        return SearchResults(
+            tracks=Track.from_data(data['song_hits'], Track.SOURCE_SEARCH, many=True),
+            artists=Artist.from_data([
+                item['artist']
+                for item
+                in data['artist_hits']
+            ], many=True)
+        )
+
+    def get_artists(self):
+        """
+        Return found artists.
+        """
+        return self.artists
+
+    def get_tracks(self):
+        """
+        Return found tracks.
+        """
+        return self.tracks
+
+
 class Playlist(object):
     """
     Model that represents remotely stored (Google Play Music) playlist.
@@ -264,98 +354,8 @@ class Playlist(object):
         return Playlist(
             playlist_id=data['id'],
             name=data['name'],
-            tracks=cls.playlist_items_to_tracks(data['tracks'])
+            tracks=Track.from_data(data['tracks'], Track.SOURCE_PLAYLIST, many=True)
         )
-
-    @classmethod
-    def playlist_items_to_tracks(cls, playlist_tracks):
-        """
-        Converts Google Play Music API response with playlist tracks data
-        into list of :class:`Track` instances. Uses "My library" cache
-        to fulfil missing track IDs (Google does not provide proper track IDs
-        for tracks that are in both playlist and "my library").
-        """
-        results = []
-        for playlist_track in playlist_tracks:
-            if 'track' in playlist_track:
-                track = dict(playlist_track['track'])
-                # track['id'] = playlist_track['trackId']
-                track = Track.from_data(track)
-            else:
-                track = GP.get().get_track_by_id(playlist_track['trackId']).copy()
-                # track = cached_tracks_map[playlist_track['trackId']].copy()
-                # raise Exception('{} {} {}'.format(track.id_, track.store_id, track.track_id))
-                track.track_id = playlist_track['trackId']
-                # raise Exception(track)
-                # track.store_id = playlist_track.get('storeId')
-                # track.id_ = playlist_track.get('id')
-                # track['trackId'] = playlist_track['trackId']
-            results.append(track)
-        return results
-
-
-class Station(object):
-    """
-    Model that represents specific station on Google Play Music.
-    """
-    def __init__(self, station_id):
-        self._id = station_id
-        self._tracks = []
-        self._tracks_loaded = False
-
-    @property
-    def id(self):
-        """
-        Station ID.
-        """
-        return self._id
-
-    def load_tracks(self):
-        """
-        Fetch tracks related to this station and
-        populate it with :class:`Track` instances.
-        """
-        data = GP.get().mobile_client.get_station_tracks(self.id, 100)
-        self._tracks = Track.from_data(data, many=True)
-        self._tracks_loaded = True
-
-    def get_tracks(self):
-        """
-        Return a list of tracks in this station.
-        """
-        assert self._tracks_loaded, 'Must call ".load_tracks()" before ".get_tracks()"'
-        return self._tracks
-
-
-class SearchResults(object):
-    """
-    Model that represents search results including artists & tracks.
-    """
-    def __init__(self, tracks, artists):
-        self.artists = artists
-        self.tracks = tracks
-
-    @classmethod
-    def from_data(cls, data):
-        """
-        Construct and return :class:`.SearchResults` instance from raw data.
-        """
-        return SearchResults(
-            tracks=Track.from_data([item['track'] for item in data['song_hits']], many=True),
-            artists=Artist.from_data([item['artist'] for item in data['artist_hits']], many=True)
-        )
-
-    def get_artists(self):
-        """
-        Return found artists.
-        """
-        return self.artists
-
-    def get_tracks(self):
-        """
-        Return found tracks.
-        """
-        return self.tracks
 
 
 class GP(object):
@@ -417,11 +417,13 @@ class GP(object):
     def get_all_tracks(self):
         """
         Cache and return all tracks from "My library".
+
+        Each track will have "id" and "storeId" keys.
         """
         if self.cached_tracks:
             return self.cached_tracks
         data = self.mobile_client.get_all_songs()
-        self.cached_tracks = Track.from_data(data, True)
+        self.cached_tracks = Track.from_data(data, Track.SOURCE_LIBRARY, True)
         return self.cached_tracks
 
     get_all_tracks_async = asynchronous(get_all_tracks)
@@ -460,10 +462,10 @@ class GP(object):
 
     def get_track_by_id(self, any_id):
         """
-        Return track by id, store_id or track_id.
+        Return track by id or store_id.
         """
         for track in self.cached_tracks:
-            if any_id in (track.id_, track.store_id, track.track_id):
+            if any_id in (track.library_id, track.store_id, track.playlist_item_id):
                 return track
         return None
 

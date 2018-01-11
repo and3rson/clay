@@ -90,7 +90,7 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            u'      {} ({})\n'.format(self.track.artist, self.track.type)
+            u'      {} ({})\n'.format(self.track.artist, self.track.source)
         )
         if self.state == SongListItem.STATE_IDLE:
             self.content.set_attr('line1')
