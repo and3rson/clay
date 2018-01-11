@@ -5,6 +5,7 @@ Components for song listing.
 import urwid
 from clay.notifications import NotificationArea
 from clay.player import Player
+from clay.gp import GP
 
 
 class SongListItem(urwid.Pile):
@@ -89,7 +90,7 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            u'      {}'.format(self.track.artist)
+            u'      {} ({})\n'.format(self.track.artist, self.track.type)
         )
         if self.state == SongListItem.STATE_IDLE:
             self.content.set_attr('line1')
@@ -163,47 +164,64 @@ class SongListBoxPopup(urwid.LineBox):
 
     def __init__(self, songitem):
         self.songitem = songitem
+        options = [
+            urwid.AttrWrap(urwid.Text(songitem.full_title), 'panel')
+        ]
+        if not GP.get().get_track_by_id(songitem.track.id):
+            options.append(urwid.AttrWrap(urwid.Button(
+                'Add to my library', on_press=self.add_to_my_library
+            ), 'panel', 'panel_focus'))
+        else:
+            options.append(urwid.AttrWrap(urwid.Button(
+                'Remove from my library', on_press=self.remove_from_my_library
+            ), 'panel', 'panel_focus'))
+        options.append(urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'))
+        options.append(urwid.AttrWrap(urwid.Button(
+            'Close', on_press=self.close
+        ), 'panel', 'panel_focus'))
         super(SongListBoxPopup, self).__init__(
-            urwid.Pile([
-                urwid.AttrWrap(urwid.Text(songitem.full_title), 'panel'),
-                urwid.AttrWrap(urwid.Button(
-                    'Add to my library', on_press=self.add_to_my_library
-                ), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Button(
-                #     'Remove from my library', on_press=self.remove_from_my_library
-                # ), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Button('Remove from my library'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
-                # urwid.AttrWrap(urwid.Button('Add to player queue'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Button('Remove from player queue'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
-                # urwid.AttrWrap(urwid.Button('Add to playlist'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Button('Remove from playlist'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'),
-                # urwid.AttrWrap(urwid.Button('Like'), 'panel', 'panel_focus'),
-                # urwid.AttrWrap(urwid.Button('Dislike'), 'panel', 'panel_focus'),
-            ])
+            urwid.Pile(options)
         )
-        # raise(Exception(songitem.full_title))
 
     def add_to_my_library(self, _):
         """
         Add related track to my library.
         """
-        self.songitem.track.add_to_my_library_async(callback=self.on_add_to_my_library)
-        urwid.emit_signal(self, 'close')
+        def on_add_to_my_library(result, error):
+            """
+            Show notification with song addition result.
+            """
+            if error or not result:
+                NotificationArea.notify('Error while adding track to my library: {}'.format(
+                    str(error) if error else 'reason is unknown :('
+                ))
+            else:
+                NotificationArea.notify('Track added to library!')
+        self.songitem.track.add_to_my_library_async(callback=on_add_to_my_library)
+        self.close()
 
-    @staticmethod
-    def on_add_to_my_library(result, error):
+    def remove_from_my_library(self, _):
         """
-        Show notification with song addition result.
+        Removes related track to my library.
         """
-        if error or not result:
-            NotificationArea.notify('Error while adding track to my library: {}'.format(
-                str(error) if error else 'reason is unknown :('
-            ))
-        else:
-            NotificationArea.notify('Track added to library!')
+        def on_remove_from_my_library(result, error):
+            """
+            Show notification with song removal result.
+            """
+            if error or not result:
+                NotificationArea.notify('Error while removing track from my library: {}'.format(
+                    str(error) if error else 'reason is unknown :('
+                ))
+            else:
+                NotificationArea.notify('Track removed from library!')
+        self.songitem.track.remove_from_my_library_async(callback=on_remove_from_my_library)
+        self.close()
+
+    def close(self, *_):
+        """
+        Close this menu.
+        """
+        urwid.emit_signal(self, 'close')
 
 
 class SongListBox(urwid.Frame):
@@ -253,7 +271,7 @@ class SongListBox(urwid.Frame):
         current_index = None
         for index, track in enumerate(tracks):
             songitem = SongListItem(track)
-            if current_track is not None and current_track.id == track.id:
+            if current_track is not None and current_track == track:
                 songitem.set_state(SongListItem.STATE_LOADING)
                 if current_index is None:
                     current_index = index
@@ -341,9 +359,9 @@ class SongListBox(urwid.Frame):
         for i, songitem in enumerate(self.walker):
             if isinstance(songitem, urwid.Text):
                 continue
-            if songitem.track.id == track.id:
+            if songitem.track == track:
                 songitem.set_state(SongListItem.STATE_LOADING)
-                self.set_focus(i)
+                self.walker.set_focus(i)
             elif songitem.state != SongListItem.STATE_IDLE:
                 songitem.set_state(SongListItem.STATE_IDLE)
 
@@ -359,7 +377,7 @@ class SongListBox(urwid.Frame):
         for songitem in self.walker:
             if isinstance(songitem, urwid.Text):
                 continue
-            if songitem.track.id == current_track.id:
+            if songitem.track == current_track:
                 songitem.set_state(
                     SongListItem.STATE_LOADING
                     if is_loading
@@ -409,7 +427,7 @@ class SongListBox(urwid.Frame):
         if key == 'meta m' and self.is_context_menu_visible:
             self.hide_context_menu()
             return None
-        return super(SongListBox).keypress(size, key)
+        return super(SongListBox, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """

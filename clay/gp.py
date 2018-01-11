@@ -76,19 +76,48 @@ class Track(object):
     TYPE_UPLOADED = 'uploaded'
     TYPE_STORE = 'store'
 
-    def __init__(self, track_id, title, artist, duration, track_type):
-        self._id = track_id
+    def __init__(self, id_, track_id, store_id, title, artist, duration):
+        self.id_ = id_
+        self.track_id = track_id
+        self.store_id = store_id
         self.title = title
         self.artist = artist
         self.duration = duration
-        self.type = track_type
 
     @property
     def id(self):
         """
         "id" or "track_id" of this track.
         """
-        return self._id
+        if self.id_:
+            return self.id_
+        if self.track_id:
+            return self.track_id
+        if self.store_id:
+            return self.store_id
+        raise Exception('None of "id", "track_id" and "store_id" were set for this track!')
+
+    def __eq__(self, other):
+        if self.track_id:
+            return self.track_id == other.track_id
+        if self.store_id:
+            return self.store_id == other.store_id
+        if self.id_:
+            return self.store_id == other.id_
+        return False
+
+    @property
+    def type(self):
+        """
+        Returns track type.
+        """
+        if self.track_id:
+            return 'playlist'
+        if self.store_id:
+            return 'store'
+        if self.id_:
+            return 'uploaded'
+        raise Exception('None of "id", "track_id" and "store_id" were set for this track!')
 
     @classmethod
     def from_data(cls, data, many=False):
@@ -99,21 +128,29 @@ class Track(object):
         if many:
             return [cls.from_data(one) for one in data]
 
-        if 'id' in data:
-            track_id = data['id']
-            track_type = 'uploaded'
-        elif 'storeId' in data:
-            track_id = data['storeId']
-            track_type = 'store'
-        else:
-            raise Exception('Track is missing both "id" and "storeId"! Where does it come from?')
+        if 'id' not in data and 'storeId' not in data and 'trackId' not in data:
+            raise Exception('Track is missing "id", "storeId" and "trackId"!')
 
         return Track(
-            track_id=track_id,
+            id_=data.get('id'),
+            track_id=data.get('trackId'),
+            store_id=data.get('storeId'),
             title=data['title'],
             artist=data['artist'],
-            duration=int(data['durationMillis']),
-            track_type=track_type
+            duration=int(data['durationMillis'])
+        )
+
+    def copy(self):
+        """
+        Returns a copy of this instance.
+        """
+        return Track(
+            id_=self.id_,
+            track_id=self.track_id,
+            store_id=self.store_id,
+            title=self.title,
+            artist=self.artist,
+            duration=self.duration
         )
 
     def get_url(self, callback):
@@ -150,6 +187,23 @@ class Track(object):
         return GP.get().add_to_my_library(self)
 
     add_to_my_library_async = asynchronous(add_to_my_library)
+
+    def remove_from_my_library(self):
+        """
+        Remove a track from my library.
+        """
+        return GP.get().remove_from_my_library(self)
+
+    remove_from_my_library_async = asynchronous(remove_from_my_library)
+
+    def __str__(self):
+        return u'<Track "{} - {}" from {}>'.format(
+            self.artist,
+            self.title,
+            self.type
+        )
+
+    __repr__ = __str__
 
 
 class Artist(object):
@@ -222,14 +276,20 @@ class Playlist(object):
         for tracks that are in both playlist and "my library").
         """
         results = []
-        cached_tracks_map = GP.get().get_cached_tracks_map()
         for playlist_track in playlist_tracks:
             if 'track' in playlist_track:
                 track = dict(playlist_track['track'])
-                track['id'] = playlist_track['trackId']
+                # track['id'] = playlist_track['trackId']
                 track = Track.from_data(track)
             else:
-                track = cached_tracks_map[playlist_track['trackId']]
+                track = GP.get().get_track_by_id(playlist_track['trackId']).copy()
+                # track = cached_tracks_map[playlist_track['trackId']].copy()
+                # raise Exception('{} {} {}'.format(track.id_, track.store_id, track.track_id))
+                track.track_id = playlist_track['trackId']
+                # raise Exception(track)
+                # track.store_id = playlist_track.get('storeId')
+                # track.id_ = playlist_track.get('id')
+                # track['trackId'] = playlist_track['trackId']
             results.append(track)
         return results
 
@@ -360,7 +420,8 @@ class GP(object):
         """
         if self.cached_tracks:
             return self.cached_tracks
-        self.cached_tracks = Track.from_data(self.mobile_client.get_all_songs(), True)
+        data = self.mobile_client.get_all_songs()
+        self.cached_tracks = Track.from_data(data, True)
         return self.cached_tracks
 
     get_all_tracks_async = asynchronous(get_all_tracks)
@@ -397,6 +458,15 @@ class GP(object):
         """
         return {track.id: track for track in self.cached_tracks}
 
+    def get_track_by_id(self, any_id):
+        """
+        Return track by id, store_id or track_id.
+        """
+        for track in self.cached_tracks:
+            if any_id in (track.id_, track.store_id, track.track_id):
+                return track
+        return None
+
     def search(self, query):
         """
         Find tracks and return an instance of :class:`.SearchResults`.
@@ -411,6 +481,15 @@ class GP(object):
         Add a track to my library.
         """
         result = self.mobile_client.add_store_tracks(track.id)
+        if result:
+            self.invalidate_caches()
+        return result
+
+    def remove_from_my_library(self, track):
+        """
+        Remove a track from my library.
+        """
+        result = self.mobile_client.delete_songs(track.id)
         if result:
             self.invalidate_caches()
         return result

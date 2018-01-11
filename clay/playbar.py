@@ -18,6 +18,9 @@ class PlayBar(urwid.ProgressBar):
         self.player = Player.get()
 
     def get_text(self):
+        """
+        Return text for display in this bar.
+        """
         if self.track is None:
             return u'Idle'
         progress = self.player.get_play_progress_seconds()
