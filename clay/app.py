@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-branches
 """
 Main app entrypoint.
 """
@@ -110,6 +111,8 @@ class AppWidget(urwid.Frame):
 
         NotificationArea.set_app(self)
         self._login_notification = None
+
+        self._popup = None
 
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
@@ -266,6 +269,13 @@ class AppWidget(urwid.Frame):
         if self.loop:
             self.loop.draw_screen()
 
+    def register_popup(self, popup):
+        """
+        Notify app about a popup that's currently being shown.
+        This is used to correctly deliver "Escape" key hit.
+        """
+        self._popup = popup
+
     def keypress(self, size, key):
         """
         Handle keypress.
@@ -294,7 +304,11 @@ class AppWidget(urwid.Frame):
         elif key == 'ctrl x':
             sys.exit(0)
         elif key == 'esc' or key == 'ctrl _':
-            NotificationArea.close_newest()
+            if self._popup:
+                self._popup.close()
+                self._popup = None
+            else:
+                NotificationArea.close_newest()
         else:
             super(AppWidget, self).keypress(size, key)
 

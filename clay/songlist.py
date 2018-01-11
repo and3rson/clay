@@ -90,7 +90,7 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            u'      {} ({})\n'.format(self.track.artist, self.track.source)
+            u'      {}\n'.format(self.track.artist)
         )
         if self.state == SongListItem.STATE_IDLE:
             self.content.set_attr('line1')
@@ -165,20 +165,56 @@ class SongListBoxPopup(urwid.LineBox):
     def __init__(self, songitem):
         self.songitem = songitem
         options = [
-            urwid.AttrWrap(urwid.Text(songitem.full_title), 'panel')
+            urwid.AttrWrap(
+                urwid.Text(' ' + songitem.full_title),
+                'panel'
+            ),
+            urwid.AttrWrap(
+                urwid.Text(' Source: {}'.format(songitem.track.source)),
+                'panel_divider'
+            ),
+            urwid.AttrWrap(
+                urwid.Text(' StoreID: {}'.format(songitem.track.store_id)),
+                'panel_divider'
+            )
         ]
+        options.append(urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        ))
         if not GP.get().get_track_by_id(songitem.track.id):
-            options.append(urwid.AttrWrap(urwid.Button(
-                'Add to my library', on_press=self.add_to_my_library
-            ), 'panel', 'panel_focus'))
+            options.append(urwid.AttrWrap(
+                urwid.Button('Add to my library', on_press=self.add_to_my_library),
+                'panel',
+                'panel_focus'
+            ))
         else:
-            options.append(urwid.AttrWrap(urwid.Button(
-                'Remove from my library', on_press=self.remove_from_my_library
-            ), 'panel', 'panel_focus'))
-        options.append(urwid.AttrWrap(urwid.Divider('-'), 'panel_divider', 'panel_divider_focus'))
-        options.append(urwid.AttrWrap(urwid.Button(
-            'Close', on_press=self.close
-        ), 'panel', 'panel_focus'))
+            options.append(urwid.AttrWrap(
+                urwid.Button('Remove from my library', on_press=self.remove_from_my_library),
+                'panel',
+                'panel_focus'
+            ))
+        options.append(urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        ))
+        options.append(urwid.AttrWrap(
+            urwid.Button('Create station', on_press=self.create_station),
+            'panel',
+            'panel_focus'
+        ))
+        options.append(urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        ))
+        options.append(urwid.AttrWrap(
+            urwid.Button('Close', on_press=self.close),
+            'panel',
+            'panel_focus'
+        ))
         super(SongListBoxPopup, self).__init__(
             urwid.Pile(options)
         )
@@ -217,6 +253,13 @@ class SongListBoxPopup(urwid.LineBox):
         self.songitem.track.remove_from_my_library_async(callback=on_remove_from_my_library)
         self.close()
 
+    def create_station(self, _):
+        """
+        Create a station from this track.
+        """
+        Player.get().create_station_from_track(self.songitem.track)
+        self.close()
+
     def close(self, *_):
         """
         Close this menu.
@@ -248,7 +291,7 @@ class SongListBox(urwid.Frame):
             bottom_w=self.list_box,
             align='center',
             valign='middle',
-            width=30,
+            width=50,
             height='pack'
         )
 
@@ -334,6 +377,7 @@ class SongListBox(urwid.Frame):
         Show context menu.
         """
         popup = SongListBoxPopup(songitem)
+        self.app.register_popup(popup)
         self.overlay.top_w = popup
         urwid.connect_signal(popup, 'close', self.hide_context_menu)
         self.contents['body'] = (self.overlay, None)
