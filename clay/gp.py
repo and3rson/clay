@@ -405,13 +405,41 @@ class GP(object):
         """
         self.mobile_client.logout()
         self.invalidate_caches()
-        prev_auth_state = self.is_authenticated
+        # prev_auth_state = self.is_authenticated
         result = self.mobile_client.login(email, password, device_id)
-        if prev_auth_state != self.is_authenticated:
-            self.auth_state_changed.fire(self.is_authenticated)
+        # if prev_auth_state != self.is_authenticated:
+        self.auth_state_changed.fire(self.is_authenticated)
         return result
 
     login_async = asynchronous(login)
+
+    @synchronized
+    def use_authtoken(self, authtoken, device_id):
+        """
+        Try to use cached token to log into Google Play Music.
+        """
+        # pylint: disable=protected-access
+        self.mobile_client.session._authtoken = authtoken
+        self.mobile_client.session.is_authenticated = True
+        self.mobile_client.android_id = device_id
+        del self.mobile_client.is_subscribed
+        if self.mobile_client.is_subscribed:
+            self.auth_state_changed.fire(True)
+            return True
+        del self.mobile_client.is_subscribed
+        self.mobile_client.android_id = None
+        self.mobile_client.session.is_authenticated = False
+        self.auth_state_changed.fire(False)
+        return False
+
+    use_authtoken_async = asynchronous(use_authtoken)
+
+    def get_authtoken(self):
+        """
+        Return currently active auth token.
+        """
+        # pylint: disable=protected-access
+        return self.mobile_client.session._authtoken
 
     @synchronized
     def get_all_tracks(self):

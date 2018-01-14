@@ -28,21 +28,22 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 
 # What works
 - Playback
-- Music library
+- Music library browsing & management
 - Playlists
 - Radio stations
 - Song search
 - Queue management
 - Notifications
 - Global hotkeys
-- Configuration
-- Caching (partially)
+- Configuration UI
+- Token caching for faster authorizations
+- Song operations (add to library, start station etc.)
+- Caching (not for song data, that one is coming soon)
 
 # What is being developed
 
 - Like/dislike tracks
 - Playlist editing
-- Library management
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
 - PYPI package

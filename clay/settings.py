@@ -48,15 +48,3 @@ class Settings(object):
         config.update(new_config)
         with open(Settings.get_config_filename(), 'w') as settings:
             settings.write(yaml.dump(config, default_flow_style=False))
-
-    @classmethod
-    def is_config_valid(cls):
-        """
-        Return True if existing config is enough to log in, False otherwise.
-        """
-        config = Settings.get_config()
-        return all([
-            config.get(x, None)
-            for x
-            in ('username', 'password', 'device_id')
-        ])

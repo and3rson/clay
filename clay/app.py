@@ -160,10 +160,63 @@ class AppWidget(urwid.Frame):
         self.set_page('MyLibraryPage')
         self.log_in()
 
+    def log_in(self, use_token=True):
+        """
+        Called when this page is shown.
+
+        Request user authorization.
+        """
+        config = Settings.get_config()
+        username, password, device_id, authtoken = [
+            config.get(x)
+            for x
+            in ('username', 'password', 'device_id', 'authtoken')
+        ]
+        if self._login_notification:
+            self._login_notification.close()
+        if use_token and authtoken:
+            self._login_notification = NotificationArea.notify('Using cached auth token...')
+            GP.get().use_authtoken_async(
+                authtoken,
+                device_id,
+                callback=self.on_check_authtoken
+            )
+        elif username and password and device_id:
+            self._login_notification = NotificationArea.notify('Logging in...')
+            GP.get().login_async(
+                username,
+                password,
+                device_id,
+                callback=self.on_login
+            )
+        else:
+            self._login_notification = NotificationArea.notify(
+                'Please set your credentials on the settings page.'
+            )
+
+    def on_check_authtoken(self, success, error):
+        """
+        Called once cached auth token is validated.
+        If *error* is ``None`` and *success* is ``True``, switch app to "My library" page.
+        Otherwise attemt to log in via credentials.
+        """
+        if error:
+            self._login_notification.update(
+                'Failed to use cached auth token: {}'.format(str(error))
+            )
+            self.log_in(False)
+        elif not success:
+            self._login_notification.update(
+                'Failed to use cached auth token, proceeding to normal auth.'
+            )
+            self.log_in(False)
+        else:
+            self._login_notification.close()
+
     def on_login(self, success, error):
         """
         Called once user authorization finishes.
-        If *error* is ``None``, switch app to "My library" page.'
+        If *error* is ``None`` and *success* is ``True``, switch app to "My library" page.
         """
         if error:
             self._login_notification.update('Failed to log in: {}'.format(str(error)))
@@ -175,27 +228,9 @@ class AppWidget(urwid.Frame):
             )
             return
 
+        Settings.set_config(dict(authtoken=GP.get().get_authtoken()))
+
         self._login_notification.close()
-
-    def log_in(self):
-        """
-        Called when this page is shown.
-
-        Request user authorization.
-        """
-        if Settings.is_config_valid():
-            config = Settings.get_config()
-            self._login_notification = NotificationArea.notify('Logging in...')
-            GP.get().login_async(
-                config['username'],
-                config['password'],
-                config['device_id'],
-                callback=self.on_login
-            )
-        else:
-            NotificationArea.notify(
-                'Please set your credentials on the settings page.'
-            )
 
     def set_loop(self, loop):
         """
