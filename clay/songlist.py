@@ -2,6 +2,15 @@
 Components for song listing.
 """
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-instance-attributes
+from string import digits
+try:
+    # Python 3.x
+    from string import ascii_letters
+except ImportError:
+    # Python 2.3
+    from string import letters as ascii_letters
+
 import urwid
 from clay.notifications import NotificationArea
 from clay.player import Player
@@ -285,19 +294,77 @@ class SongListBox(urwid.Frame):
         player.media_state_changed += self.media_state_changed
 
         self.list_box = urwid.ListBox(self.walker)
+        self.filter_prefix = '> '
+        self.filter_query = ''
+        self.filter_box = urwid.Text(self.filter_prefix)
+        self.filter_info = urwid.Text('')
+        self.filter_panel = urwid.Columns([
+            self.filter_box,
+            ('pack', self.filter_info)
+        ])
+        self.content = urwid.Pile([
+            self.list_box,
+        ])
 
         self.overlay = urwid.Overlay(
             top_w=None,
-            bottom_w=self.list_box,
+            bottom_w=self.content,
             align='center',
             valign='middle',
             width=50,
             height='pack'
         )
 
+        self._is_filtering = False
+
         super(SongListBox, self).__init__(
-            body=self.list_box
+            body=self.content
         )
+
+    def perform_filtering(self, char):
+        """
+        Enter filtering mode (if not entered yet) and filter stuff.
+        """
+        if not self._is_filtering:
+            self.content.contents = [
+                (self.list_box, ('weight', 1)),
+                (self.filter_panel, ('pack', None))
+            ]
+            self.app.append_cancel_action(self.end_filtering)
+            self.filter_query = ''
+            self._is_filtering = True
+
+        if char == 'backspace':
+            self.filter_query = self.filter_query[:-1]
+        else:
+            self.filter_query += char
+        self.filter_box.set_text(self.filter_prefix + self.filter_query)
+
+        matches = self.get_filtered_items()
+        self.filter_info.set_text('{} matches'.format(len(matches)))
+        if matches:
+            self.walker.set_focus(matches[0].index)
+
+    def get_filtered_items(self):
+        """
+        Get song items that match the search query.
+        """
+        matches = []
+        for songitem in self.walker:
+            if not isinstance(songitem, SongListItem):
+                continue
+            if self.filter_query.lower() in songitem.full_title.lower():
+                matches.append(songitem)
+        return matches
+
+    def end_filtering(self):
+        """
+        Exit filtering mode.
+        """
+        self.content.contents = [
+            (self.list_box, ('weight', 1))
+        ]
+        self._is_filtering = False
 
     def set_placeholder(self, text):
         """
@@ -377,7 +444,7 @@ class SongListBox(urwid.Frame):
         Show context menu.
         """
         popup = SongListBoxPopup(songitem)
-        self.app.register_popup(popup)
+        self.app.append_cancel_action(popup.close)
         self.overlay.top_w = popup
         urwid.connect_signal(popup, 'close', self.hide_context_menu)
         self.contents['body'] = (self.overlay, None)
@@ -393,7 +460,7 @@ class SongListBox(urwid.Frame):
         """
         Hide context menu.
         """
-        self.contents['body'] = (self.list_box, None)
+        self.contents['body'] = (self.content, None)
 
     def track_changed(self, track):
         """
@@ -468,9 +535,35 @@ class SongListBox(urwid.Frame):
             songlistitem.set_index(i)
 
     def keypress(self, size, key):
-        if key == 'meta m' and self.is_context_menu_visible:
+        if self._is_filtering and key in ('up', 'down', 'home', 'end'):
+            matches = self.get_filtered_items()
+            if not matches:
+                return False
+            _, index = self.walker.get_focus()
+            if key == 'home':
+                self.list_box.set_focus(matches[0].index, 'below')
+            elif key == 'end':
+                self.list_box.set_focus(matches[-1].index, 'above')
+            elif key == 'up':
+                prev_items = [item for item in matches if item.index < index]
+                if prev_items:
+                    self.list_box.set_focus(prev_items[-1].index, 'below')
+                    return False
+                self.list_box.set_focus(matches[-1].index, 'above')
+            else:
+                next_items = [item for item in matches if item.index > index]
+                if next_items:
+                    self.list_box.set_focus(next_items[0].index, 'above')
+                    return False
+                self.list_box.set_focus(matches[0].index, 'below')
+            return False
+        elif key == 'meta m' and self.is_context_menu_visible:
             self.hide_context_menu()
             return None
+        elif key in ascii_letters + digits + ' _-.,?!()[]/':
+            self.perform_filtering(key)
+        elif key == 'backspace':
+            self.perform_filtering(key)
         return super(SongListBox, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):

@@ -32,6 +32,7 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - Playlists
 - Radio stations
 - Song search
+- Filtering results
 - Queue management
 - Notifications
 - Global hotkeys

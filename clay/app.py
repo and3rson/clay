@@ -112,7 +112,7 @@ class AppWidget(urwid.Frame):
         NotificationArea.set_app(self)
         self._login_notification = None
 
-        self._popup = None
+        self._cancel_actions = []
 
         self.header = urwid.Pile([
             # urwid.Divider('\u2500'),
@@ -304,12 +304,12 @@ class AppWidget(urwid.Frame):
         if self.loop:
             self.loop.draw_screen()
 
-    def register_popup(self, popup):
+    def append_cancel_action(self, action):
         """
-        Notify app about a popup that's currently being shown.
-        This is used to correctly deliver "Escape" key hit.
+        Notify app about an action that can be cancelled by adding it to the action stack.
+        It will be called once when "Escape" key is hit.
         """
-        self._popup = popup
+        self._cancel_actions.append(action)
 
     def keypress(self, size, key):
         """
@@ -339,11 +339,12 @@ class AppWidget(urwid.Frame):
         elif key == 'ctrl x':
             sys.exit(0)
         elif key == 'esc' or key == 'ctrl _':
-            if self._popup:
-                self._popup.close()
-                self._popup = None
-            else:
+            try:
+                action = self._cancel_actions.pop()
+            except IndexError:
                 NotificationArea.close_newest()
+            else:
+                action()
         else:
             super(AppWidget, self).keypress(size, key)
 
