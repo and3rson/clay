@@ -28,7 +28,7 @@ class SearchBox(urwid.Columns):
         self.query = urwid.Edit()
         super(SearchBox, self).__init__([
             ('pack', urwid.Text('Search: ')),
-            self.query
+            urwid.AttrWrap(self.query, 'input', 'input_focus')
         ])
 
     def keypress(self, size, key):

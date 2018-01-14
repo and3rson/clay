@@ -3,6 +3,7 @@ Components for song listing.
 """
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
 from string import digits
 try:
     # Python 3.x
@@ -536,27 +537,7 @@ class SongListBox(urwid.Frame):
 
     def keypress(self, size, key):
         if self._is_filtering and key in ('up', 'down', 'home', 'end'):
-            matches = self.get_filtered_items()
-            if not matches:
-                return False
-            _, index = self.walker.get_focus()
-            if key == 'home':
-                self.list_box.set_focus(matches[0].index, 'below')
-            elif key == 'end':
-                self.list_box.set_focus(matches[-1].index, 'above')
-            elif key == 'up':
-                prev_items = [item for item in matches if item.index < index]
-                if prev_items:
-                    self.list_box.set_focus(prev_items[-1].index, 'below')
-                    return False
-                self.list_box.set_focus(matches[-1].index, 'above')
-            else:
-                next_items = [item for item in matches if item.index > index]
-                if next_items:
-                    self.list_box.set_focus(next_items[0].index, 'above')
-                    return False
-                self.list_box.set_focus(matches[0].index, 'below')
-            return False
+            return self.handle_filtered_keypress(key)
         elif key == 'meta m' and self.is_context_menu_visible:
             self.hide_context_menu()
             return None
@@ -565,6 +546,44 @@ class SongListBox(urwid.Frame):
         elif key == 'backspace':
             self.perform_filtering(key)
         return super(SongListBox, self).keypress(size, key)
+
+    def handle_filtered_keypress(self, key):
+        """
+        Handle up/down/home/end keypress while in fitering mode.
+        """
+        matches = self.get_filtered_items()
+        if not matches:
+            return False
+        _, index = self.walker.get_focus()
+        if key == 'home':
+            self.list_box.set_focus(matches[0].index, 'below')
+        elif key == 'end':
+            self.list_box.set_focus(matches[-1].index, 'above')
+        elif key == 'up':
+            self.list_box.set_focus(*self.get_prev_item(matches, index))
+        else:
+            self.list_box.set_focus(*self.get_next_item(matches, index))
+        return False
+
+    @staticmethod
+    def get_prev_item(matches, current_index):
+        """
+        Get previous item index from matches list.
+        """
+        prev_items = [item for item in matches if item.index < current_index]
+        if prev_items:
+            return prev_items[-1].index, 'below'
+        return matches[-1].index, 'above'
+
+    @staticmethod
+    def get_next_item(matches, current_index):
+        """
+        Get next item index from matches list.
+        """
+        next_items = [item for item in matches if item.index > current_index]
+        if next_items:
+            return next_items[0].index, 'above'
+        return matches[0].index, 'below'
 
     def mouse_event(self, size, event, button, col, row, focus):
         """

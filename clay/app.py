@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
 # pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-public-methods
 """
 Main app entrypoint.
 """
 
 import sys
 sys.path.insert(0, '.')  # noqa
-sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
+# sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 
@@ -63,6 +63,20 @@ class AppWidget(urwid.Frame):
 
     Handles tab switches, global keypresses etc.
     """
+
+    KEYBINDS = {
+        'ctrl q': 'seek_start',
+        'ctrl w': 'play_pause',
+        'ctrl e': 'next_song',
+        'shift left': 'seek_backward',
+        'shift right': 'seek_forward',
+        'ctrl s': 'toggle_shuffle',
+        'ctrl r': 'toggle_repeat_one',
+        'ctrl x': 'quit',
+        'esc': 'handle_escape_action',
+        'ctrl _': 'handle_escape_action'
+    }
+
     class Tab(urwid.Text):
         """
         Represents a single tab in header tabbar.
@@ -321,32 +335,80 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
-        player = Player.get()
-        if key == 'ctrl q':
-            player.seek_absolute(0)
-        elif key == 'ctrl w':
-            player.play_pause()
-        elif key == 'ctrl e':
-            player.next(True)
-        elif key == 'shift right':
-            player.seek(0.05)
-        elif key == 'shift left':
-            player.seek(-0.05)
-        elif key == 'ctrl s':
-            player.set_random(not player.get_is_random())
-        elif key == 'ctrl r':
-            player.set_repeat_one(not player.get_is_repeat_one())
-        elif key == 'ctrl x':
-            sys.exit(0)
-        elif key == 'esc' or key == 'ctrl _':
-            try:
-                action = self._cancel_actions.pop()
-            except IndexError:
-                NotificationArea.close_newest()
-            else:
-                action()
+        method_name = AppWidget.KEYBINDS.get(key)
+        if method_name:
+            getattr(self, method_name)()
         else:
             super(AppWidget, self).keypress(size, key)
+
+    @staticmethod
+    def seek_start():
+        """
+        Seek to the start of the song.
+        """
+        Player.get().seek_absolute(0)
+
+    @staticmethod
+    def play_pause():
+        """
+        Toggle play/pause.
+        """
+        Player.get().play_pause()
+
+    @staticmethod
+    def next_song():
+        """
+        Play next song.
+        """
+        Player.get().next(True)
+
+    @staticmethod
+    def seek_backward():
+        """
+        Seek 5% backward.
+        """
+        Player.get().seek(-0.05)
+
+    @staticmethod
+    def seek_forward():
+        """
+        Seek 5% forward.
+        """
+        Player.get().seek(0.05)
+
+    @staticmethod
+    def toggle_shuffle():
+        """
+        Toggle random playback.
+        """
+        player = Player.get()
+        player.set_random(not player.get_is_random())
+
+    @staticmethod
+    def toggle_repeat_one():
+        """
+        Toggle repeat mode.
+        """
+        player = Player.get()
+        player.set_repeat_one(not player.get_is_repeat_one())
+
+    @staticmethod
+    def quit():
+        """
+        Quit app.
+        """
+        sys.exit(0)
+
+    def handle_escape_action(self):
+        """
+        Run escape actions. If none are pending, close newest notification.
+        """
+        try:
+            action = self._cancel_actions.pop()
+        except IndexError:
+            NotificationArea.close_newest()
+        else:
+            action()
 
 
 def main():

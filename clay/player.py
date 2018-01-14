@@ -10,6 +10,7 @@ from clay import vlc
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
 from clay.hotkeys import HotkeyManager
+from clay import meta
 
 
 class Queue(object):
@@ -122,7 +123,13 @@ class Player(object):
 
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
-        self.media_player = vlc.MediaPlayer()
+        self.instance = vlc.Instance()
+        self.instance.set_user_agent(
+            meta.APP_NAME,
+            meta.USER_AGENT
+        )
+
+        self.media_player = self.instance.media_player_new()
 
         self.media_player.event_manager().event_attach(
             vlc.EventType.MediaPlayerPlaying,
@@ -243,7 +250,6 @@ class Player(object):
         See :meth:`.Queue.remove`
         """
         self.queue.remove(track)
-        self.queue_changed.fire()
         self.track_removed.fire(track)
 
     def create_station_from_track(self, track):
@@ -329,7 +335,9 @@ class Player(object):
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
             return
         assert track
-        self.media_player.set_media(vlc.Media(url))
+        media = vlc.Media(url)
+        self.media_player.set_media(media)
+
         self.media_player.play()
 
     @property
