@@ -8,7 +8,7 @@ Main app entrypoint.
 
 import sys
 sys.path.insert(0, '.')  # noqa
-# sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
+sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 
@@ -324,6 +324,13 @@ class AppWidget(urwid.Frame):
         It will be called once when "Escape" key is hit.
         """
         self._cancel_actions.append(action)
+
+    def unregister_cancel_action(self, action):
+        """
+        Remove cancel action from action stack.
+        """
+        if action in self._cancel_actions:
+            self._cancel_actions.remove(action)
 
     def keypress(self, size, key):
         """

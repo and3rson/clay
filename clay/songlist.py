@@ -220,6 +220,23 @@ class SongListBoxPopup(urwid.LineBox):
             'panel_divider',
             'panel_divider_focus'
         ))
+        if self.songitem.track in Player.get().get_queue_tracks():
+            options.append(urwid.AttrWrap(
+                urwid.Button('Remove from queue', on_press=self.remove_from_queue),
+                'panel',
+                'panel_focus'
+            ))
+        else:
+            options.append(urwid.AttrWrap(
+                urwid.Button('Append to queue', on_press=self.append_to_queue),
+                'panel',
+                'panel_focus'
+            ))
+        options.append(urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        ))
         options.append(urwid.AttrWrap(
             urwid.Button('Close', on_press=self.close),
             'panel',
@@ -261,6 +278,20 @@ class SongListBoxPopup(urwid.LineBox):
             else:
                 NotificationArea.notify('Track removed from library!')
         self.songitem.track.remove_from_my_library_async(callback=on_remove_from_my_library)
+        self.close()
+
+    def append_to_queue(self, _):
+        """
+        Appends related track to queue.
+        """
+        Player.get().append_to_queue(self.songitem.track)
+        self.close()
+
+    def remove_from_queue(self, _):
+        """
+        Removes related track from queue.
+        """
+        Player.get().remove_from_queue(self.songitem.track)
         self.close()
 
     def create_station(self, _):
@@ -317,6 +348,7 @@ class SongListBox(urwid.Frame):
         )
 
         self._is_filtering = False
+        self.popup = None
 
         super(SongListBox, self).__init__(
             body=self.content
@@ -444,10 +476,10 @@ class SongListBox(urwid.Frame):
         """
         Show context menu.
         """
-        popup = SongListBoxPopup(songitem)
-        self.app.append_cancel_action(popup.close)
-        self.overlay.top_w = popup
-        urwid.connect_signal(popup, 'close', self.hide_context_menu)
+        self.popup = SongListBoxPopup(songitem)
+        self.app.append_cancel_action(self.popup.close)
+        self.overlay.top_w = self.popup
+        urwid.connect_signal(self.popup, 'close', self.hide_context_menu)
         self.contents['body'] = (self.overlay, None)
 
     @property
@@ -461,7 +493,10 @@ class SongListBox(urwid.Frame):
         """
         Hide context menu.
         """
-        self.contents['body'] = (self.content, None)
+        if self.popup is not None:
+            self.contents['body'] = (self.content, None)
+            self.app.unregister_cancel_action(self.popup.close)
+            self.popup = None
 
     def track_changed(self, track):
         """

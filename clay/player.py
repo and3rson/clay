@@ -29,18 +29,18 @@ class Queue(object):
         self.repeat_one = False
 
         self.tracks = []
-        self.current_track = None
+        self.current_track_index = None
 
-    def load(self, tracks, current_track=None):
+    def load(self, tracks, current_track_index=None):
         """
         Load list of tracks into queue.
 
-        *current_track* can be either ``None`` or ``int`` (zero-indexed).
+        *current_track_index* can be either ``None`` or ``int`` (zero-indexed).
         """
         self.tracks = tracks[:]
-        if (current_track is None) and self.tracks:
-            current_track = 0
-        self.current_track = current_track
+        if (current_track_index is None) and self.tracks:
+            current_track_index = 0
+        self.current_track_index = current_track_index
 
     def append(self, track):
         """
@@ -57,16 +57,18 @@ class Queue(object):
 
         index = self.tracks.index(track)
         self.tracks.remove(track)
-        if index < self.current_track:
-            self.current_track -= 1
+        if self.current_track_index is None:
+            return
+        if index < self.current_track_index:
+            self.current_track_index -= 1
 
     def get_current_track(self):
         """
         Return current :class:`clay.gp.Track`
         """
-        if self.current_track is None:
+        if self.current_track_index is None:
             return None
-        return self.tracks[self.current_track]
+        return self.tracks[self.current_track_index]
 
     def next(self, force=False):
         """
@@ -79,21 +81,21 @@ class Queue(object):
         Manual track switching calls this method with ``force=True`` while
         :class:`.Player` end-of-track event will call it with ``force=False``.
         """
-        if self.current_track is None:
+        if self.current_track_index is None:
             if not self.tracks:
                 return None
-            self.current_track = self.tracks[0]
+            self.current_track_index = self.tracks[0]
 
         if self.repeat_one and not force:
             return self.get_current_track()
 
         if self.random:
-            self.current_track = randint(0, len(self.tracks) - 1)
+            self.current_track_index = randint(0, len(self.tracks) - 1)
             return self.get_current_track()
 
-        self.current_track += 1
-        if (self.current_track + 1) >= len(self.tracks):
-            self.current_track = 0
+        self.current_track_index += 1
+        if (self.current_track_index + 1) >= len(self.tracks):
+            self.current_track_index = 0
 
         return self.get_current_track()
 
