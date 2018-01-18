@@ -48,18 +48,18 @@ class SongListItem(urwid.Pile):
         self.state = SongListItem.STATE_IDLE
         self.line1 = urwid.SelectableIcon('', cursor_position=1000)
         self.line1.set_layout('left', 'clip', None)
-        self.line2 = urwid.AttrWrap(
-            urwid.Text('', wrap='clip'),
-            'line2'
-        )
-        self.content = urwid.AttrWrap(
-            urwid.Pile([
-                self.line1,
-                self.line2
-            ]),
-            'line1',
-            'line1_focus'
-        )
+        self.line2 = urwid.Text('', wrap='clip')
+
+        self.line1_wrap = urwid.AttrWrap(self.line1, 'line1')
+        self.line2_wrap = urwid.AttrWrap(self.line2, 'line2')
+
+        self.content = urwid.Pile([
+            self.line1_wrap,
+            self.line2_wrap,
+            urwid.Text('')
+        ])
+
+        self.is_focused = False
 
         super(SongListItem, self).__init__([
             self.content
@@ -90,6 +90,12 @@ class SongListItem(urwid.Pile):
         """
         Update text of this item from the attached track.
         """
+        if self.state == SongListItem.STATE_IDLE:
+            title_attr = 'line1_focus' if self.is_focused else 'line1'
+        else:
+            title_attr = 'line1_active_focus' if self.is_focused else 'line1_active'
+        artist_attr = 'line2_focus' if self.is_focused else 'line2'
+
         self.line1.set_text(
             u'{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
                 index=self.index + 1,
@@ -100,14 +106,10 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            u'      {}\n'.format(self.track.artist)
+            u'      {}'.format(self.track.artist)
         )
-        if self.state == SongListItem.STATE_IDLE:
-            self.content.set_attr('line1')
-            self.content.set_focus_attr('line1_focus')
-        else:
-            self.content.set_attr('line1_active')
-            self.content.set_focus_attr('line1_active_focus')
+        self.line1_wrap.set_attr(title_attr)
+        self.line2_wrap.set_attr(artist_attr)
 
     @property
     def full_title(self):
@@ -164,6 +166,14 @@ class SongListItem(urwid.Pile):
         """
         self.index = index
         self.update_text()
+
+    def render(self, size, focus=False):
+        """
+        Render widget & set focused state.
+        """
+        self.is_focused = focus
+        self.update_text()
+        return super().render(size, focus)
 
 
 class SongListBoxPopup(urwid.LineBox):

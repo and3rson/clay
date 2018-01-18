@@ -8,7 +8,7 @@ Main app entrypoint.
 
 import sys
 sys.path.insert(0, '.')  # noqa
-sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
+# sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 
@@ -41,11 +41,11 @@ PALETTE = [
     ('panel_divider_focus', '', '', '', '#444', '#F54'),
 
     ('line1', '', '', '', '#FFF', ''),
-    ('line1_focus', '', '', '', '#FFF', '#444'),
+    ('line1_focus', '', '', '', '#FFF', '#333'),
     ('line1_active', '', '', '', '#F54', ''),
-    ('line1_active_focus', '', '', '', '#F54', '#444'),
+    ('line1_active_focus', '', '', '', '#F54', '#333'),
     ('line2', '', '', '', '#AAA', ''),
-    ('line2_focus', '', '', '', '#AAA', '#444'),
+    ('line2_focus', '', '', '', '#AAA', '#333'),
 
     ('input', '', '', '', '#FFF', '#444'),
     ('input_focus', '', '', '', '#FFF', '#F54'),
