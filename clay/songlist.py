@@ -173,7 +173,7 @@ class SongListItem(urwid.Pile):
         """
         self.is_focused = focus
         self.update_text()
-        return super().render(size, focus)
+        return super(SongListItem, self).render(size, focus)
 
 
 class SongListBoxPopup(urwid.LineBox):
