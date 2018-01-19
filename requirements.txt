@@ -1,4 +1,3 @@
 gmusicapi==10.1.2
 PyYAML==3.12
--e git://github.com/urwid/urwid.git#egg=urwid
-
+urwid==2.0.0

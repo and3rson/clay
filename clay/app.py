@@ -260,6 +260,7 @@ class AppWidget(urwid.Frame):
         if progress < 0:
             progress = 0
         self.playbar.set_completion(progress * 100)
+        self.playbar.tick()
         self.loop.draw_screen()
 
     def media_state_changed(self, *_):
