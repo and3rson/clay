@@ -2,9 +2,7 @@
 Google Play Music integration via gmusicapi.
 """
 # pylint: disable=broad-except
-# pylint: disable=C0103
 # pylint: disable=too-many-arguments
-# pylint: disable=invalid-name
 from threading import Thread, Lock
 from uuid import UUID
 
@@ -97,7 +95,7 @@ class Track(object):
         self.playlist_item_id = playlist_item_id
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=invalid-name
         """
         Return ID for this track.
         """
@@ -237,7 +235,7 @@ class Artist(object):
         self.name = name
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=invalid-name
         """
         Artist ID.
         """
@@ -268,7 +266,7 @@ class Station(object):
         self._tracks_loaded = False
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=invalid-name
         """
         Station ID.
         """
@@ -336,7 +334,7 @@ class Playlist(object):
         self.tracks = tracks
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=invalid-name
         """
         Playlist ID.
         """
@@ -479,7 +477,9 @@ class GP(object):
         )
         return self.cached_playlists
 
-    get_all_user_playlist_contents_async = asynchronous(get_all_user_playlist_contents)
+    get_all_user_playlist_contents_async = (  # pylint: disable=invalid-name
+        asynchronous(get_all_user_playlist_contents)
+    )
 
     def get_cached_tracks_map(self):
         """

@@ -1,8 +1,6 @@
 """
 PlayBar widget.
 """
-# pylint: disable=protected-access
-# pylint: disable=invalid-name
 import urwid
 
 from clay.player import Player

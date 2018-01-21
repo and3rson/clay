@@ -8,7 +8,6 @@ Main app entrypoint.
 
 import sys
 sys.path.insert(0, '.')  # noqa
-# sys.path.insert(0, '/home/anderson/src/urwid')  # noqa
 
 import urwid
 

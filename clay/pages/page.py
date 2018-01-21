@@ -1,7 +1,6 @@
 """
 Generic page classes.
 """
-# pylint: disable=too-few-public-methods
 
 
 class AbstractPage(object):

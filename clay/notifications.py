@@ -1,7 +1,6 @@
 """
 Notification widgets.
 """
-# pylint: disable=invalid-name
 import urwid
 
 
@@ -28,7 +27,7 @@ class Notification(urwid.Columns):
         ])
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=invalid-name
         """
         Notification ID.
         """
