@@ -34,6 +34,13 @@ PALETTE = [
     ('progress', '', '', '', '#FFF', '#F54'),
     ('progress_remaining', '', '', '', '#FFF', '#444'),
 
+    ('progressbar_done', '', '', '', '#F54', ''),
+    ('progressbar_done_paused', '', '', '', '#AAA', ''),
+    ('progressbar_remaining', '', '', '', '#444', ''),
+
+    ('title-idle', '', '', '', '', ''),
+    ('title-playing', '', '', '', '#F54', ''),
+
     ('panel', '', '', '', '#FFF', '#222'),
     ('panel_focus', '', '', '', '#FFF', '#F54'),
     ('panel_divider', '', '', '', '#444', '#222'),
@@ -122,6 +129,8 @@ class AppWidget(urwid.Frame):
         ]
         self.current_page = None
 
+        self.loop = None
+
         NotificationArea.set_app(self)
         self._login_notification = None
 
@@ -137,12 +146,7 @@ class AppWidget(urwid.Frame):
             NotificationArea.get()
             # urwid.Divider('\u2500')
         ])
-        self.playbar = PlayBar(
-            'progress_remaining',
-            'progress',
-            current=0,
-            done=100
-        )
+        self.playbar = PlayBar(self)
         self.shuffle_el = urwid.AttrWrap(urwid.Text(u' \u22cd SHUF '), 'flag')
         self.repeat_el = urwid.AttrWrap(urwid.Text(u' \u27f2 REP '), 'flag')
         self.panel = urwid.Pile([
@@ -162,12 +166,7 @@ class AppWidget(urwid.Frame):
         )
         # self.current_page.activate()
 
-        self.loop = None
-
         player = Player.get()
-        player.media_position_changed += self.media_position_changed
-        player.media_state_changed += self.media_state_changed
-        player.track_changed += self.track_changed
         player.playback_flags_changed += self.playback_flags_changed
 
         self.set_page('MyLibraryPage')
@@ -251,33 +250,6 @@ class AppWidget(urwid.Frame):
         """
         self.loop = loop
 
-    def media_position_changed(self, progress):
-        """
-        Update slider in playbar.
-        Called when current play position changes.
-        """
-        if progress < 0:
-            progress = 0
-        self.playbar.set_completion(progress * 100)
-        self.playbar.tick()
-        self.loop.draw_screen()
-
-    def media_state_changed(self, *_):
-        """
-        Update playbar.
-        Called when playback is paused/unpaused.
-        """
-        self.playbar.update()
-        self.loop.draw_screen()
-
-    def track_changed(self, track):
-        """
-        Update displayed track in playbar.
-        Called when current track changes.
-        """
-        self.playbar.set_track(track)
-        self.loop.draw_screen()
-
     def playback_flags_changed(self):
         """
         Update playbar flags.
@@ -290,7 +262,6 @@ class AppWidget(urwid.Frame):
         self.repeat_el.attr = 'flag-active' \
             if player.get_is_repeat_one() \
             else 'flag'
-        self.playbar.update()
         self.loop.draw_screen()
 
     def set_page(self, classname):
