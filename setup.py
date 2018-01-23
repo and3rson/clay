@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='Clay',
+    name='clay-player',
     version='0.1',
     description='Command Line Player for Google Play Music',
     author='Andrew Dunai',

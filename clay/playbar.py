@@ -12,7 +12,8 @@ class ProgressBar(urwid.Widget):
     """
     _sizing = frozenset([urwid.FLOW])
 
-    CHARS = u'\u2580'
+    # CHARS = u'\u2580'
+    CHARS = u'\u2581'
 
     def __init__(self):
         self.value = 0
@@ -77,8 +78,8 @@ class PlayBar(urwid.Pile):
         self.text = urwid.Text('', align=urwid.CENTER)
         self.progressbar = ProgressBar()
         super(PlayBar, self).__init__([
-            ('pack', self.text),
             ('pack', self.progressbar),
+            ('pack', self.text),
         ])
         self.update()
 
