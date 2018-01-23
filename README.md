@@ -14,6 +14,13 @@ It's being actively developed, but is still in the early alpha version, so many 
 
 [![asciicast](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK.png)](https://asciinema.org/a/tV348AEpiuQbFzDmDH3hGpqHK)
 
+# Installation
+
+```bash
+sudo pip install clay-player
+clay
+```
+
 # Documentation
 
 Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
