@@ -12,7 +12,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 
 (Click the image below to see the screencast.)
 
-[![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
+[![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png?1)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
 
 # Installation
 
