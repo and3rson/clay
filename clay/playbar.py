@@ -1,6 +1,7 @@
 """
 PlayBar widget.
 """
+# pylint: disable=too-many-instance-attributes
 import urwid
 
 from clay.player import Player
@@ -13,7 +14,8 @@ class ProgressBar(urwid.Widget):
     _sizing = frozenset([urwid.FLOW])
 
     # CHARS = u'\u2580'
-    CHARS = u'\u2581'
+    # CHARS = u'\u2581'
+    CHARS = u'\u2501'
 
     def __init__(self):
         self.value = 0
@@ -75,11 +77,23 @@ class PlayBar(urwid.Pile):
         # super(PlayBar, self).__init__(*args, **kwargs)
         self.app = app
         self.rotating_index = 0
-        self.text = urwid.Text('', align=urwid.CENTER)
+        self.text = urwid.Text('', align=urwid.LEFT)
+        self.flags = [
+        ]
         self.progressbar = ProgressBar()
+
+        self.shuffle_el = urwid.AttrWrap(urwid.Text(u' \u22cd SHUF '), 'flag')
+        self.repeat_el = urwid.AttrWrap(urwid.Text(u' \u27f2 REP '), 'flag')
+
+        self.infobar = urwid.Columns([
+            self.text,
+            ('pack', self.shuffle_el),
+            # ('pack', urwid.Text(' ')),
+            ('pack', self.repeat_el)
+        ])
         super(PlayBar, self).__init__([
             ('pack', self.progressbar),
-            ('pack', self.text),
+            ('pack', self.infobar),
         ])
         self.update()
 
@@ -87,6 +101,7 @@ class PlayBar(urwid.Pile):
         player.media_position_changed += self.update
         player.media_state_changed += self.update
         player.track_changed += self.update
+        player.playback_flags_changed += self.update
 
     def get_rotating_bar(self):
         """
@@ -134,13 +149,20 @@ class PlayBar(urwid.Pile):
         Called when something unrelated to completion value changes,
         e.g. current track or playback flags.
         """
+        player = Player.get()
         self.text.set_text(self.get_text())
-        self.progressbar.set_progress(Player.get().get_play_progress())
+        self.progressbar.set_progress(player.get_play_progress())
         self.progressbar.set_done_style(
             'progressbar_done'
-            if Player.get().is_playing
+            if player.is_playing
             else 'progressbar_done_paused'
         )
+        self.shuffle_el.attr = 'flag-active' \
+            if player.get_is_random() \
+            else 'flag'
+        self.repeat_el.attr = 'flag-active' \
+            if player.get_is_repeat_one() \
+            else 'flag'
         self.app.redraw()
 
     def tick(self):

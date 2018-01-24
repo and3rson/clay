@@ -35,8 +35,8 @@ PALETTE = [
     ('progress_remaining', '', '', '', '#FFF', '#444'),
 
     ('progressbar_done', '', '', '', '#F54', ''),
-    ('progressbar_done_paused', '', '', '', '#AAA', ''),
-    ('progressbar_remaining', '', '', '', '#444', ''),
+    ('progressbar_done_paused', '', '', '', '', ''),
+    ('progressbar_remaining', '', '', '', '#222', ''),
 
     ('title-idle', '', '', '', '', ''),
     ('title-playing', '', '', '', '#F54', ''),
@@ -147,27 +147,19 @@ class AppWidget(urwid.Frame):
             # urwid.Divider('\u2500')
         ])
         self.playbar = PlayBar(self)
-        self.shuffle_el = urwid.AttrWrap(urwid.Text(u' \u22cd SHUF '), 'flag')
-        self.repeat_el = urwid.AttrWrap(urwid.Text(u' \u27f2 REP '), 'flag')
-        self.panel = urwid.Pile([
-            urwid.Columns([
-                urwid.Divider(u'\u2500'),
-                ('pack', self.shuffle_el),
-                # ('pack', urwid.Text(' ')),
-                ('pack', self.repeat_el)
-            ]),
-            self.playbar
-        ])
+        # self.panel = urwid.Pile([
+        #     urwid.Columns([
+        #         urwid.Divider(u'\u2500'),
+        #     ]),
+        #     self.playbar
+        # ])
         # self.current_page = self.pages[0]
         super(AppWidget, self).__init__(
             header=self.header,
-            footer=self.panel,
+            footer=self.playbar,
             body=urwid.Filler(urwid.Text('Loading...', align='center'))
         )
         # self.current_page.activate()
-
-        player = Player.get()
-        player.playback_flags_changed += self.playback_flags_changed
 
         self.set_page('MyLibraryPage')
         self.log_in()
@@ -249,20 +241,6 @@ class AppWidget(urwid.Frame):
         Assign a MainLoop to this app.
         """
         self.loop = loop
-
-    def playback_flags_changed(self):
-        """
-        Update playbar flags.
-        Called when random/repeat flags change.
-        """
-        player = Player.get()
-        self.shuffle_el.attr = 'flag-active' \
-            if player.get_is_random() \
-            else 'flag'
-        self.repeat_el.attr = 'flag-active' \
-            if player.get_is_repeat_one() \
-            else 'flag'
-        self.loop.draw_screen()
 
     def set_page(self, classname):
         """
