@@ -3,6 +3,7 @@ Google Play Music integration via gmusicapi.
 """
 # pylint: disable=broad-except
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-instance-attributes
 from threading import Thread, Lock
 from uuid import UUID
 
@@ -89,6 +90,8 @@ class Track(object):
         self.artist = artist
         self.duration = duration
         self.source = source
+
+        self.cached_url = None
 
         self.library_id = library_id
         self.store_id = store_id
@@ -181,7 +184,14 @@ class Track(object):
 
         Keep in mind this URL is valid for a limited time.
         """
-        GP.get().get_stream_url_async(self.store_id, callback=callback, extra=dict(track=self))
+        def on_get_url(url, error):
+            """
+            Called when URL is fetched.
+            """
+            self.cached_url = url
+            callback(url, error, self)
+
+        GP.get().get_stream_url_async(self.store_id, callback=on_get_url)
 
     @synchronized
     def create_station(self):
