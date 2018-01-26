@@ -106,7 +106,7 @@ class SongListItem(urwid.Pile):
             )
         )
         self.line2.set_text(
-            u'      {}'.format(self.track.artist)
+            u'      {} ({})'.format(self.track.artist, self.track.album_name)
         )
         self.line1_wrap.set_attr(title_attr)
         self.line2_wrap.set_attr(artist_attr)

@@ -84,7 +84,8 @@ class Track(object):
     def __init__(
             self,
             title, artist, duration, source,
-            library_id=None, store_id=None, playlist_item_id=None
+            library_id=None, store_id=None, playlist_item_id=None,
+            album_name=None, album_url=None
     ):
         self.title = title
         self.artist = artist
@@ -96,6 +97,9 @@ class Track(object):
         self.library_id = library_id
         self.store_id = store_id
         self.playlist_item_id = playlist_item_id
+
+        self.album_name = album_name
+        self.album_url = album_url
 
     @property
     def id(self):  # pylint: disable=invalid-name
@@ -129,7 +133,9 @@ class Track(object):
                 artist=data['track']['artist'],
                 duration=int(data['track']['durationMillis']),
                 source=source,
-                store_id=data['track']['storeId']  # or data['trackId']
+                store_id=data['track']['storeId'],  # or data['trackId']
+                album_name=data['track']['album'],
+                album_url=data['track']['albumArtRef'][0]['url']
             )
         elif source == Track.SOURCE_STATION:
             # Station tracks have all the info in place.
@@ -138,7 +144,9 @@ class Track(object):
                 artist=data['artist'],
                 duration=int(data['durationMillis']),
                 source=source,
-                store_id=data['storeId']
+                store_id=data['storeId'],
+                album_name=data['album'],
+                album_url=data['albumArtRef'][0]['url']
             )
         elif source == Track.SOURCE_LIBRARY:
             # Data contains all info about track
@@ -150,7 +158,9 @@ class Track(object):
                 duration=int(data['durationMillis']),
                 source=source,
                 store_id=data['storeId'],
-                library_id=data['id']
+                library_id=data['id'],
+                album_name=data['album'],
+                album_url=data['albumArtRef'][0]['url']
             )
         elif source == Track.SOURCE_PLAYLIST:
             if 'track' in data:
@@ -162,7 +172,9 @@ class Track(object):
                     duration=int(data['track']['durationMillis']),
                     source=source,
                     store_id=data['track']['storeId'],  # or data['trackId']
-                    playlist_item_id=data['id']
+                    playlist_item_id=data['id'],
+                    album_name=data['track']['album'],
+                    album_url=data['track']['albumArtRef'][0]['url']
                 )
             # We need to find a track in Library by trackId.
             UUID(data['trackId'])
@@ -172,7 +184,9 @@ class Track(object):
                 artist=track.artist,
                 duration=track.duration,
                 source=source,
-                store_id=track.store_id
+                store_id=track.store_id,
+                album_name=track.album_name,
+                album_url=track.album_url
             )
         raise AssertionError()
 

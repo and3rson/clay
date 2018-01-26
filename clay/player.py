@@ -189,7 +189,9 @@ class Player(object):
                 artist=track.artist,
                 title=track.title,
                 progress=self.get_play_progress_seconds(),
-                length=self.get_length_seconds()
+                length=self.get_length_seconds(),
+                album_name=track.album_name,
+                album_url=track.album_url
             )
         with open('/tmp/clay.json', 'w') as statefile:
             statefile.write(json.dumps(data, indent=4))
