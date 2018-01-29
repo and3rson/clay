@@ -150,6 +150,10 @@ class Player(object):
             self._media_position_changed
         )
 
+        self.equalizer = vlc.libvlc_audio_equalizer_new()
+
+        self.media_player.set_equalizer(self.equalizer)
+
         hotkey_manager = HotkeyManager.get()
         hotkey_manager.play_pause += self.play_pause
         hotkey_manager.next += self.next
@@ -413,3 +417,51 @@ class Player(object):
         *position* must be a ``float`` in range ``[0;1]``.
         """
         self.media_player.set_position(position)
+
+    @staticmethod
+    def get_equalizer_freqs():
+        """
+        Return a list of equalizer frequencies for each band.
+        """
+        return [
+            vlc.libvlc_audio_equalizer_get_band_frequency(index)
+            for index
+            in range(vlc.libvlc_audio_equalizer_get_band_count())
+        ]
+
+    def get_equalizer_amps(self):
+        """
+        Return a list of equalizer amplifications for each band.
+        """
+        return [
+            vlc.libvlc_audio_equalizer_get_amp_at_index(
+                self.equalizer,
+                index
+            )
+            for index
+            in range(vlc.libvlc_audio_equalizer_get_band_count())
+        ]
+
+    def set_equalizer_value(self, index, amp):
+        """
+        Set equalizer amplification for specific band.
+        """
+        assert vlc.libvlc_audio_equalizer_set_amp_at_index(
+            self.equalizer,
+            amp,
+            index
+        ) == 0
+        self.media_player.set_equalizer(self.equalizer)
+
+    def set_equalizer_values(self, amps):
+        """
+        Set a list of equalizer amplifications for each band.
+        """
+        assert len(amps) == vlc.libvlc_audio_equalizer_get_band_count()
+        for index, amp in enumerate(amps):
+            assert vlc.libvlc_audio_equalizer_set_amp_at_index(
+                self.equalizer,
+                amp,
+                index
+            ) == 0
+        self.media_player.set_equalizer(self.equalizer)
