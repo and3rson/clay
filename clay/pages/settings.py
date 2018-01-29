@@ -15,6 +15,13 @@ class Slider(urwid.Widget):
     """
     _sizing = frozenset([urwid.FLOW])
 
+    CHARS = [
+        # '_',
+        u'\u2581',
+        u'\u2500',
+        u'\u2594'
+    ]
+
     def selectable(self):
         return True
 
@@ -32,20 +39,35 @@ class Slider(urwid.Widget):
         self.max_value = 20
         super(Slider, self).__init__()
 
-    @staticmethod
-    def rows(*_):
+    def rows(self, *_):
         """
         Return count of rows required to render this widget.
         """
-        # return self.slider_height + 2
-        return 2
+        return self.slider_height + 2
 
     def render(self, size, focus=None):
         """
         Render widget.
         """
         rows = [('+' if self.value >= 0 else '') + str(self.value) + ' dB']
+
+        chars = [' '] * 5
+
+        k = ((float(self.value) / (self.max_value + 1)) + 1) / 2  # Convert value to [0;1] range
+        section_index = int(k * self.slider_height)
+        char_index = int(k * self.slider_height * len(Slider.CHARS)) % len(Slider.CHARS)
+        chars[section_index] = Slider.CHARS[char_index]
+
         # rows.extend(['X'] * self.slider_height)
+        rows.extend([
+            (
+                u'\u2524{}\u251C'
+                if i == self.slider_height // 2
+                else u'\u2502{}\u2502'
+            ).format(x)
+            for i, x
+            in enumerate(reversed(chars))
+        ])
         rows.append(self.freq_str)
         text = urwid.AttrMap(urwid.Text('\n'.join(
             rows
