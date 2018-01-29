@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='clay-player',
-    version='0.4',
+    version='0.5',
     description='Command Line Player for Google Play Music',
     author='Andrew Dunai',
     author_email='a@dun.ai',
