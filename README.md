@@ -42,11 +42,13 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - Filtering results
 - Queue management
 - Notifications
+- Audio equalizer
 - Global hotkeys
 - Configuration UI
 - Token caching for faster authorizations
 - Song operations (add to library, start station etc.)
 - Caching (not for song data, that one is coming soon)
+- PYPI package
 
 # What is being developed
 
@@ -54,7 +56,6 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - Playlist editing
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
-- PYPI package
 
 # Installation
 
