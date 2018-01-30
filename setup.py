@@ -13,7 +13,8 @@ setup(
     install_required=[
         'gmusicapi',
         'PyYAML',
-        'urwid'
+        'urwid',
+        'codename'
     ],
     packages=find_packages(),
     entry_points={
