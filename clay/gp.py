@@ -125,7 +125,12 @@ class Track(object):
         from Google Play Music API response.
         """
         if many:
-            return [cls.from_data(one, source) for one in data]
+            return [
+                track
+                for track
+                in [cls.from_data(one, source) for one in data]
+                if track is not None
+            ]
 
         try:
             if source == Track.SOURCE_SEARCH:
@@ -191,15 +196,17 @@ class Track(object):
                     album_url=track.album_url
                 )
         except Exception as error:  # pylint: disable=bare-except
-            print('Failed to create track from data.')
-            print('Failing payload was:')
-            print(data)
-            raise Exception(
-                'Failed to create track from data. Original error: {}. Payload: {}'.format(
-                    str(error),
-                    data
-                )
-            )
+            # print('Failed to create track from data.')
+            # print('Failing payload was:')
+            # print(data)
+            # raise Exception(
+            #     'Failed to create track from data. Original error: {}. Payload: {}'.format(
+            #         str(error),
+            #         data
+            #     )
+            # )
+            return None
+
         raise AssertionError()
 
     def get_url(self, callback):
