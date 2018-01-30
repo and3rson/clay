@@ -7,7 +7,7 @@ except ImportError:
     codename = None
 
 APP_NAME = 'Clay Player'
-VERSION = '0.5.3'
+VERSION = '0.5.4'
 if codename is not None:
     VERSION += '-' + codename(separator='-', id=VERSION)
 USER_AGENT = ' '.join([
