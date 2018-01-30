@@ -159,7 +159,7 @@ class Track(object):
                     artist=data['artist'],
                     duration=int(data['durationMillis']),
                     source=source,
-                    store_id=data['storeIda'],
+                    store_id=data['storeId'],
                     library_id=data['id'],
                     album_name=data['album'],
                     album_url=data['albumArtRef'][0]['url']
