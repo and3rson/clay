@@ -126,68 +126,77 @@ class Track(object):
         if many:
             return [cls.from_data(one, source) for one in data]
 
-        if source == Track.SOURCE_SEARCH:
-            # Data contains a nested track representation.
-            return Track(
-                title=data['track']['title'],
-                artist=data['track']['artist'],
-                duration=int(data['track']['durationMillis']),
-                source=source,
-                store_id=data['track']['storeId'],  # or data['trackId']
-                album_name=data['track']['album'],
-                album_url=data['track']['albumArtRef'][0]['url']
-            )
-        elif source == Track.SOURCE_STATION:
-            # Station tracks have all the info in place.
-            return Track(
-                title=data['title'],
-                artist=data['artist'],
-                duration=int(data['durationMillis']),
-                source=source,
-                store_id=data['storeId'],
-                album_name=data['album'],
-                album_url=data['albumArtRef'][0]['url']
-            )
-        elif source == Track.SOURCE_LIBRARY:
-            # Data contains all info about track
-            # including ID in library and ID in store.
-            UUID(data['id'])
-            return Track(
-                title=data['title'],
-                artist=data['artist'],
-                duration=int(data['durationMillis']),
-                source=source,
-                store_id=data['storeId'],
-                library_id=data['id'],
-                album_name=data['album'],
-                album_url=data['albumArtRef'][0]['url']
-            )
-        elif source == Track.SOURCE_PLAYLIST:
-            if 'track' in data:
-                # Data contains a nested track representation that can be used
-                # to construct new track.
+        try:
+            if source == Track.SOURCE_SEARCH:
+                # Data contains a nested track representation.
                 return Track(
                     title=data['track']['title'],
                     artist=data['track']['artist'],
                     duration=int(data['track']['durationMillis']),
                     source=source,
                     store_id=data['track']['storeId'],  # or data['trackId']
-                    playlist_item_id=data['id'],
                     album_name=data['track']['album'],
                     album_url=data['track']['albumArtRef'][0]['url']
                 )
-            # We need to find a track in Library by trackId.
-            UUID(data['trackId'])
-            track = GP.get().get_track_by_id(data['trackId'])
-            return Track(
-                title=track.title,
-                artist=track.artist,
-                duration=track.duration,
-                source=source,
-                store_id=track.store_id,
-                album_name=track.album_name,
-                album_url=track.album_url
-            )
+            elif source == Track.SOURCE_STATION:
+                # Station tracks have all the info in place.
+                return Track(
+                    title=data['title'],
+                    artist=data['artist'],
+                    duration=int(data['durationMillis']),
+                    source=source,
+                    store_id=data['storeId'],
+                    album_name=data['album'],
+                    album_url=data['albumArtRef'][0]['url']
+                )
+            elif source == Track.SOURCE_LIBRARY:
+                # Data contains all info about track
+                # including ID in library and ID in store.
+                UUID(data['id'])
+                return Track(
+                    title=data['title'],
+                    artist=data['artist'],
+                    duration=int(data['durationMillis']),
+                    source=source,
+                    store_id=data['storeIda'],
+                    library_id=data['id'],
+                    album_name=data['album'],
+                    album_url=data['albumArtRef'][0]['url']
+                )
+            elif source == Track.SOURCE_PLAYLIST:
+                if 'track' in data:
+                    # Data contains a nested track representation that can be used
+                    # to construct new track.
+                    return Track(
+                        title=data['track']['title'],
+                        artist=data['track']['artist'],
+                        duration=int(data['track']['durationMillis']),
+                        source=source,
+                        store_id=data['track']['storeId'],  # or data['trackId']
+                        playlist_item_id=data['id'],
+                        album_name=data['track']['album'],
+                        album_url=data['track']['albumArtRef'][0]['url']
+                    )
+                # We need to find a track in Library by trackId.
+                UUID(data['trackId'])
+                track = GP.get().get_track_by_id(data['trackId'])
+                return Track(
+                    title=track.title,
+                    artist=track.artist,
+                    duration=track.duration,
+                    source=source,
+                    store_id=track.store_id,
+                    album_name=track.album_name,
+                    album_url=track.album_url
+                )
+        except Exception as e:  # pylint: disable=bare-except
+            print('Failed to create track from data.')
+            print('Failing payload was:')
+            print(data)
+            raise Exception('Failed to create track from data. Original error: {}. Payload: {}'.format(
+                str(e),
+                data
+            ))
         raise AssertionError()
 
     def get_url(self, callback):

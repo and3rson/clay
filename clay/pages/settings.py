@@ -71,7 +71,7 @@ class Slider(urwid.Widget):
         rows.append(self.freq_str)
         text = urwid.AttrMap(urwid.Text('\n'.join(
             rows
-        ), align=urwid.CENTER), '', 'panel_focus')
+        ), align=urwid.CENTER), 'default', 'panel_focus')
         return text.render(size, focus)
 
     def keypress(self, _, key):

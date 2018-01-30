@@ -5,6 +5,7 @@ PlayBar widget.
 import urwid
 
 from clay.player import Player
+from clay import meta
 
 
 class ProgressBar(urwid.Widget):
@@ -126,7 +127,10 @@ class PlayBar(urwid.Pile):
         player = Player.get()
         track = player.get_current_track()
         if track is None:
-            return u'Idle'
+            return u'{} {}'.format(
+                meta.APP_NAME,
+                meta.VERSION
+            )
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
         return (self.get_style(), u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(

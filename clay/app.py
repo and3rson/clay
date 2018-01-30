@@ -22,8 +22,12 @@ from clay.settings import Settings
 from clay.notifications import NotificationArea
 from clay.gp import GP
 
+BG = '#222'
+
 PALETTE = [
-    ('logo', '', '', '', '#F54', ''),
+    (None, '', '', '', '#FFF', BG),
+    ('default', '', '', '', '#FFF', BG),
+    ('logo', '', '', '', '#F54', BG),
 
     ('bg', '', '', '', '#FFF', '#222'),
     ('primary', '', '', '', '#F54', '#FFF'),
@@ -34,30 +38,30 @@ PALETTE = [
     ('progress', '', '', '', '#FFF', '#F54'),
     ('progress_remaining', '', '', '', '#FFF', '#444'),
 
-    ('progressbar_done', '', '', '', '#F54', ''),
-    ('progressbar_done_paused', '', '', '', '', ''),
-    ('progressbar_remaining', '', '', '', '#222', ''),
+    ('progressbar_done', '', '', '', '#F54', BG),
+    ('progressbar_done_paused', '', '', '', '', BG),
+    ('progressbar_remaining', '', '', '', '#222', BG),
 
-    ('title-idle', '', '', '', '', ''),
-    ('title-playing', '', '', '', '#F54', ''),
+    ('title-idle', '', '', '', '', BG),
+    ('title-playing', '', '', '', '#F54', BG),
 
     ('panel', '', '', '', '#FFF', '#222'),
     ('panel_focus', '', '', '', '#FFF', '#F54'),
     ('panel_divider', '', '', '', '#444', '#222'),
     ('panel_divider_focus', '', '', '', '#444', '#F54'),
 
-    ('line1', '', '', '', '#FFF', ''),
+    ('line1', '', '', '', '#FFF', BG),
     ('line1_focus', '', '', '', '#FFF', '#333'),
-    ('line1_active', '', '', '', '#F54', ''),
+    ('line1_active', '', '', '', '#F54', BG),
     ('line1_active_focus', '', '', '', '#F54', '#333'),
-    ('line2', '', '', '', '#AAA', ''),
-    ('line2_focus', '', '', '', '#AAA', '#333'),
+    ('line2', '', '', '', '#AAA,italics', BG),
+    ('line2_focus', '', '', '', '#AAA,italics', '#333'),
 
     ('input', '', '', '', '#FFF', '#444'),
     ('input_focus', '', '', '', '#FFF', '#F54'),
 
-    ('flag', '', '', '', '#AAA', ''),
-    ('flag-active', '', '', '', '#F54', ''),
+    ('flag', '', '', '', '#AAA', BG),
+    ('flag-active', '', '', '', '#F54', BG),
 
     ('notification', '', '', '', '#F54', '#222'),
 ]
