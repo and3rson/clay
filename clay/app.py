@@ -54,8 +54,8 @@ PALETTE = [
     ('line1_focus', '', '', '', '#FFF', '#333'),
     ('line1_active', '', '', '', '#F54', BG),
     ('line1_active_focus', '', '', '', '#F54', '#333'),
-    ('line2', '', '', '', '#AAA,italics', BG),
-    ('line2_focus', '', '', '', '#AAA,italics', '#333'),
+    ('line2', '', '', '', '#AAA', BG),
+    ('line2_focus', '', '', '', '#AAA', '#333'),
 
     ('input', '', '', '', '#FFF', '#444'),
     ('input_focus', '', '', '', '#FFF', '#F54'),
