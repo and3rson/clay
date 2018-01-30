@@ -4,6 +4,7 @@ Google Play Music integration via gmusicapi.
 # pylint: disable=broad-except
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
+from __future__ import print_function
 from threading import Thread, Lock
 from uuid import UUID
 
@@ -189,14 +190,16 @@ class Track(object):
                     album_name=track.album_name,
                     album_url=track.album_url
                 )
-        except Exception as e:  # pylint: disable=bare-except
+        except Exception as error:  # pylint: disable=bare-except
             print('Failed to create track from data.')
             print('Failing payload was:')
             print(data)
-            raise Exception('Failed to create track from data. Original error: {}. Payload: {}'.format(
-                str(e),
-                data
-            ))
+            raise Exception(
+                'Failed to create track from data. Original error: {}. Payload: {}'.format(
+                    str(error),
+                    data
+                )
+            )
         raise AssertionError()
 
     def get_url(self, callback):
