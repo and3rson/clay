@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+from clay.meta import VERSION
 
 setup(
     name='clay-player',
-    version='0.5.1',
+    version=VERSION,
     description='Command Line Player for Google Play Music',
     author='Andrew Dunai',
     author_email='a@dun.ai',
