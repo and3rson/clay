@@ -130,6 +130,23 @@ Also be aware that this app has not been tested with 2FA yet.
 - `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification
 - `<CTRL> x` - exit app
 
+# Troubleshooting
+
+At some point, the app may fail. Possible reasons are app bugs,
+Google Play Music API issues, [gmusicapi] bugs, [urwid] bugs etc.
+
+If you encounter a problem, please feel free to submit an ![issue](https://github.com/and3rson/clay/issues).
+I'll try to figure it out ASAP.
+
+Most issues can be reproduced only with specific data coming from Google Play Music servers.
+
+You can set `CLAY_DEBUG` environment variable to `1` before launching Clay player.
+This will dump all Google API calls & responses to the `/tmp/clay-api-log.json` file.
+
+You can attach this file when opening an issue here, but **keep in mind that
+this file MAY contain some personal data, access tokens and/or Google account credentials
+that may allow others to use your account**.
+
 # Credits
 
 Made by Andrew Dunai.
