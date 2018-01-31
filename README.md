@@ -1,3 +1,22 @@
+- [About](#clay-alpha)
+- [Quick start](#quick-start)
+- [Documentation](#documentation)
+- [Requirements](#requirements)
+- [What works](#what-works)
+- [What is being developed](#what-is-being-developed)
+- [Installation](#installation)
+  * [Method 1 (PyPi, automatic)](#method-1-pypi-automatic)
+  * [Method 2 (from source, manual)](#method-2-from-source-manual)
+- [Configuration](#configuration)
+- [Controls](#controls)
+  * [General](#general)
+  * [Songs](#songs)
+  * [Playback](#playback)
+  * [Equalizer](#equalizer)
+  * [Misc](#misc)
+- [Troubleshooting](#troubleshooting)
+- [Credits](#credits)
+
 # Clay [alpha]
 
 [![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest)
@@ -14,7 +33,7 @@ It's being actively developed, but is still in the early alpha version, so many 
 
 [![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png?1)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
 
-# Installation
+# Quick start
 
 ```bash
 sudo pip install clay-player
@@ -70,23 +89,7 @@ pip install clay-player
 clay
 ```
 
-## Method 2 (from source, automatic)
-
-1. Clone the source code.
-
-2. Source the 'activate.sh' script. It will initialize the Python virtual env and install the dependencies:
-
-    ```bash
-    source activate.sh
-    ```
-
-3. Run the player:
-
-    ```bash
-    ./clay/app.py
-    ```
-
-## Method 3 (from source, manual)
+## Method 2 (from source, manual)
 
 1. Clone the source code.
 
@@ -111,8 +114,8 @@ clay
 
 # Configuration
 
-In order to use this app, you need to know your Device ID. Typically gmusicapi should display possible IDs once you type a wrong one.
-Also be aware that this app has not been tested with 2FA yet.
+- In order to use this app, you need to know your Device ID. Typically gmusicapi should display possible IDs once you type a wrong one.
+- Please be aware that this app has not been tested with 2FA yet.
 
 # Controls
 
@@ -138,9 +141,13 @@ Also be aware that this app has not been tested with 2FA yet.
 - `<SHIFT> <LEFT|RIGHT>` - seek backward/forward by 5% of the song duration
 - `<CTRL> q` - seek to song beginning
 
+## Equalizer
+- `+` - increase amplification
+- `-` - decrease amplification
+
 ## Misc
 
-- `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification
+- `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification or popup
 - `<CTRL> x` - exit app
 
 # Troubleshooting
