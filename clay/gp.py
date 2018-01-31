@@ -425,8 +425,10 @@ class GP(object):
         assert self.__class__.instance is None, 'Can be created only once!'
         # self.is_debug = os.getenv('CLAY_DEBUG')
         self.mobile_client = Mobileclient()
+        self.mobile_client._make_call = self._make_call_proxy(
+            self.mobile_client._make_call
+        )
         # if self.is_debug:
-        #     self.mobile_client._make_call = self._make_call_proxy(self.mobile_client._make_call)
         #     self.debug_file = open('/tmp/clay-api-log.json', 'w')
         #     self._last_call_index = 0
         self.cached_tracks = None
