@@ -129,7 +129,7 @@ class PlayBar(urwid.Pile):
         if track is None:
             return u'{} {}'.format(
                 meta.APP_NAME,
-                meta.VERSION
+                meta.VERSION_WITH_CODENAME
             )
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
