@@ -61,36 +61,49 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 
 0. Install Python 3 and VLC.
 
-## Method 1 (automatic)
+## Method 1 (PyPi, automatic)
 
-1. Source the 'activate.sh' script. It will initialize the Python virtual env and install the dependencies:
+Just install the player using `pip`:
+
+```bash
+pip install clay-player
+clay
+```
+
+## Method 2 (from source, automatic)
+
+1. Clone the source code.
+
+2. Source the 'activate.sh' script. It will initialize the Python virtual env and install the dependencies:
 
     ```bash
     source activate.sh
     ```
 
-2. Run the player:
+3. Run the player:
 
     ```bash
     ./clay/app.py
     ```
 
-## Method 2 (manual)
+## Method 3 (from source, manual)
 
-1. Create & activate virtualenv:
+1. Clone the source code.
+
+2. Create & activate virtualenv:
 
     ```bash
     virtualenv .env
     source .env/bin/activate
     ```
 
-2. Install the requirements:
+3. Install the requirements:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-3. Run the player:
+4. Run the player:
 
     ```bash
     ./clay/app.py
