@@ -114,15 +114,17 @@ clay
 
 # Configuration
 
-- In order to use this app, you need to know your Device ID. Typically gmusicapi should display possible IDs once you type a wrong one.
+- Once you launch the app, use the "Settings" page to enter your login and password.
+- You will also need to know your Device ID. Thanks to [gmusicapi], the app should display possible IDs once you enter a wrong one.
 - Please be aware that this app has not been tested with 2FA yet.
+- For people with 2FA, you can just create an app password in Google accounts page and proceed normally. (Thanks @j605)
 
 # Controls
 
 ## General
 
 - `<UP|DOWN|LEFT|RIGHT>` - nagivate around
-- `<ALT> + 1..9` - switch active tab
+- `<ALT> + 0..9` - switch active tab
 
 ## Songs
 
@@ -160,7 +162,7 @@ I'll try to figure it out ASAP.
 
 Most issues can be reproduced only with specific data coming from Google Play Music servers.
 
-Use "debug" tab within app to select the error and hit "Enter" to copy it into clipboard.
+Use "Debug" tab within app to select the error and hit "Enter" to copy it into clipboard.
 This will help me to investigate this issue.
 
 # Credits
