@@ -160,12 +160,8 @@ I'll try to figure it out ASAP.
 
 Most issues can be reproduced only with specific data coming from Google Play Music servers.
 
-You can set `CLAY_DEBUG` environment variable to `1` before launching Clay player.
-This will dump all Google API calls & responses to the `/tmp/clay-api-log.json` file.
-
-You can attach this file when opening an issue here, but **keep in mind that
-this file MAY contain some personal data, access tokens and/or Google account credentials
-that may allow others to use your account**.
+Use "debug" tab within app to select the error and hit "Enter" to copy it into clipboard.
+This will help me to investigate this issue.
 
 # Credits
 

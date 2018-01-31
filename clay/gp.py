@@ -6,15 +6,15 @@ Google Play Music integration via gmusicapi.
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-return-statements
 # pylint: disable=protected-access
+# pylint: disable=no-self-use
 from __future__ import print_function
-import os
-import json
 from threading import Thread, Lock
 from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
 
 from clay.eventhook import EventHook
+from clay.log import Logger
 
 
 def asynchronous(func):
@@ -199,7 +199,12 @@ class Track(object):
                     album_name=track.album_name,
                     album_url=track.album_url
                 )
-        except Exception:  # pylint: disable=bare-except
+        except Exception as error:  # pylint: disable=bare-except
+            Logger.get().error(
+                'Failed to parse track data: %s, failing data: %s',
+                repr(error),
+                data
+            )
             # TODO: Fix this.
             # print('Failed to create track from data.')
             # print('Failing payload was:')
@@ -418,12 +423,12 @@ class GP(object):
 
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
-        self.is_debug = os.getenv('CLAY_DEBUG')
+        # self.is_debug = os.getenv('CLAY_DEBUG')
         self.mobile_client = Mobileclient()
-        if self.is_debug:
-            self.mobile_client._make_call = self._make_call_proxy(self.mobile_client._make_call)
-            self.debug_file = open('/tmp/clay-api-log.json', 'w')
-            self._last_call_index = 0
+        # if self.is_debug:
+        #     self.mobile_client._make_call = self._make_call_proxy(self.mobile_client._make_call)
+        #     self.debug_file = open('/tmp/clay-api-log.json', 'w')
+        #     self._last_call_index = 0
         self.cached_tracks = None
         self.cached_playlists = None
 
@@ -449,15 +454,20 @@ class GP(object):
             """
             Wrapper function.
             """
+            Logger.get().debug('GP::{}(*{}, **{})'.format(
+                protocol.__name__,
+                args,
+                kwargs
+            ))
             result = func(protocol, *args, **kwargs)
-            self._last_call_index += 1
-            call_index = self._last_call_index
-            self.debug_file.write(json.dumps([
-                call_index,
-                protocol.__name__, args, kwargs,
-                result
-            ]) + '\n')
-            self.debug_file.flush()
+            # self._last_call_index += 1
+            # call_index = self._last_call_index
+            # self.debug_file.write(json.dumps([
+            #     call_index,
+            #     protocol.__name__, args, kwargs,
+            #     result
+            # ]) + '\n')
+            # self.debug_file.flush()
             return result
         return _make_call
 

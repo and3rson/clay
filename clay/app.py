@@ -13,6 +13,7 @@ import urwid
 
 from clay.player import Player
 from clay.playbar import PlayBar
+from clay.pages.debug import DebugPage
 from clay.pages.mylibrary import MyLibraryPage
 from clay.pages.myplaylists import MyPlaylistsPage
 from clay.pages.playerqueue import QueuePage
@@ -120,6 +121,7 @@ class AppWidget(urwid.Frame):
 
     def __init__(self):
         self.pages = [
+            DebugPage(self),
             MyLibraryPage(self),
             MyPlaylistsPage(self),
             QueuePage(self),

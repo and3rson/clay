@@ -4,7 +4,6 @@ Components for song listing.
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
-import os
 from string import digits
 try:
     # Python 3.x
@@ -16,6 +15,7 @@ import urwid
 from clay.notifications import NotificationArea
 from clay.player import Player
 from clay.gp import GP
+from clay.clipboard import copy
 
 
 class SongListItem(urwid.Pile):
@@ -321,13 +321,7 @@ class SongListBoxPopup(urwid.LineBox):
         """
         Copy URL to clipboard.
         """
-        code = os.system('echo "{}" | xclipa -selection clipboard'.format(
-            self.songitem.track.cached_url
-        ))
-        if code != 0:
-            NotificationArea.notify(
-                'Failed to copy URL to clipboard, do you have "xclip" installed?'
-            )
+        copy(self.songitem.track.cached_url)
         self.close()
 
     def close(self, *_):
