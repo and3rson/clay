@@ -6,6 +6,7 @@ import urwid
 from clay.pages.page import AbstractPage
 from clay.log import Logger
 from clay.clipboard import copy
+from clay.gp import GP
 
 
 class DebugItem(urwid.AttrMap):
@@ -52,12 +53,38 @@ class DebugPage(urwid.Pile, AbstractPage):
             self._append_log(log_record)
         Logger.get().on_log_event += self._append_log
         self.listbox = urwid.ListBox(self.walker)
+
+        self.debug_data = urwid.Text('')
+
         super(DebugPage, self).__init__([
+            ('pack', self.debug_data),
+            ('pack', urwid.Text('')),
             ('pack', urwid.Text('Hit "Enter" to copy selected message to clipboard.')),
+            ('pack', urwid.Divider(u'\u2550')),
             self.listbox
         ])
 
+        GP.get().auth_state_changed += self.update
+
+        self.update()
+
+    def update(self, *_):
+        """
+        Update this widget.
+        """
+        gpclient = GP.get()
+        self.debug_data.set_text(
+            '- Is authenticated: {}\n'
+            '- Is subscribed: {}'.format(
+                gpclient.is_authenticated,
+                gpclient.is_subscribed if gpclient.is_authenticated else None
+            )
+        )
+
     def _append_log(self, log_record):
+        """
+        Add log record to list.
+        """
         self.walker.insert(0, urwid.Divider(u'\u2500'))
         self.walker.insert(0, DebugItem(log_record))
 

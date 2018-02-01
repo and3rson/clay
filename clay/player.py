@@ -5,12 +5,18 @@ Media player built using libVLC.
 # pylint: disable=too-many-public-methods
 from random import randint
 import json
+try:  # Python 3.x
+    from urllib.request import urlopen
+except ImportError:  # Python 2.x
+    from urllib2 import urlopen
 
 from clay import vlc
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
 from clay.hotkeys import HotkeyManager
+from clay.settings import Settings
 from clay import meta
+from clay.log import Logger
 
 
 class Queue(object):
@@ -329,9 +335,33 @@ class Player(object):
         if track is None:
             return
         self._is_loading = True
-        track.get_url(callback=self._play_ready)
         self.broadcast_state()
         self.track_changed.fire(track)
+
+        if Settings.get_config().get('download_tracks', False):
+            path = Settings.get_cached_file_path(track.store_id + '.mp3')
+            if path is None:
+                Logger.get().debug('Track %s not in cache, downloading...', track.store_id)
+                track.get_url(callback=self._download_track)
+            else:
+                Logger.get().debug('Track %s in cache, playing', track.store_id)
+                self._play_ready(path, None, track)
+        else:
+            Logger.get().debug('Starting to stream %s', track.store_id)
+            track.get_url(callback=self._play_ready)
+
+    def _download_track(self, url, error, track):
+        if error:
+            NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
+            Logger.get().error(
+                'Failed to request media URL for track %s: %s',
+                track.store_id,
+                str(error)
+            )
+            return
+        response = urlopen(url)
+        path = Settings.save_file_to_cache(track.store_id + '.mp3', response.read())
+        self._play_ready(path, None, track)
 
     def _play_ready(self, url, error, track):
         """
@@ -341,6 +371,11 @@ class Player(object):
         self._is_loading = False
         if error:
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
+            Logger.get().error(
+                'Failed to request media URL for track %s: %s',
+                track.store_id,
+                str(error)
+            )
             return
         assert track
         media = vlc.Media(url)

@@ -63,6 +63,7 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - Notifications
 - Audio equalizer
 - Global hotkeys
+- Song file caching
 - Configuration UI
 - Token caching for faster authorizations
 - Song operations (add to library, start station etc.)

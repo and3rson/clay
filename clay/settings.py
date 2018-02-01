@@ -25,6 +25,12 @@ class Settings(object):
             if error.errno != errno.EEXIST:
                 raise
 
+        try:
+            os.makedirs(appdirs.user_cache_dir('clay', 'Clay'))
+        except OSError as error:
+            if error.errno != errno.EEXIST:
+                raise
+
         path = os.path.join(filedir, 'config.yaml')
         if not os.path.exists(path):
             with open(path, 'w') as settings:
@@ -48,3 +54,25 @@ class Settings(object):
         config.update(new_config)
         with open(Settings.get_config_filename(), 'w') as settings:
             settings.write(yaml.dump(config, default_flow_style=False))
+
+    @classmethod
+    def get_cached_file_path(cls, filename):
+        """
+        Get full path to cached file.
+        """
+        cache_dir = appdirs.user_cache_dir('clay', 'Clay')
+        path = os.path.join(cache_dir, filename)
+        if os.path.exists(path):
+            return path
+        return None
+
+    @classmethod
+    def save_file_to_cache(cls, filename, content):
+        """
+        Save content into file in cache.
+        """
+        cache_dir = appdirs.user_cache_dir('clay', 'Clay')
+        path = os.path.join(cache_dir, filename)
+        with open(path, 'wb') as cachefile:
+            cachefile.write(content)
+        return path

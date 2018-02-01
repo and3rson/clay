@@ -138,6 +138,10 @@ class SettingsPage(urwid.Columns, AbstractPage):
         self.device_id = urwid.Edit(
             edit_text=config.get('device_id', '')
         )
+        self.download_tracks = urwid.CheckBox(
+            'Download tracks before playback',
+            state=config.get('download_tracks', False)
+        )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
             urwid.Text('Settings'),
@@ -150,6 +154,8 @@ class SettingsPage(urwid.Columns, AbstractPage):
             urwid.Divider(' '),
             urwid.Text('Device ID'),
             urwid.AttrWrap(self.device_id, 'input', 'input_focus'),
+            urwid.Divider(' '),
+            self.download_tracks,
             urwid.Divider(' '),
             urwid.AttrWrap(urwid.Button(
                 'Save', on_press=self.on_save
@@ -165,7 +171,8 @@ class SettingsPage(urwid.Columns, AbstractPage):
         Settings.set_config(dict(
             username=self.username.edit_text,
             password=self.password.edit_text,
-            device_id=self.device_id.edit_text
+            device_id=self.device_id.edit_text,
+            download_tracks=self.download_tracks.state
         ))
         self.app.set_page('MyLibraryPage')
         self.app.log_in()

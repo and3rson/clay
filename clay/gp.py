@@ -615,3 +615,10 @@ class GP(object):
         Return True if user is authenticated on Google Play Music, false otherwise.
         """
         return self.mobile_client.is_authenticated()
+
+    @property
+    def is_subscribed(self):
+        """
+        Return True if user is subscribed on Google Play Music, false otherwise.
+        """
+        return self.mobile_client.is_subscribed
