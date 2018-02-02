@@ -355,7 +355,7 @@ class Player(object):
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
             Logger.get().error(
                 'Failed to request media URL for track %s: %s',
-                track.store_id,
+                track.original_data,
                 str(error)
             )
             return
@@ -373,7 +373,7 @@ class Player(object):
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
             Logger.get().error(
                 'Failed to request media URL for track %s: %s',
-                track.store_id,
+                track.original_data,
                 str(error)
             )
             return

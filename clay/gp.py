@@ -12,7 +12,6 @@ from threading import Thread, Lock
 from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
-from gmusicapi.protocol import mobileclient
 
 from clay.eventhook import EventHook
 from clay.log import Logger
@@ -91,7 +90,7 @@ class Track(object):
             self,
             title, artist, duration, source,
             library_id=None, store_id=None, playlist_item_id=None,
-            album_name=None, album_url=None
+            album_name=None, album_url=None, original_data=None
     ):
         self.title = title
         self.artist = artist
@@ -106,6 +105,8 @@ class Track(object):
 
         self.album_name = album_name
         self.album_url = album_url
+
+        self.original_data = original_data
 
     @property
     def id(self):  # pylint: disable=invalid-name
@@ -147,7 +148,8 @@ class Track(object):
                     source=source,
                     store_id=data['track']['storeId'],  # or data['trackId']
                     album_name=data['track']['album'],
-                    album_url=data['track']['albumArtRef'][0]['url']
+                    album_url=data['track']['albumArtRef'][0]['url'],
+                    original_data=data
                 )
             elif source == Track.SOURCE_STATION:
                 # Station tracks have all the info in place.
@@ -158,7 +160,8 @@ class Track(object):
                     source=source,
                     store_id=data['storeId'],
                     album_name=data['album'],
-                    album_url=data['albumArtRef'][0]['url']
+                    album_url=data['albumArtRef'][0]['url'],
+                    original_data=data
                 )
             elif source == Track.SOURCE_LIBRARY:
                 # Data contains all info about track
@@ -172,7 +175,8 @@ class Track(object):
                     store_id=data['storeId'],
                     library_id=data['id'],
                     album_name=data['album'],
-                    album_url=data['albumArtRef'][0]['url']
+                    album_url=data['albumArtRef'][0]['url'],
+                    original_data=data
                 )
             elif source == Track.SOURCE_PLAYLIST:
                 if 'track' in data:
@@ -186,7 +190,8 @@ class Track(object):
                         store_id=data['track']['storeId'],  # or data['trackId']
                         playlist_item_id=data['id'],
                         album_name=data['track']['album'],
-                        album_url=data['track']['albumArtRef'][0]['url']
+                        album_url=data['track']['albumArtRef'][0]['url'],
+                        original_data=data
                     )
                 # We need to find a track in Library by trackId.
                 UUID(data['trackId'])
@@ -198,7 +203,8 @@ class Track(object):
                     source=source,
                     store_id=track.store_id,
                     album_name=track.album_name,
-                    album_url=track.album_url
+                    album_url=track.album_url,
+                    original_data=data
                 )
         except Exception as error:  # pylint: disable=bare-except
             Logger.get().error(
@@ -235,7 +241,11 @@ class Track(object):
             self.cached_url = url
             callback(url, error, self)
 
-        GP.get().get_stream_url_async(self.store_id, callback=on_get_url)
+        if GP.get().is_subscribed:
+            track_id = self.store_id
+        else:
+            track_id = self.library_id
+        GP.get().get_stream_url_async(track_id, callback=on_get_url)
 
     @synchronized
     def create_station(self):
@@ -410,25 +420,6 @@ class Playlist(object):
         )
 
 
-class CustomMobileclient(Mobileclient):
-    """
-    Modified :class:`.Mobileclient`.
-    """
-    def __init__(self, debug_logging=True, validate=True, verify_ssl=True):
-        self.android_id = None
-        super(CustomMobileclient, self).__init__(
-            debug_logging,
-            validate,
-            verify_ssl
-        )
-
-    def get_stream_url(self, song_id, device_id=None, quality='hi'):
-        device_id = self._ensure_device_id(device_id)
-        return self._make_call(
-            mobileclient.GetStreamUrl, song_id, device_id, quality
-        )
-
-
 class GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
@@ -444,7 +435,7 @@ class GP(object):
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
         # self.is_debug = os.getenv('CLAY_DEBUG')
-        self.mobile_client = CustomMobileclient()
+        self.mobile_client = Mobileclient()
         self.mobile_client._make_call = self._make_call_proxy(
             self.mobile_client._make_call
         )
