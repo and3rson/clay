@@ -7,7 +7,7 @@ except ImportError:
     codename = None
 
 APP_NAME = 'Clay Player'
-VERSION = '0.6.0'
+VERSION = '0.6.1'
 if codename is not None:
     VERSION_WITH_CODENAME = VERSION + '-' + codename(separator='-', id=VERSION)
 else:

@@ -12,6 +12,7 @@ from threading import Thread, Lock
 from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
+from gmusicapi.protocol import mobileclient
 
 from clay.eventhook import EventHook
 from clay.log import Logger
@@ -409,6 +410,25 @@ class Playlist(object):
         )
 
 
+class CustomMobileclient(Mobileclient):
+    """
+    Modified :class:`.Mobileclient`.
+    """
+    def __init__(self, debug_logging=True, validate=True, verify_ssl=True):
+        self.android_id = None
+        super(CustomMobileclient, self).__init__(
+            debug_logging,
+            validate,
+            verify_ssl
+        )
+
+    def get_stream_url(self, song_id, device_id=None, quality='hi'):
+        device_id = self._ensure_device_id(device_id)
+        return self._make_call(
+            mobileclient.GetStreamUrl, song_id, device_id, quality
+        )
+
+
 class GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
@@ -424,7 +444,7 @@ class GP(object):
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
         # self.is_debug = os.getenv('CLAY_DEBUG')
-        self.mobile_client = Mobileclient()
+        self.mobile_client = CustomMobileclient()
         self.mobile_client._make_call = self._make_call_proxy(
             self.mobile_client._make_call
         )
