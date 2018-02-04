@@ -1,0 +1,7 @@
+dist
+docs
+.env2
+.env3
+.git
+.gitignore
+.tox
