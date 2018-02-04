@@ -20,9 +20,6 @@ run: | build
 	clay \
 	${CMD}
 
-# paplay --server=172.17.0.1 LRMonoPhase4.wav
-# --privileged \
-
 .PHONY: docs
 docs:
 	make -C docs html

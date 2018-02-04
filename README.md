@@ -7,6 +7,7 @@
 - [Installation](#installation)
   * [Method 1 (PyPi, automatic)](#method-1-pypi-automatic)
   * [Method 2 (from source, manual)](#method-2-from-source-manual)
+  * [Method 3 (in Docker)](#method-3-in-docker)
 - [Configuration](#configuration)
 - [Controls](#controls)
   * [General](#general)
@@ -112,6 +113,33 @@ clay
     ```bash
     ./clay/app.py
     ```
+
+## Method 3 (in Docker)
+
+Sometimes you want to run stuff in Docker. You can run Clay in docker as well.
+
+There are two strict requirements:
+
+- You need to build the container by yourself (bacause of PulseAudio related paths & magic cookies.)
+- You must have PulseAudio running on host with `module-native-protocol-tcp` module enabled.
+
+Here's how you do it:
+
+1. Clone the source code
+
+2. Create "~/.config/clay" directory (to have proper volume permissions in docker)
+
+    ```bash
+    mkdir ~/.config/clay
+    ```
+
+3. Build & run the image
+
+    ```bash
+    make run
+    ```
+
+You *should* get the sound working. Also docker will reuse the Clay config file from host (if you have one).
 
 # Configuration
 
