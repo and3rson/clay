@@ -37,7 +37,8 @@ It's being actively developed, but is still in the early alpha version, so many 
 # Quick start
 
 ```bash
-sudo pip install clay-player
+sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo vlc keybinder python-keybinder
+pip install --user clay-player
 clay
 ```
 
@@ -51,6 +52,8 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - [gmusicapi] (PYPI)
 - [urwid] (PYPI)
 - [PyYAML] (PYPI)
+- [PyGObject] (native)
+- [Keybinder] (native)
 - lib[VLC] (native, distributed with VLC player)
 
 # What works
@@ -80,14 +83,22 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 
 # Installation
 
-0. Install Python 3 and VLC.
+**Warning:** The AUR and PyPy packages called `python3-keybinder` will
+not work with Clay since you need to use the official bindings. Since
+Ubuntu seperated the official bindings into a different package but
+with the same name as the unofficial one it can cause some
+confusion. So if you get a `Namespace Keybinder not available` warning
+it is probably caused by this. So, for example, on Arch Linux you need
+the `libkeybinder3` package instead.
+
+0. Install Python 3, PyGObject, keybinder and VLC from your package manager.
 
 ## Method 1 (PyPi, automatic)
 
 Just install the player using `pip`:
 
 ```bash
-pip install clay-player
+pip install --user clay-player
 clay
 ```
 
@@ -95,10 +106,10 @@ clay
 
 1. Clone the source code.
 
-2. Create & activate virtualenv:
+2. Create & activate virtualenv with system packages:
 
     ```bash
-    virtualenv .env
+    virtualenv --system-site-packages --prompt="(clay) " .env
     source .env/bin/activate
     ```
 
@@ -204,4 +215,5 @@ Regards to [gmusicapi] and [VLC] who made this possible.
 [VLC]: https://wiki.videolan.org/python_bindings
 [urwid]: urwid.org/
 [pyyaml]: https://github.com/yaml/pyyaml
-
+[PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
+[Keybinder]: https://github.com/kupferlauncher/keybinder
