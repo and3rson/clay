@@ -10,13 +10,18 @@ from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
 from clay.log import Logger
 
+
+IS_INIT = False
+def report_error(error_msg):
+    "Print an error message to the debug screen"
+    Logger.get().error("{0}: {1}".format(error.__class__.__name__, error_msg))
+
 try:
     # pylint: disable=import-error
     import gi
     gi.require_version('Keybinder', '3.0')  # noqa
     gi.require_version('Gtk', '3.0')  # noqa
     from gi.repository import Keybinder, Gtk
-    IS_INIT = False
     # pylint: enable=import-error
 except ImportError as error:
     report_error(error)
@@ -29,10 +34,6 @@ except Exception as error:
     ERROR_MESSAGE = "There was unknown error: '{}'".format(error)
 else:
     IS_INIT = True
-
-def report_error(error_msg):
-    "Print an error message to the debug screen"
-    Logger.get().error("{0}: {1}".format(error.__class__.__name__, error_msg))
 
 
 class HotkeyManager(object):
