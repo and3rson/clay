@@ -9,6 +9,9 @@ Main app entrypoint.
 import sys
 sys.path.insert(0, '.')  # noqa
 
+
+import argparse
+import os
 import urwid
 
 from clay.player import Player
@@ -133,8 +136,8 @@ class AppWidget(urwid.Frame):
             for page
             in self.pages
         ]
-        self.current_page = None
 
+        self.current_page = None
         self.loop = None
 
         NotificationArea.set_app(self)
@@ -373,16 +376,58 @@ class AppWidget(urwid.Frame):
             action()
 
 
-def main():
+class MultilineVersionAction(argparse.Action):
     """
-    Application entrypoint.
+    An argparser action for multiple lines so we can display the copyright notice
+    Based on: https://stackoverflow.com/a/41147122
     """
+    version = "0.6.2"
+    author = "Andrew Dunai"
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+
+        self.prog = os.path.basename(sys.argv[0])
+        super(MultilineVersionAction, self).__init__(option_strings, dest, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.exit(message="""Clay {0}
+
+Copyright 2017 (C) {1} and Clay contributors.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+""".format(self.version, self.author))
+
+
+if __name__ == '__main__':
+    #pylint: disable-all
     app_widget = AppWidget()
+
+    parser = argparse.ArgumentParser(
+        prog="Clay",
+        description="Awesome standalone command line player for Google Play Music.",
+        epilog="This project is neither affiliated nor endorsed by Google.")
+
+    parser.add_argument(
+        "-v", "--version",
+        action=MultilineVersionAction)
+
+    parser.add_argument(
+        "--with-x-keybinds",
+        help="define global X keybinds (requires Keybinder and PyGObject)",
+        action='store_true')
+
+    args = parser.parse_args()
+
+    if args.version:
+        exit(0)
+
+    if args.with_x_keybinds:
+        Player.get().enable_xorg_bindings()
+
     loop = urwid.MainLoop(app_widget, PALETTE)
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()
-
-
-if __name__ == '__main__':
-    main()

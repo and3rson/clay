@@ -161,16 +161,6 @@ class Player(object):
 
         self.media_player.set_equalizer(self.equalizer)
 
-        # Check whether xorg is running
-        if os.environ.get("DISPLAY") is not None:
-            from clay.hotkeys import HotkeyManager
-            hotkey_manager = HotkeyManager.get()
-            hotkey_manager.play_pause += self.play_pause
-            hotkey_manager.next += self.next
-            hotkey_manager.prev += lambda: self.seek_absolute(0)
-        else:
-            self.logger.debug("X11 isn't running so we can't load the global keybinds")
-
         self._create_station_notification = None
         self._is_loading = False
         self.queue = Queue()
@@ -184,6 +174,18 @@ class Player(object):
             cls.instance = Player()
 
         return cls.instance
+
+    def enable_xorg_bindings(self):
+        """Enable the global X bindings using keybinder"""
+        if os.environ.get("DISPLAY") is None:
+            self.logger.debug("X11 isn't running so we can't load the global keybinds")
+            return
+
+        from clay.hotkeys import HotkeyManager
+        hotkey_manager = HotkeyManager.get()
+        hotkey_manager.play_pause += self.play_pause
+        hotkey_manager.next += self.next
+        hotkey_manager.prev += lambda: self.seek_absolute(0)
 
     def broadcast_state(self):
         """
