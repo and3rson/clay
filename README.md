@@ -186,7 +186,7 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 At some point, the app may fail. Possible reasons are app bugs,
 Google Play Music API issues, [gmusicapi] bugs, [urwid] bugs etc.
 
-If you encounter a problem, please feel free to submit an ![issue](https://github.com/and3rson/clay/issues).
+If you encounter a problem, please feel free to submit an [issue](https://github.com/and3rson/clay/issues).
 I'll try to figure it out ASAP.
 
 Most issues can be reproduced only with specific data coming from Google Play Music servers.
@@ -199,6 +199,11 @@ This will help me to investigate this issue.
 Made by Andrew Dunai.
 
 Regards to [gmusicapi] and [VLC] who made this possible.
+
+Special thanks to the people who contribute to this project:
+
+- [Valentijn (@ValentijnvdBeek)](https://github.com/ValentijnvdBeek)
+- [Sam Kingston (@sjkingo)](https://github.com/sjkingo)
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
