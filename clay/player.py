@@ -5,19 +5,18 @@ Media player built using libVLC.
 # pylint: disable=too-many-public-methods
 from random import randint
 import json
+import os
+
 try:  # Python 3.x
     from urllib.request import urlopen
 except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
-from clay import vlc
+from clay import vlc, meta
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
-from clay.hotkeys import HotkeyManager
 from clay.settings import Settings
-from clay import meta
 from clay.log import Logger
-
 
 class Queue(object):
     """
@@ -131,6 +130,8 @@ class Player(object):
 
     def __init__(self):
         assert self.__class__.instance is None, 'Can be created only once!'
+        self.logger = Logger.get()
+
         self.instance = vlc.Instance()
         self.instance.set_user_agent(
             meta.APP_NAME,
@@ -160,10 +161,15 @@ class Player(object):
 
         self.media_player.set_equalizer(self.equalizer)
 
-        hotkey_manager = HotkeyManager.get()
-        hotkey_manager.play_pause += self.play_pause
-        hotkey_manager.next += self.next
-        hotkey_manager.prev += lambda: self.seek_absolute(0)
+        # Check whether xorg is running
+        if os.environ.get("DISPLAY") is not None:
+            from clay.hotkeys import HotkeyManager
+            hotkey_manager = HotkeyManager.get()
+            hotkey_manager.play_pause += self.play_pause
+            hotkey_manager.next += self.next
+            hotkey_manager.prev += lambda: self.seek_absolute(0)
+        else:
+            self.logger.debug("X11 isn't running so we can't load the global keybinds")
 
         self._create_station_notification = None
         self._is_loading = False
@@ -341,19 +347,19 @@ class Player(object):
         if Settings.get_config().get('download_tracks', False):
             path = Settings.get_cached_file_path(track.store_id + '.mp3')
             if path is None:
-                Logger.get().debug('Track %s not in cache, downloading...', track.store_id)
+                self.logger.debug('Track %s not in cache, downloading...', track.store_id)
                 track.get_url(callback=self._download_track)
             else:
-                Logger.get().debug('Track %s in cache, playing', track.store_id)
+                self.logger.debug('Track %s in cache, playing', track.store_id)
                 self._play_ready(path, None, track)
         else:
-            Logger.get().debug('Starting to stream %s', track.store_id)
+            self.logger.debug('Starting to stream %s', track.store_id)
             track.get_url(callback=self._play_ready)
 
     def _download_track(self, url, error, track):
         if error:
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
-            Logger.get().error(
+            self.logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,
                 str(error)
@@ -371,7 +377,7 @@ class Player(object):
         self._is_loading = False
         if error:
             NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
-            Logger.get().error(
+            self.logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,
                 str(error)

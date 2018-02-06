@@ -3,8 +3,12 @@ Hotkeys management.
 Requires "gi" package and "Gtk" & "Keybinder" modules.
 """
 # pylint: disable=broad-except
-import sys
 import threading
+
+from clay.settings import Settings
+from clay.eventhook import EventHook
+from clay.notifications import NotificationArea
+from clay.log import Logger
 
 try:
     # pylint: disable=import-error
@@ -12,18 +16,23 @@ try:
     gi.require_version('Keybinder', '3.0')  # noqa
     gi.require_version('Gtk', '3.0')  # noqa
     from gi.repository import Keybinder, Gtk
-    # pylint: enable=import-error
-except Exception as error:
-    sys.stderr.write('Could not import Keybinder and Gtk. Error was: "{}"\n'.format(error))
-    sys.stderr.write('Global shortcuts will not work.\n')
     IS_INIT = False
-    ERROR = str(error)
+    # pylint: enable=import-error
+except ImportError as error:
+    report_error(error)
+    ERROR_MESSAGE = "Couldn't import PyGObject"
+except ValueError as error:
+    report_error(error)
+    ERROR_MESSAGE = "Couldn't find the Keybinder and/or Gtk modules"
+except Exception as error:
+    report_error(error)
+    ERROR_MESSAGE = "There was unknown error: '{}'".format(error)
 else:
     IS_INIT = True
 
-from clay.settings import Settings
-from clay.eventhook import EventHook
-from clay.notifications import NotificationArea
+def report_error(error_msg):
+    "Print an error message to the debug screen"
+    Logger.get().error("{0}: {1}".format(error.__class__.__name__, error_msg))
 
 
 class HotkeyManager(object):
@@ -54,10 +63,10 @@ class HotkeyManager(object):
 
             threading.Thread(target=Gtk.main).start()
         else:
-            NotificationArea.notify(
-                'Could not import Keybinder and Gtk. Error was: "{}"\n'
-                'Global shortcuts will not work.'.format(ERROR)
-            )
+            Logger.get().debug("Not loading the global shortcuts.")
+            NotificationArea.notify(ERROR_MESSAGE +
+                                    ", this means the global shortcuts will not work.\n" +
+                                    "You can check the log for more details.")
 
     @classmethod
     def get(cls):

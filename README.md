@@ -52,8 +52,8 @@ Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
 - [gmusicapi] (PYPI)
 - [urwid] (PYPI)
 - [PyYAML] (PYPI)
-- [PyGObject] (native)
-- [Keybinder] (native)
+- [PyGObject] (native, optional, used for global X keybinds)
+- [Keybinder] (native, optional, used for global X keybinds)
 - lib[VLC] (native, distributed with VLC player)
 
 # What works
@@ -91,7 +91,9 @@ confusion. So if you get a `Namespace Keybinder not available` warning
 it is probably caused by this. So, for example, on Arch Linux you need
 the `libkeybinder3` package instead.
 
-0. Install Python 3, PyGObject, keybinder and VLC from your package manager.
+1. Install Python 3, and VLC from your package manager.
+2. Optionally, you can install PyGObject, and keybinder plus bindings
+   if you want global X keybinds.
 
 ## Method 1 (PyPi, automatic)
 
