@@ -194,6 +194,12 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification or popup
 - `<CTRL> x` - exit app
 
+## X keybinds
+**NOTE:** you need to pass the `--with-x-keybinds` flag for these to work
+- `<XF86AudioPlay>` - play/pause the song
+- `<XF86AudioNext>` - play the next song
+- `<XF86AudioPrev>` - play previous song
+
 # Troubleshooting
 
 At some point, the app may fail. Possible reasons are app bugs,
