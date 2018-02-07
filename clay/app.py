@@ -9,8 +9,12 @@ Main app entrypoint.
 import sys
 sys.path.insert(0, '.')  # noqa
 
+
+import argparse
+import os
 import urwid
 
+from clay import meta
 from clay.player import Player
 from clay.playbar import PlayBar
 from clay.pages.debug import DebugPage
@@ -22,6 +26,7 @@ from clay.pages.settings import SettingsPage
 from clay.settings import Settings
 from clay.notifications import NotificationArea
 from clay.gp import GP
+
 
 BG = '#222'
 
@@ -133,8 +138,8 @@ class AppWidget(urwid.Frame):
             for page
             in self.pages
         ]
-        self.current_page = None
 
+        self.current_page = None
         self.loop = None
 
         NotificationArea.set_app(self)
@@ -373,16 +378,50 @@ class AppWidget(urwid.Frame):
             action()
 
 
-def main():
+class MultilineVersionAction(argparse.Action):
     """
-    Application entrypoint.
+    An argparser action for multiple lines so we can display the copyright notice
+    Based on: https://stackoverflow.com/a/41147122
     """
+    version = "0.6.2"
+    author = "Andrew Dunai"
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+
+        self.prog = os.path.basename(sys.argv[0])
+        super(MultilineVersionAction, self).__init__(option_strings, dest, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.exit(message=meta.COPYRIGHT_MESSAGE)
+
+
+if __name__ == '__main__':
+    # pylint: disable-all
+    parser = argparse.ArgumentParser(
+        prog=meta.APP_NAME,
+        description=meta.DESCRIPTION,
+        epilog="This project is neither affiliated nor endorsed by Google.")
+
+    parser.add_argument("-v", "--version", action=MultilineVersionAction)
+
+    parser.add_argument(
+        "--with-x-keybinds",
+        help="define global X keybinds (requires Keybinder and PyGObject)",
+        action='store_true')
+
+    args = parser.parse_args()
+
+    if args.version:
+        exit(0)
+
+    if args.with_x_keybinds:
+        Player.get().enable_xorg_bindings()
+
+    # Run the actual program
     app_widget = AppWidget()
     loop = urwid.MainLoop(app_widget, PALETTE)
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()
-
-
-if __name__ == '__main__':
-    main()
