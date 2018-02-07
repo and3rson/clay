@@ -14,6 +14,7 @@ import argparse
 import os
 import urwid
 
+from clay import meta
 from clay.player import Player
 from clay.playbar import PlayBar
 from clay.pages.debug import DebugPage
@@ -25,6 +26,7 @@ from clay.pages.settings import SettingsPage
 from clay.settings import Settings
 from clay.notifications import NotificationArea
 from clay.gp import GP
+
 
 BG = '#222'
 
@@ -392,27 +394,17 @@ class MultilineVersionAction(argparse.Action):
         super(MultilineVersionAction, self).__init__(option_strings, dest, nargs=0, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        parser.exit(message="""Clay {0}
-
-Copyright 2017 (C) {1} and Clay contributors.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-""".format(self.version, self.author))
+        parser.exit(message=meta.COPYRIGHT_MESSAGE)
 
 
 if __name__ == '__main__':
-    #pylint: disable-all
-    app_widget = AppWidget()
-
+    # pylint: disable-all
     parser = argparse.ArgumentParser(
-        prog="Clay",
-        description="Awesome standalone command line player for Google Play Music.",
+        prog=meta.APP_NAME,
+        description=meta.DESCRIPTION,
         epilog="This project is neither affiliated nor endorsed by Google.")
 
-    parser.add_argument(
-        "-v", "--version",
-        action=MultilineVersionAction)
+    parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
     parser.add_argument(
         "--with-x-keybinds",
@@ -427,6 +419,8 @@ if __name__ == '__main__':
     if args.with_x_keybinds:
         Player.get().enable_xorg_bindings()
 
+    # Run the actual program
+    app_widget = AppWidget()
     loop = urwid.MainLoop(app_widget, PALETTE)
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
