@@ -30,7 +30,7 @@ class DebugItem(urwid.AttrMap):
             )
         ])
 
-        super(DebugItem, self).__init__(self.columns, 'panel', 'panel_focus')
+        super(DebugItem, self).__init__(self.columns, 'line1', 'line1_focus')
 
     def keypress(self, _, key):
         """

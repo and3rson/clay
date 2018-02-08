@@ -28,49 +28,53 @@ from clay.notifications import NotificationArea
 from clay.gp import GP
 
 
-BG = '#222'
+def create_palette(transparent=False):
+    if transparent:
+        bg = ''
+    else:
+        bg = '#222'
 
-PALETTE = [
-    (None, '', '', '', '#FFF', BG),
-    ('default', '', '', '', '#FFF', BG),
-    ('logo', '', '', '', '#F54', BG),
+    return [
+        (None, '', '', '', '#FFF', bg),
+        ('default', '', '', '', '#FFF', bg),
+        ('logo', '', '', '', '#F54', bg),
 
-    ('bg', '', '', '', '#FFF', '#222'),
-    ('primary', '', '', '', '#F54', '#FFF'),
-    ('secondary', '', '', '', '#17F', '#FFF'),
-    ('selected', '', '', '', '#FFF', '#444'),
-    ('primary_inv', '', '', '', '#FFF', '#17F'),
-    ('secondary_inv', '', '', '', '#FFF', '#F17'),
-    ('progress', '', '', '', '#FFF', '#F54'),
-    ('progress_remaining', '', '', '', '#FFF', '#444'),
+        ('bg', '', '', '', '#FFF', '#222'),
+        ('primary', '', '', '', '#F54', '#FFF'),
+        ('secondary', '', '', '', '#17F', '#FFF'),
+        ('selected', '', '', '', '#FFF', '#444'),
+        ('primary_inv', '', '', '', '#FFF', '#17F'),
+        ('secondary_inv', '', '', '', '#FFF', '#F17'),
+        ('progress', '', '', '', '#FFF', '#F54'),
+        ('progress_remaining', '', '', '', '#FFF', '#444'),
 
-    ('progressbar_done', '', '', '', '#F54', BG),
-    ('progressbar_done_paused', '', '', '', '', BG),
-    ('progressbar_remaining', '', '', '', '#222', BG),
+        ('progressbar_done', '', '', '', '#F54', bg),
+        ('progressbar_done_paused', '', '', '', '', bg),
+        ('progressbar_remaining', '', '', '', '#222', bg),
 
-    ('title-idle', '', '', '', '', BG),
-    ('title-playing', '', '', '', '#F54', BG),
+        ('title-idle', '', '', '', '', bg),
+        ('title-playing', '', '', '', '#F54', bg),
 
-    ('panel', '', '', '', '#FFF', '#222'),
-    ('panel_focus', '', '', '', '#FFF', '#F54'),
-    ('panel_divider', '', '', '', '#444', '#222'),
-    ('panel_divider_focus', '', '', '', '#444', '#F54'),
+        ('panel', '', '', '', '#FFF', '#222'),
+        ('panel_focus', '', '', '', '#FFF', '#F54'),
+        ('panel_divider', '', '', '', '#444', '#222'),
+        ('panel_divider_focus', '', '', '', '#444', '#F54'),
 
-    ('line1', '', '', '', '#FFF', BG),
-    ('line1_focus', '', '', '', '#FFF', '#333'),
-    ('line1_active', '', '', '', '#F54', BG),
-    ('line1_active_focus', '', '', '', '#F54', '#333'),
-    ('line2', '', '', '', '#AAA', BG),
-    ('line2_focus', '', '', '', '#AAA', '#333'),
+        ('line1', '', '', '', '#FFF', bg),
+        ('line1_focus', '', '', '', '#FFF', '#333'),
+        ('line1_active', '', '', '', '#F54', bg),
+        ('line1_active_focus', '', '', '', '#F54', '#333'),
+        ('line2', '', '', '', '#AAA', bg),
+        ('line2_focus', '', '', '', '#AAA', '#333'),
 
-    ('input', '', '', '', '#FFF', '#444'),
-    ('input_focus', '', '', '', '#FFF', '#F54'),
+        ('input', '', '', '', '#FFF', '#444'),
+        ('input_focus', '', '', '', '#FFF', '#F54'),
 
-    ('flag', '', '', '', '#AAA', BG),
-    ('flag-active', '', '', '', '#F54', BG),
+        ('flag', '', '', '', '#AAA', bg),
+        ('flag-active', '', '', '', '#F54', bg),
 
-    ('notification', '', '', '', '#F54', '#222'),
-]
+        ('notification', '', '', '', '#F54', '#222'),
+    ]
 
 
 class AppWidget(urwid.Frame):
@@ -412,6 +416,11 @@ def main():
         help="define global X keybinds (requires Keybinder and PyGObject)",
         action='store_true')
 
+    parser.add_argument(
+        "--transparent",
+        help="use transparent background",
+        action='store_true')
+
     args = parser.parse_args()
 
     if args.version:
@@ -422,7 +431,7 @@ def main():
 
     # Run the actual program
     app_widget = AppWidget()
-    loop = urwid.MainLoop(app_widget, PALETTE)
+    loop = urwid.MainLoop(app_widget, create_palette(args.transparent))
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()
