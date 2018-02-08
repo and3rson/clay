@@ -397,7 +397,8 @@ class MultilineVersionAction(argparse.Action):
         parser.exit(message=meta.COPYRIGHT_MESSAGE)
 
 
-if __name__ == '__main__':
+def main():
+    # This method is required to allow Clay to be ran as script via setuptools installation.
     # pylint: disable-all
     parser = argparse.ArgumentParser(
         prog=meta.APP_NAME,
@@ -425,3 +426,7 @@ if __name__ == '__main__':
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()
+
+
+if __name__ == '__main__':
+    main()
