@@ -199,6 +199,7 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 
 - `<ESC>` or `<CTRL> /` or <CTRL> _ - close most recent notification or popup
 - `<CTRL> x` - exit app
+- To filter songs just start typing words. Hit `<ESC>` to cancel.
 
 ## X keybinds
 **NOTE:** you need to pass the `--with-x-keybinds` flag for these to work
