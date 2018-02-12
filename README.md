@@ -32,13 +32,13 @@ This project is neither affiliated nor endorsed by Google.
 
 It's being actively developed, but is still in the early beta stage, so many features are missing and/or may be bugged.
 
-(Click the image below to see the screencast.)
-
-[![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png?1)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
-
 Screenshot:
 
 ![Clay Player screenshot](./images/clay-screenshot.png)
+
+Click the image below to see the screencast:
+
+[![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png?1)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
 
 # Quick start
 
