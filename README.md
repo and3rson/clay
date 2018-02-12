@@ -1,4 +1,4 @@
-- [About](#clay-alpha)
+- [About](#clay-beta)
 - [Quick start](#quick-start)
 - [Documentation](#documentation)
 - [Requirements](#requirements)
@@ -18,7 +18,7 @@
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
 
-# Clay [alpha]
+# Clay [beta]
 
 [![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest)
 
@@ -28,7 +28,7 @@ This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] librar
 
 This project is neither affiliated nor endorsed by Google.
 
-It's being actively developed, but is still in the early alpha version, so many features are missing and/or may be bugged.
+It's being actively developed, but is still in the early beta stage, so many features are missing and/or may be bugged.
 
 (Click the image below to see the screencast.)
 
