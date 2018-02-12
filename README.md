@@ -36,6 +36,10 @@ It's being actively developed, but is still in the early beta stage, so many fea
 
 [![asciicast](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea.png?1)](https://asciinema.org/a/69ygwYGRDyB5a7pFgyrwWo1ea)
 
+Screenshot:
+
+![Clay Player screenshot](./images/clay-screenshot.png)
+
 # Quick start
 
 ```bash
