@@ -1,3 +1,5 @@
+![Clay Player](./images/clay-banner.png)
+
 - [About](#clay-beta)
 - [Quick start](#quick-start)
 - [Documentation](#documentation)
