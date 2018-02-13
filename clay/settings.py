@@ -78,6 +78,12 @@ class _Settings(object):
             self._config = yaml.load(settings_file.read())
 
     def _commit_edits(self, config):
+        """
+        Write config to file.
+
+        This method is supposed to be called only
+        from :py:meth:`~._SettingsEditor.__exit__`.
+        """
         self._config.update(config)
         with open(self._config_file_path, 'w') as settings_file:
             settings_file.write(yaml.dump(self._config, default_flow_style=False))
