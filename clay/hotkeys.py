@@ -5,7 +5,7 @@ Requires "gi" package and "Gtk" & "Keybinder" modules.
 # pylint: disable=broad-except
 import threading
 
-from clay.settings import Settings
+from clay.settings import settings
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
 from clay.log import Logger
@@ -84,8 +84,7 @@ class HotkeyManager(object):
         """
         Load hotkey config from settings.
         """
-        config = Settings.get_config()
-        hotkeys = config.get('hotkeys', {})
+        hotkeys = settings.get('hotkeys', {})
         for operation, default_key in HotkeyManager.DEFAULT_HOTKEYS.items():
             if operation not in hotkeys or not hotkeys[operation]:
                 hotkeys[operation] = default_key

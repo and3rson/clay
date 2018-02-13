@@ -15,8 +15,9 @@ except ImportError:  # Python 2.x
 from clay import vlc, meta
 from clay.eventhook import EventHook
 from clay.notifications import NotificationArea
-from clay.settings import Settings
+from clay.settings import settings
 from clay.log import Logger
+
 
 class Queue(object):
     """
@@ -346,8 +347,8 @@ class Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if Settings.get_config().get('download_tracks', False):
-            path = Settings.get_cached_file_path(track.store_id + '.mp3')
+        if settings.get('download_tracks', False):
+            path = settings.get_cached_file_path(track.store_id + '.mp3')
             if path is None:
                 self.logger.debug('Track %s not in cache, downloading...', track.store_id)
                 track.get_url(callback=self._download_track)
@@ -368,7 +369,7 @@ class Player(object):
             )
             return
         response = urlopen(url)
-        path = Settings.save_file_to_cache(track.store_id + '.mp3', response.read())
+        path = settings.save_file_to_cache(track.store_id + '.mp3', response.read())
         self._play_ready(path, None, track)
 
     def _play_ready(self, url, error, track):
