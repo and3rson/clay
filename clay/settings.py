@@ -4,7 +4,6 @@ Application settings manager.
 import os
 import errno
 import yaml
-
 import appdirs
 
 
@@ -15,26 +14,24 @@ class Settings(object):
     @classmethod
     def get_config_filename(cls):
         """
-        Return full path to config file.
+        Returns full path to config file and will create it if it doesn't
+        already exist. 
         """
         filedir = appdirs.user_config_dir('clay', 'Clay')
+        path = os.path.join(filedir, 'config.yaml')
 
+        if os.path.exists(path):
+            return path
+        
         try:
             os.makedirs(filedir)
         except OSError as error:
             if error.errno != errno.EEXIST:
                 raise
 
-        try:
-            os.makedirs(appdirs.user_cache_dir('clay', 'Clay'))
-        except OSError as error:
-            if error.errno != errno.EEXIST:
-                raise
-
-        path = os.path.join(filedir, 'config.yaml')
-        if not os.path.exists(path):
-            with open(path, 'w') as settings:
-                settings.write('{}')
+        with open(path, 'w') as settings:
+            settings.write('{}')
+            
         return path
 
     @classmethod
