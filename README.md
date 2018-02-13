@@ -32,6 +32,11 @@ This project is neither affiliated nor endorsed by Google.
 
 It's being actively developed, but is still in the early beta stage, so many features are missing and/or may be bugged.
 
+We're on IRC!
+
+- Server: irc.oftc.net
+- Channel: **#clay**
+
 Screenshot:
 
 ![Clay Player screenshot](./images/clay-screenshot.png)
