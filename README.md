@@ -22,7 +22,7 @@
 
 # Clay [beta]
 
-[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest) [![PyPI version](https://badge.fury.io/py/clay-player.svg)](https://badge.fury.io/py/clay-player)
 
 Standalone command line player for Google Play Music.
 
