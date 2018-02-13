@@ -346,7 +346,7 @@ class Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if Settings.get_config().get('download_tracks', False):
+        if Settings.get_config("play_settings").get('download_tracks', False):
             path = Settings.get_cached_file_path(track.store_id + '.mp3')
             if path is None:
                 self.logger.debug('Track %s not in cache, downloading...', track.store_id)

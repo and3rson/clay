@@ -29,52 +29,10 @@ from clay.gp import GP
 
 
 def create_palette(transparent=False):
-    if transparent:
-        bg = ''
-    else:
-        bg = '#222'
+    config = Settings.get_config('colours')
 
-    return [
-        (None, '', '', '', '#FFF', bg),
-        ('default', '', '', '', '#FFF', bg),
-        ('logo', '', '', '', '#F54', bg),
-
-        ('bg', '', '', '', '#FFF', '#222'),
-        ('primary', '', '', '', '#F54', '#FFF'),
-        ('secondary', '', '', '', '#17F', '#FFF'),
-        ('selected', '', '', '', '#FFF', '#444'),
-        ('primary_inv', '', '', '', '#FFF', '#17F'),
-        ('secondary_inv', '', '', '', '#FFF', '#F17'),
-        ('progress', '', '', '', '#FFF', '#F54'),
-        ('progress_remaining', '', '', '', '#FFF', '#444'),
-
-        ('progressbar_done', '', '', '', '#F54', bg),
-        ('progressbar_done_paused', '', '', '', '', bg),
-        ('progressbar_remaining', '', '', '', '#222', bg),
-
-        ('title-idle', '', '', '', '', bg),
-        ('title-playing', '', '', '', '#F54', bg),
-
-        ('panel', '', '', '', '#FFF', '#222'),
-        ('panel_focus', '', '', '', '#FFF', '#F54'),
-        ('panel_divider', '', '', '', '#444', '#222'),
-        ('panel_divider_focus', '', '', '', '#444', '#F54'),
-
-        ('line1', '', '', '', '#FFF', bg),
-        ('line1_focus', '', '', '', '#FFF', '#333'),
-        ('line1_active', '', '', '', '#F54', bg),
-        ('line1_active_focus', '', '', '', '#F54', '#333'),
-        ('line2', '', '', '', '#AAA', bg),
-        ('line2_focus', '', '', '', '#AAA', '#333'),
-
-        ('input', '', '', '', '#FFF', '#444'),
-        ('input_focus', '', '', '', '#FFF', '#F54'),
-
-        ('flag', '', '', '', '#AAA', bg),
-        ('flag-active', '', '', '', '#F54', bg),
-
-        ('notification', '', '', '', '#F54', '#222'),
-    ]
+    return [(name, '', '', '', config[name]['foreground'], config[name]['background'])
+            for name in config]
 
 
 class AppWidget(urwid.Frame):
@@ -185,7 +143,7 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        config = Settings.get_config()
+        config = Settings.get_config('play_settings')
         username, password, device_id, authtoken = [
             config.get(x)
             for x
@@ -387,9 +345,6 @@ class MultilineVersionAction(argparse.Action):
     An argparser action for multiple lines so we can display the copyright notice
     Based on: https://stackoverflow.com/a/41147122
     """
-    version = "0.6.2"
-    author = "Andrew Dunai"
-
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         if nargs is not None:
             raise ValueError("nargs not allowed")

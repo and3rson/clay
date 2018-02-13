@@ -7,6 +7,8 @@ import yaml
 import appdirs
 
 
+# Rewrite this so it keeps the settings in memory and writes on exit
+# It is sort of silly to use so much IO for simple tasks
 class Settings(object):
     """
     Settings management class.
@@ -15,14 +17,14 @@ class Settings(object):
     def get_config_filename(cls):
         """
         Returns full path to config file and will create it if it doesn't
-        already exist. 
+        already exist.
         """
         filedir = appdirs.user_config_dir('clay', 'Clay')
         path = os.path.join(filedir, 'config.yaml')
 
         if os.path.exists(path):
             return path
-        
+
         try:
             os.makedirs(filedir)
         except OSError as error:
@@ -31,23 +33,23 @@ class Settings(object):
 
         with open(path, 'w') as settings:
             settings.write('{}')
-            
+
         return path
 
     @classmethod
-    def get_config(cls):
+    def get_config(cls, section):
         """
         Read config dictionary.
         """
         with open(Settings.get_config_filename(), 'r') as settings:
-            return yaml.load(settings.read())
+            return yaml.load(settings.read()).get(section)
 
     @classmethod
     def set_config(cls, new_config):
         """
         Write config dictionary.
         """
-        config = Settings.get_config()
+        config = Settings.get_config('play_settings')
         config.update(new_config)
         with open(Settings.get_config_filename(), 'w') as settings:
             settings.write(yaml.dump(config, default_flow_style=False))

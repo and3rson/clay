@@ -84,7 +84,7 @@ class HotkeyManager(object):
         """
         Load hotkey config from settings.
         """
-        config = Settings.get_config()
+        config = Settings.get_config('play_settings')
         hotkeys = config.get('hotkeys', {})
         for operation, default_key in HotkeyManager.DEFAULT_HOTKEYS.items():
             if operation not in hotkeys or not hotkeys[operation]:

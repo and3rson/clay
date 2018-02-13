@@ -1,0 +1,124 @@
+
+play_settings:
+  authtoken: 
+  device_id: 
+  download_tracks: false
+  password: 
+  username: 
+
+colours:
+  background: &def
+    foreground: "#FFF"
+    background: "#222"
+    
+  default: *def
+  None: *def
+
+  logo:
+    <<: *def
+    foreground: "#F54"
+
+  primary:
+    foreground: "#F54"
+    background: "#FFF"
+
+  secondary:
+    foreground: "#17F"
+    background: "#FFF"
+
+  selected:
+    foreground: "#FFF"
+    background: "#444"
+
+  primary_inv:
+    foreground: "#FFF"
+    background: "#17F"
+
+  secondary_inv:
+    foreground: "#FFF"
+    background: "#F17"
+
+  progress:
+    foreground: "#FFF"
+    background: "#F54"
+
+  progress_remaining:
+    foreground: "#FFF"
+    background: "#444"
+
+  progressbar_done:
+    <<: *def
+    foreground: "#F54"
+
+  progressbar_done_paused:
+    <<: *def
+    foreground: null
+
+  progressbar_remaining:
+    <<: *def
+    foreground: "#222"
+
+  title-idle:
+    <<: *def
+    foreground: null
+
+  title-playing:
+    <<: *def
+    foreground: "#F54"
+
+  panel:
+    foreground: "#FFF"
+    background: "#222"
+
+  panel_focus:
+    foreground: "#FFF"
+    background: "#F54"
+
+  panel_divider:
+    foreground: "#444"
+    background: "#222"
+
+  panel_divider_focus:
+    foreground: "#444"
+    background: '#F54'
+
+  line1: *def
+  line1_focus:
+    foreground: "#FFF"
+    background: "#333"
+
+  line1_active:
+    foreground: "#F54"
+    <<: *def
+
+  line1_active_focus:
+    foreground: "#F54"
+    background: "#333"
+
+  line2:
+    foreground: "#AAA"
+    <<: *def
+
+  line2_focus:
+    foreground: "#AAA"
+    background: "#333"
+
+  input:
+    foreground: "#FFF"
+    background: "#444"
+
+  input_focus:
+    foreground: "#FFF"
+    background: "#F54"
+
+  flag:
+    foreground: "#AAA"
+    <<: *def
+
+  flag-active:
+    foreground: "#F54"
+    <<: *def
+
+  notification:
+    foreground: "#F54"
+    background: "#222"

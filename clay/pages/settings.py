@@ -128,7 +128,8 @@ class SettingsPage(urwid.Columns, AbstractPage):
 
     def __init__(self, app):
         self.app = app
-        config = Settings.get_config()
+        config = Settings.get_config('play_settings')
+
         self.username = urwid.Edit(
             edit_text=config.get('username', '')
         )
