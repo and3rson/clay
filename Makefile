@@ -26,4 +26,4 @@ docs:
 
 check:
 	pylint clay --ignore-imports=y
-	radon cc -a -s -nB -e clay/vlc.py clay
+	radon cc -a -s -nC -e clay/vlc.py clay
