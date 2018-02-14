@@ -4,7 +4,7 @@ PlayBar widget.
 # pylint: disable=too-many-instance-attributes
 import urwid
 
-from clay.player import Player
+from clay.player import player
 from clay import meta
 
 
@@ -98,7 +98,6 @@ class PlayBar(urwid.Pile):
         ])
         self.update()
 
-        player = Player.get()
         player.media_position_changed += self.update
         player.media_state_changed += self.update
         player.track_changed += self.update
@@ -115,7 +114,6 @@ class PlayBar(urwid.Pile):
         """
         Return the style for current playback state.
         """
-        player = Player.get()
         if player.is_loading or player.is_playing:
             return 'title-playing'
         return 'title-idle'
@@ -124,7 +122,6 @@ class PlayBar(urwid.Pile):
         """
         Return text for display in this bar.
         """
-        player = Player.get()
         track = player.get_current_track()
         if track is None:
             return u'{} {}'.format(
@@ -153,7 +150,6 @@ class PlayBar(urwid.Pile):
         Called when something unrelated to completion value changes,
         e.g. current track or playback flags.
         """
-        player = Player.get()
         self.text.set_text(self.get_text())
         self.progressbar.set_progress(player.get_play_progress())
         self.progressbar.set_done_style(

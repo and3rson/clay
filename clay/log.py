@@ -8,7 +8,7 @@ from datetime import datetime
 from clay.eventhook import EventHook
 
 
-class LoggerRecord(object):
+class _LoggerRecord(object):
     """
     Represents a logger record.
     """
@@ -40,17 +40,14 @@ class LoggerRecord(object):
         return self._message % self._args
 
 
-class Logger(object):
+class _Logger(object):
     """
     Global logger.
 
     Allows subscribing to log events.
     """
-    instance = None
 
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
-
         self.logs = []
         self.logfile = open('/tmp/clay.log', 'w')
 
@@ -58,23 +55,13 @@ class Logger(object):
 
         self.on_log_event = EventHook()
 
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.Logger` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = Logger()
-
-        return cls.instance
-
     def log(self, level, message, *args):
         """
         Add log item.
         """
         self._lock.acquire()
         try:
-            logger_record = LoggerRecord(level, message, args)
+            logger_record = _LoggerRecord(level, message, args)
             self.logs.append(logger_record)
             self.logfile.write('{} {:8} {}\n'.format(
                 logger_record.formatted_timestamp,
@@ -117,3 +104,6 @@ class Logger(object):
         Return all logs.
         """
         return self.logs
+
+
+logger = _Logger()  # pylint: disable=invalid-name

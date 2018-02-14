@@ -4,7 +4,7 @@ Notification widgets.
 import urwid
 
 
-class Notification(urwid.Columns):
+class _Notification(urwid.Columns):
     """
     Single notification widget.
     Can be updated or closed.
@@ -16,7 +16,7 @@ class Notification(urwid.Columns):
         self._id = notification_id
         self.text = urwid.Text('')
         self._set_text(message)
-        super(Notification, self).__init__([
+        super(_Notification, self).__init__([
             urwid.AttrWrap(
                 urwid.Columns([
                     self.text,
@@ -41,7 +41,7 @@ class Notification(urwid.Columns):
         message = '\n'.join([
             message[0]
         ] + ['    {}'.format(line) for line in message[1:]])
-        self.text.set_text(Notification.TEMPLATE.format(message))
+        self.text.set_text(_Notification.TEMPLATE.format(message))
 
     def update(self, message):
         """
@@ -50,7 +50,7 @@ class Notification(urwid.Columns):
         self._set_text(message)
         if not self.is_alive:
             self.area.append_notification(self)
-        self.area.__class__.app.redraw()
+        self.area.app.redraw()
 
     @property
     def is_alive(self):
@@ -70,73 +70,36 @@ class Notification(urwid.Columns):
             if notification is self:
                 self.area.contents.remove((notification, props))
 
-        if self.area.__class__.app is not None:
-            self.area.__class__.app.redraw()
+        if self.area.app is not None:
+            self.area.app.redraw()
 
 
-class NotificationArea(urwid.Pile):
+class _NotificationArea(urwid.Pile):
     """
     Notification area widget.
     """
-    instance = None
-    app = None
 
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
+        self.app = None
         self.last_id = 0
         self.notifications = {}
-        super(NotificationArea, self).__init__([])
+        super(_NotificationArea, self).__init__([])
 
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.NotificationArea` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = NotificationArea()
-
-        return cls.instance
-
-    @classmethod
-    def set_app(cls, app):
+    def set_app(self, app):
         """
         Set app instance.
 
         Required for proper screen redraws when
         new notifications are created asynchronously.
         """
-        cls.app = app
+        self.app = app
 
-    @classmethod
-    def notify(cls, message):
-        """
-        Create new notification with message.
-        This is a class method.
-        """
-        return cls.get().do_notify(message)
-
-    @classmethod
-    def close_all(cls):
-        """
-        Close all notfiications.
-        This is a class method.
-        """
-        cls.get().do_close_all()
-
-    @classmethod
-    def close_newest(cls):
-        """
-        Close newest notification.
-        This is a class method.
-        """
-        cls.get().do_close_newest()
-
-    def do_notify(self, message):
+    def notify(self, message):
         """
         Create new notification with message.
         """
         self.last_id += 1
-        notification = Notification(self, self.last_id, message)
+        notification = _Notification(self, self.last_id, message)
         self.append_notification(notification)
         return notification
 
@@ -150,20 +113,23 @@ class NotificationArea(urwid.Pile):
                 ('weight', 1)
             )
         )
-        if self.__class__.app is not None:
-            self.__class__.app.redraw()
+        if self.app is not None:
+            self.app.redraw()
 
-    def do_close_all(self):
+    def close_all(self):
         """
         Close all notifications.
         """
         while self.contents:
             self.contents[0][0].close()
 
-    def do_close_newest(self):
+    def close_newest(self):
         """
         Close newest notification
         """
         if not self.contents:
             return
         self.contents[-1][0].close()
+
+
+notification_area = _NotificationArea()  # pylint: disable=invalid-name

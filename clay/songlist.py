@@ -12,9 +12,9 @@ except ImportError:
     # Python 2.3
     from string import letters as ascii_letters
 import urwid
-from clay.notifications import NotificationArea
-from clay.player import Player
-from clay.gp import GP
+from clay.notifications import notification_area
+from clay.player import player
+from clay.gp import gp
 from clay.clipboard import copy
 from clay.settings import settings
 
@@ -113,7 +113,7 @@ class SongListItem(urwid.Pile):
             )
         )
         if settings.get_is_file_cached(self.track.filename):
-            self.line1_right.set_text(u'\u25bc Cached')
+            self.line1_right.set_text(u' \u25bc Cached')
         else:
             self.line1_right.set_text(u'')
         self.line2.set_text(
@@ -214,7 +214,7 @@ class SongListBoxPopup(urwid.LineBox):
             'panel_divider',
             'panel_divider_focus'
         ))
-        if not GP.get().get_track_by_id(songitem.track.id):
+        if not gp.get_track_by_id(songitem.track.id):
             options.append(urwid.AttrWrap(
                 urwid.Button('Add to my library', on_press=self.add_to_my_library),
                 'panel',
@@ -241,7 +241,7 @@ class SongListBoxPopup(urwid.LineBox):
             'panel_divider',
             'panel_divider_focus'
         ))
-        if self.songitem.track in Player.get().get_queue_tracks():
+        if self.songitem.track in player.get_queue_tracks():
             options.append(urwid.AttrWrap(
                 urwid.Button('Remove from queue', on_press=self.remove_from_queue),
                 'panel',
@@ -282,11 +282,11 @@ class SongListBoxPopup(urwid.LineBox):
             Show notification with song addition result.
             """
             if error or not result:
-                NotificationArea.notify('Error while adding track to my library: {}'.format(
+                notification_area.notify('Error while adding track to my library: {}'.format(
                     str(error) if error else 'reason is unknown :('
                 ))
             else:
-                NotificationArea.notify('Track added to library!')
+                notification_area.notify('Track added to library!')
         self.songitem.track.add_to_my_library_async(callback=on_add_to_my_library)
         self.close()
 
@@ -299,11 +299,11 @@ class SongListBoxPopup(urwid.LineBox):
             Show notification with song removal result.
             """
             if error or not result:
-                NotificationArea.notify('Error while removing track from my library: {}'.format(
+                notification_area.notify('Error while removing track from my library: {}'.format(
                     str(error) if error else 'reason is unknown :('
                 ))
             else:
-                NotificationArea.notify('Track removed from library!')
+                notification_area.notify('Track removed from library!')
         self.songitem.track.remove_from_my_library_async(callback=on_remove_from_my_library)
         self.close()
 
@@ -311,21 +311,21 @@ class SongListBoxPopup(urwid.LineBox):
         """
         Appends related track to queue.
         """
-        Player.get().append_to_queue(self.songitem.track)
+        player.append_to_queue(self.songitem.track)
         self.close()
 
     def remove_from_queue(self, _):
         """
         Removes related track from queue.
         """
-        Player.get().remove_from_queue(self.songitem.track)
+        player.remove_from_queue(self.songitem.track)
         self.close()
 
     def create_station(self, _):
         """
         Create a station from this track.
         """
-        Player.get().create_station_from_track(self.songitem.track)
+        player.create_station_from_track(self.songitem.track)
         self.close()
 
     def copy_url(self, _):
@@ -355,7 +355,6 @@ class SongListBox(urwid.Frame):
         self.tracks = []
         self.walker = urwid.SimpleFocusListWalker([])
 
-        player = Player.get()
         player.track_changed += self.track_changed
         player.media_state_changed += self.media_state_changed
 
@@ -443,7 +442,7 @@ class SongListBox(urwid.Frame):
         """
         Convert list of track data items into list of :class:`.SongListItem` instances.
         """
-        current_track = Player.get().get_current_track()
+        current_track = player.get_current_track()
         items = []
         current_index = None
         for index, track in enumerate(tracks):
@@ -476,7 +475,6 @@ class SongListBox(urwid.Frame):
         Toggles track playback state or loads entire playlist
         that contains current track into player queue.
         """
-        player = Player.get()
         if songitem.is_currently_played:
             player.play_pause()
         else:
@@ -488,7 +486,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *append-requested* item.
         Appends track to player queue.
         """
-        Player.get().append_to_queue(songitem.track)
+        player.append_to_queue(songitem.track)
 
     @staticmethod
     def item_unappend_requested(songitem):
@@ -496,7 +494,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *remove-requested* item.
         Removes track from player queue.
         """
-        Player.get().remove_from_queue(songitem.track)
+        player.remove_from_queue(songitem.track)
 
     @staticmethod
     def item_station_requested(songitem):
@@ -504,7 +502,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *station-requested* item.
         Requests new station creation.
         """
-        Player.get().create_station_from_track(songitem.track)
+        player.create_station_from_track(songitem.track)
 
     def context_menu_requested(self, songitem):
         """
@@ -551,7 +549,7 @@ class SongListBox(urwid.Frame):
         Called when player media state changes.
         Updates corresponding song item state (if found in this song list).
         """
-        current_track = Player.get().get_current_track()
+        current_track = player.get_current_track()
         if current_track is None:
             return
 

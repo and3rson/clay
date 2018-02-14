@@ -14,7 +14,7 @@ from uuid import UUID
 from gmusicapi.clients import Mobileclient
 
 from clay.eventhook import EventHook
-from clay.log import Logger
+from clay.log import logger
 
 
 def asynchronous(func):
@@ -202,7 +202,7 @@ class Track(object):
                     )
                 # We need to find a track in Library by trackId.
                 UUID(data['trackId'])
-                track = GP.get().get_track_by_id(data['trackId'])
+                track = gp.get_track_by_id(data['trackId'])
                 return Track(
                     title=track.title,
                     artist=track.artist,
@@ -214,7 +214,7 @@ class Track(object):
                     original_data=data
                 )
         except Exception as error:  # pylint: disable=bare-except
-            Logger.get().error(
+            logger.error(
                 'Failed to parse track data: %s, failing data: %s',
                 repr(error),
                 data
@@ -248,11 +248,11 @@ class Track(object):
             self.cached_url = url
             callback(url, error, self)
 
-        if GP.get().is_subscribed:
+        if gp.is_subscribed:
             track_id = self.store_id
         else:
             track_id = self.library_id
-        GP.get().get_stream_url_async(track_id, callback=on_get_url)
+        gp.get_stream_url_async(track_id, callback=on_get_url)
 
     @synchronized
     def create_station(self):
@@ -261,7 +261,7 @@ class Track(object):
 
         Returns :class:`.Station` instance.
         """
-        station_id = GP.get().mobile_client.create_station(
+        station_id = gp.mobile_client.create_station(
             name=u'Station - {}'.format(self.title),
             track_id=self.store_id
         )
@@ -275,7 +275,7 @@ class Track(object):
         """
         Add a track to my library.
         """
-        return GP.get().add_to_my_library(self)
+        return gp.add_to_my_library(self)
 
     add_to_my_library_async = asynchronous(add_to_my_library)
 
@@ -283,7 +283,7 @@ class Track(object):
         """
         Remove a track from my library.
         """
-        return GP.get().remove_from_my_library(self)
+        return gp.remove_from_my_library(self)
 
     remove_from_my_library_async = asynchronous(remove_from_my_library)
 
@@ -348,7 +348,7 @@ class Station(object):
         Fetch tracks related to this station and
         populate it with :class:`Track` instances.
         """
-        data = GP.get().mobile_client.get_station_tracks(self.id, 100)
+        data = gp.mobile_client.get_station_tracks(self.id, 100)
         self._tracks = Track.from_data(data, Track.SOURCE_STATION, many=True)
         self._tracks_loaded = True
 
@@ -427,7 +427,7 @@ class Playlist(object):
         )
 
 
-class GP(object):
+class _GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
     asynchronous API calls, caching and some other perks.
@@ -435,12 +435,9 @@ class GP(object):
     Singleton.
     """
     # TODO: Switch to urwid signals for more explicitness?
-    instance = None
-
     caches_invalidated = EventHook()
 
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
         # self.is_debug = os.getenv('CLAY_DEBUG')
         self.mobile_client = Mobileclient()
         self.mobile_client._make_call = self._make_call_proxy(
@@ -456,16 +453,6 @@ class GP(object):
 
         self.auth_state_changed = EventHook()
 
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.GP` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = GP()
-
-        return cls.instance
-
     def _make_call_proxy(self, func):
         """
         Return a function that wraps *fn* and logs args & return values.
@@ -474,7 +461,7 @@ class GP(object):
             """
             Wrapper function.
             """
-            Logger.get().debug('GP::{}(*{}, **{})'.format(
+            logger.debug('GP::{}(*{}, **{})'.format(
                 protocol.__name__,
                 args,
                 kwargs
@@ -640,3 +627,6 @@ class GP(object):
         Return True if user is subscribed on Google Play Music, false otherwise.
         """
         return self.mobile_client.is_subscribed
+
+
+gp = _GP()  # pylint: disable=invalid-name

@@ -5,7 +5,7 @@ import urwid
 
 from clay.pages.page import AbstractPage
 from clay.settings import settings
-from clay.player import Player
+from clay.player import player
 
 
 class Slider(urwid.Widget):
@@ -95,7 +95,7 @@ class Slider(urwid.Widget):
         """
         Update player equalizer & toggle redraw.
         """
-        Player.get().set_equalizer_value(self.index, self.value)
+        player.set_equalizer_value(self.index, self.value)
         self._invalidate()
 
 
@@ -107,7 +107,7 @@ class Equalizer(urwid.Columns):
         self.bands = [
             Slider(index, freq)
             for index, freq
-            in enumerate(Player.get().get_equalizer_freqs())
+            in enumerate(player.get_equalizer_freqs())
         ]
         super(Equalizer, self).__init__(
             self.bands

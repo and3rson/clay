@@ -3,9 +3,9 @@ Components for "My playlists" page.
 """
 import urwid
 
-from clay.gp import GP
+from clay.gp import gp
 from clay.songlist import SongListBox
-from clay.notifications import NotificationArea
+from clay.notifications import notification_area
 from clay.pages.page import AbstractPage
 
 
@@ -59,7 +59,7 @@ class MyPlaylistListBox(urwid.ListBox):
         ])
         self.notification = None
 
-        GP.get().auth_state_changed += self.auth_state_changed
+        gp.auth_state_changed += self.auth_state_changed
 
         super(MyPlaylistListBox, self).__init__(self.walker)
 
@@ -73,9 +73,7 @@ class MyPlaylistListBox(urwid.ListBox):
                 urwid.Text(u'\n \uf01e Loading playlists...', align='center')
             ]
 
-            GP.get().get_all_user_playlist_contents_async(callback=self.on_get_playlists)
-
-            # self.notification = NotificationArea.notify('Loading playlists...')
+            gp.get_all_user_playlist_contents_async(callback=self.on_get_playlists)
 
     def on_get_playlists(self, playlists, error):
         """
@@ -83,7 +81,7 @@ class MyPlaylistListBox(urwid.ListBox):
         Populates list of playlists.
         """
         if error:
-            NotificationArea.notify('Failed to get playlists: {}'.format(str(error)))
+            notification_area.notify('Failed to get playlists: {}'.format(str(error)))
 
         items = []
         for playlist in playlists:
