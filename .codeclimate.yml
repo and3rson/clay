@@ -1,11 +1,11 @@
-version: "2"         # required to adjust maintainability checks
+version: "2"  # required to adjust maintainability checks
 engines:
   duplication:
     enabled: false
 checks:
   argument-count:
     config:
-      threshold: 8
+      threshold: 8  # maximum complexity for ~ B mark in Radon
   complex-logic:
     config:
       threshold: 4
@@ -20,10 +20,10 @@ checks:
       threshold: 40
   method-lines:
     config:
-      threshold: 25
+      threshold: 40  # to fit in 1366x768 screen
   nested-control-flow:
     config:
       threshold: 4
   return-statements:
     config:
-      threshold: 4
+      threshold: 5
