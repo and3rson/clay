@@ -8,7 +8,6 @@ disable =
     too-many-public-methods,
     too-many-instance-attributes,
     no-self-use,
-
     too-many-ancestors
 
 
