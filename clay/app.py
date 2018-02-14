@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-public-methods
 """
 Main app entrypoint.
 """
 
 import sys
-sys.path.insert(0, '.')
+sys.path.insert(0, '.')  # noqa
 
 
 import argparse
@@ -29,15 +27,18 @@ from clay.gp import gp
 
 
 def create_palette(transparent=False):
+    """
+    Return urwid palette.
+    """
     if transparent:
-        bg = ''
+        bgcolor = ''
     else:
-        bg = '#222'
+        bgcolor = '#222'
 
     return [
-        (None, '', '', '', '#FFF', bg),
-        ('default', '', '', '', '#FFF', bg),
-        ('logo', '', '', '', '#F54', bg),
+        (None, '', '', '', '#FFF', bgcolor),
+        ('default', '', '', '', '#FFF', bgcolor),
+        ('logo', '', '', '', '#F54', bgcolor),
 
         ('bg', '', '', '', '#FFF', '#222'),
         ('primary', '', '', '', '#F54', '#FFF'),
@@ -48,30 +49,30 @@ def create_palette(transparent=False):
         ('progress', '', '', '', '#FFF', '#F54'),
         ('progress_remaining', '', '', '', '#FFF', '#444'),
 
-        ('progressbar_done', '', '', '', '#F54', bg),
-        ('progressbar_done_paused', '', '', '', '', bg),
-        ('progressbar_remaining', '', '', '', '#222', bg),
+        ('progressbar_done', '', '', '', '#F54', bgcolor),
+        ('progressbar_done_paused', '', '', '', '', bgcolor),
+        ('progressbar_remaining', '', '', '', '#222', bgcolor),
 
-        ('title-idle', '', '', '', '', bg),
-        ('title-playing', '', '', '', '#F54', bg),
+        ('title-idle', '', '', '', '', bgcolor),
+        ('title-playing', '', '', '', '#F54', bgcolor),
 
         ('panel', '', '', '', '#FFF', '#222'),
         ('panel_focus', '', '', '', '#FFF', '#F54'),
         ('panel_divider', '', '', '', '#444', '#222'),
         ('panel_divider_focus', '', '', '', '#444', '#F54'),
 
-        ('line1', '', '', '', '#FFF', bg),
+        ('line1', '', '', '', '#FFF', bgcolor),
         ('line1_focus', '', '', '', '#FFF', '#333'),
-        ('line1_active', '', '', '', '#F54', bg),
+        ('line1_active', '', '', '', '#F54', bgcolor),
         ('line1_active_focus', '', '', '', '#F54', '#333'),
-        ('line2', '', '', '', '#AAA', bg),
+        ('line2', '', '', '', '#AAA', bgcolor),
         ('line2_focus', '', '', '', '#AAA', '#333'),
 
         ('input', '', '', '', '#FFF', '#444'),
         ('input_focus', '', '', '', '#FFF', '#F54'),
 
-        ('flag', '', '', '', '#AAA', bg),
-        ('flag-active', '', '', '', '#F54', bg),
+        ('flag', '', '', '', '#AAA', bgcolor),
+        ('flag-active', '', '', '', '#F54', bgcolor),
 
         ('notification', '', '', '', '#F54', '#222'),
     ]
@@ -389,24 +390,30 @@ class MultilineVersionAction(argparse.Action):
 
 
 def main():
-    # This method is required to allow Clay to be ran as script via setuptools installation.
-    # pylint: disable-all
+    """
+    Application entrypoint.
+
+    This method is required to allow Clay to be ran an application when installed via setuptools.
+    """
     parser = argparse.ArgumentParser(
         prog=meta.APP_NAME,
         description=meta.DESCRIPTION,
-        epilog="This project is neither affiliated nor endorsed by Google.")
+        epilog="This project is neither affiliated nor endorsed by Google."
+    )
 
     parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
     parser.add_argument(
         "--with-x-keybinds",
         help="define global X keybinds (requires Keybinder and PyGObject)",
-        action='store_true')
+        action='store_true'
+    )
 
     parser.add_argument(
         "--transparent",
         help="use transparent background",
-        action='store_true')
+        action='store_true'
+    )
 
     args = parser.parse_args()
 
