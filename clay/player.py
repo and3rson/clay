@@ -347,8 +347,8 @@ class Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if settings.get('download_tracks', False):
-            path = settings.get_cached_file_path(track.store_id + '.mp3')
+        if settings.get('download_tracks', False) or settings.get_is_file_cached(track.filename):
+            path = settings.get_cached_file_path(track.filename)
             if path is None:
                 self.logger.debug('Track %s not in cache, downloading...', track.store_id)
                 track.get_url(callback=self._download_track)
@@ -369,7 +369,7 @@ class Player(object):
             )
             return
         response = urlopen(url)
-        path = settings.save_file_to_cache(track.store_id + '.mp3', response.read())
+        path = settings.save_file_to_cache(track.filename, response.read())
         self._play_ready(path, None, track)
 
     def _play_ready(self, url, error, track):
