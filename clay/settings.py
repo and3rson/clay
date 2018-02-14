@@ -42,9 +42,15 @@ class _Settings(object):
     """
     def __init__(self):
         self._config = {}
+        self._cached_files = set()
+
+        self._config_dir = None
+        self._config_file_path = None
+        self._cache_dir = None
 
         self._ensure_directories()
         self._load_config()
+        self._load_cache()
 
     def _ensure_directories(self):
         """
@@ -76,6 +82,12 @@ class _Settings(object):
         """
         with open(self._config_file_path, 'r') as settings_file:
             self._config = yaml.load(settings_file.read())
+
+    def _load_cache(self):
+        """
+        Load cached files.
+        """
+        self._cached_files = set(os.listdir(self._cache_dir))
 
     def _commit_edits(self, config):
         """
@@ -120,6 +132,12 @@ class _Settings(object):
             return path
         return None
 
+    def get_is_file_cached(self, filename):
+        """
+        Return ``True`` if *filename* is present in cache.
+        """
+        return filename in self._cached_files
+
     def save_file_to_cache(self, filename, content):
         """
         Save content into file in cache.
@@ -127,6 +145,7 @@ class _Settings(object):
         path = os.path.join(self._cache_dir, filename)
         with open(path, 'wb') as cachefile:
             cachefile.write(content)
+        self._cached_files.add(filename)
         return path
 
 

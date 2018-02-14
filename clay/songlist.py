@@ -16,6 +16,7 @@ from clay.notifications import NotificationArea
 from clay.player import Player
 from clay.gp import GP
 from clay.clipboard import copy
+from clay.settings import settings
 
 
 class SongListItem(urwid.Pile):
@@ -46,8 +47,14 @@ class SongListItem(urwid.Pile):
         self.track = track
         self.index = 0
         self.state = SongListItem.STATE_IDLE
-        self.line1 = urwid.SelectableIcon('', cursor_position=1000)
-        self.line1.set_layout('left', 'clip', None)
+        self.line1_left = urwid.SelectableIcon('', cursor_position=1000)
+        self.line1_left.set_layout('left', 'clip', None)
+        self.line1_right = urwid.Text('x')
+        self.line1 = urwid.Columns([
+            self.line1_left,
+            ('pack', self.line1_right),
+            ('pack', urwid.Text(' '))
+        ])
         self.line2 = urwid.Text('', wrap='clip')
 
         self.line1_wrap = urwid.AttrWrap(self.line1, 'line1')
@@ -96,7 +103,7 @@ class SongListItem(urwid.Pile):
             title_attr = 'line1_active_focus' if self.is_focused else 'line1_active'
         artist_attr = 'line2_focus' if self.is_focused else 'line2'
 
-        self.line1.set_text(
+        self.line1_left.set_text(
             u'{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
                 index=self.index + 1,
                 icon=self.get_state_icon(self.state),
@@ -105,6 +112,10 @@ class SongListItem(urwid.Pile):
                 seconds=(self.track.duration // 1000) % 60
             )
         )
+        if settings.get_is_file_cached(self.track.filename):
+            self.line1_right.set_text(u'\u25bc Cached')
+        else:
+            self.line1_right.set_text(u'')
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )

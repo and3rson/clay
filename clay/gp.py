@@ -117,6 +117,13 @@ class Track(object):
             return self.library_id
         return self.store_id
 
+    @property
+    def filename(self):
+        """
+        Return a filename for this track.
+        """
+        return self.store_id + '.mp3'
+
     def __eq__(self, other):
         return (
             (self.library_id and self.library_id == other.library_id) or
