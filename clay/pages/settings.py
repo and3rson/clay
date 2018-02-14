@@ -4,7 +4,7 @@ Components for "Settings" page.
 import urwid
 
 from clay.pages.page import AbstractPage
-from clay.settings import Settings
+from clay.settings import settings
 from clay.player import Player
 
 
@@ -128,19 +128,18 @@ class SettingsPage(urwid.Columns, AbstractPage):
 
     def __init__(self, app):
         self.app = app
-        config = Settings.get_config()
         self.username = urwid.Edit(
-            edit_text=config.get('username', '')
+            edit_text=settings.get('username', '')
         )
         self.password = urwid.Edit(
-            mask='*', edit_text=config.get('password', '')
+            mask='*', edit_text=settings.get('password', '')
         )
         self.device_id = urwid.Edit(
-            edit_text=config.get('device_id', '')
+            edit_text=settings.get('device_id', '')
         )
         self.download_tracks = urwid.CheckBox(
             'Download tracks before playback',
-            state=config.get('download_tracks', False)
+            state=settings.get('download_tracks', False)
         )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
@@ -168,12 +167,12 @@ class SettingsPage(urwid.Columns, AbstractPage):
         """
         Called when "Save" button is pressed.
         """
-        Settings.set_config(dict(
-            username=self.username.edit_text,
-            password=self.password.edit_text,
-            device_id=self.device_id.edit_text,
-            download_tracks=self.download_tracks.state
-        ))
+        with settings.edit() as config:
+            config['username'] = self.username.edit_text
+            config['password'] = self.password.edit_text
+            config['device_id'] = self.device_id.edit_text
+            config['download_tracks'] = self.download_tracks.state
+
         self.app.set_page('MyLibraryPage')
         self.app.log_in()
 

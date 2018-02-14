@@ -23,7 +23,7 @@ from clay.pages.myplaylists import MyPlaylistsPage
 from clay.pages.playerqueue import QueuePage
 from clay.pages.search import SearchPage
 from clay.pages.settings import SettingsPage
-from clay.settings import Settings
+from clay.settings import settings
 from clay.notifications import NotificationArea
 from clay.gp import GP
 
@@ -185,9 +185,8 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        config = Settings.get_config()
         username, password, device_id, authtoken = [
-            config.get(x)
+            settings.get(x)
             for x
             in ('username', 'password', 'device_id', 'authtoken')
         ]
@@ -247,7 +246,8 @@ class AppWidget(urwid.Frame):
             )
             return
 
-        Settings.set_config(dict(authtoken=GP.get().get_authtoken()))
+        with settings.edit() as config:
+            config['authtoken'] = GP.get().get_authtoken()
 
         self._login_notification.close()
 
