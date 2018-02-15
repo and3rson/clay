@@ -219,10 +219,10 @@ class Track(object):
         )
 
     _CREATE_TRACK = {
-        SOURCE_SEARCH: _from_search,
-        SOURCE_STATION: _from_station,
-        SOURCE_LIBRARY: _from_library,
-        SOURCE_PLAYLIST: _from_playlist,
+        SOURCE_SEARCH: '_from_search',
+        SOURCE_STATION: '_from_station',
+        SOURCE_LIBRARY: '_from_library',
+        SOURCE_PLAYLIST: '_from_playlist',
     }
 
     @classmethod
@@ -240,7 +240,7 @@ class Track(object):
             ]
 
         try:
-            return cls._CREATE_TRACK[source](data)
+            return getattr(cls, cls._CREATE_TRACK[source])(data)
         except Exception as error:  # pylint: disable=bare-except
             logger.error(
                 'Failed to parse track data: %s, failing data: %s',

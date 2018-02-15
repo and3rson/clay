@@ -31,9 +31,9 @@ class Slider(urwid.Widget):
             freq = int(freq)
         self.freq = freq
         if freq >= 1000:
-            self.freq_str = str(freq // 1000) + ' KHz'
+            self.freq_str = str(freq // 1000) + '\nKHz'
         else:
-            self.freq_str = str(freq) + ' Hz'
+            self.freq_str = str(freq) + '\nHz'
         self.value = 0
         self.slider_height = 5
         self.max_value = 20
@@ -43,7 +43,7 @@ class Slider(urwid.Widget):
         """
         Return count of rows required to render this widget.
         """
-        return self.slider_height + 2
+        return self.slider_height + 3
 
     def render(self, size, focus=None):
         """

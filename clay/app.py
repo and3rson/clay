@@ -158,6 +158,7 @@ class AppWidget(urwid.Frame):
                 for tab
                 in self.tabs
             ], dividechars=0), 'panel'),
+            notification_area
         ])
         self.playbar = PlayBar(self)
         super(AppWidget, self).__init__(

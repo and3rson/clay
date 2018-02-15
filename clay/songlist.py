@@ -209,68 +209,40 @@ class SongListBoxPopup(urwid.LineBox):
                 'panel_divider'
             )
         ]
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
+        options.append(self._create_divider())
         if not gp.get_track_by_id(songitem.track.id):
-            options.append(urwid.AttrWrap(
-                urwid.Button('Add to my library', on_press=self.add_to_my_library),
-                'panel',
-                'panel_focus'
-            ))
+            options.append(self._create_button('Add to library', self.add_to_my_library))
         else:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Remove from my library', on_press=self.remove_from_my_library),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
-        options.append(urwid.AttrWrap(
-            urwid.Button('Create station', on_press=self.create_station),
-            'panel',
-            'panel_focus'
-        ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
+            options.append(self._create_button('Remove from library', self.remove_from_my_library))
+        options.append(self._create_divider())
+        options.append(self._create_button('Create station', self.create_station))
+        options.append(self._create_divider())
         if self.songitem.track in player.get_queue_tracks():
-            options.append(urwid.AttrWrap(
-                urwid.Button('Remove from queue', on_press=self.remove_from_queue),
-                'panel',
-                'panel_focus'
-            ))
+            options.append(self._create_button('Remove from queue', self.remove_from_queue))
         else:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Append to queue', on_press=self.append_to_queue),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
+            options.append(self._create_button('Append to queue', self.append_to_queue))
         if self.songitem.track.cached_url is not None:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Copy URL to clipboard', on_press=self.copy_url),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Button('Close', on_press=self.close),
-            'panel',
-            'panel_focus'
-        ))
+            options.append(self._create_button('Copy URL to clipboard', self.copy_url))
+        options.append(self._create_button('Close', self.close))
         super(SongListBoxPopup, self).__init__(
             urwid.Pile(options)
+        )
+
+    def _create_divider(self):
+        """
+        Return a divider widget.
+        """
+        return urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        )
+
+    def _create_button(self, title, on_press):
+        return urwid.AttrWrap(
+            urwid.Button(title, on_press=on_press),
+            'panel',
+            'panel_focus'
         )
 
     def add_to_my_library(self, _):
