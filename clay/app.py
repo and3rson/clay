@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-public-methods
 """
 Main app entrypoint.
 """
@@ -15,7 +13,7 @@ import os
 import urwid
 
 from clay import meta
-from clay.player import Player
+from clay.player import player
 from clay.playbar import PlayBar
 from clay.pages.debug import DebugPage
 from clay.pages.mylibrary import MyLibraryPage
@@ -23,17 +21,16 @@ from clay.pages.myplaylists import MyPlaylistsPage
 from clay.pages.playerqueue import QueuePage
 from clay.pages.search import SearchPage
 from clay.pages.settings import SettingsPage
-from clay.settings import Settings
-from clay.notifications import NotificationArea
-from clay.gp import GP
+from clay.settings import settings
+from clay.notifications import notification_area
+from clay.gp import gp
 
 
 def create_palette(transparent=False):
-    config = Settings.get_config('colours')
+    config = settings.get_section('colours')
 
     return [(name, '', '', '', config[name]['foreground'], config[name]['background'])
             for name in config]
-
 
 class AppWidget(urwid.Frame):
     """
@@ -104,35 +101,25 @@ class AppWidget(urwid.Frame):
         self.current_page = None
         self.loop = None
 
-        NotificationArea.set_app(self)
+        notification_area.set_app(self)
         self._login_notification = None
 
         self._cancel_actions = []
 
         self.header = urwid.Pile([
-            # urwid.Divider('\u2500'),
             urwid.AttrWrap(urwid.Columns([
                 ('pack', tab)
                 for tab
                 in self.tabs
             ], dividechars=0), 'panel'),
-            NotificationArea.get()
-            # urwid.Divider('\u2500')
+            notification_area
         ])
         self.playbar = PlayBar(self)
-        # self.panel = urwid.Pile([
-        #     urwid.Columns([
-        #         urwid.Divider(u'\u2500'),
-        #     ]),
-        #     self.playbar
-        # ])
-        # self.current_page = self.pages[0]
         super(AppWidget, self).__init__(
             header=self.header,
             footer=self.playbar,
             body=urwid.Filler(urwid.Text('Loading...', align='center'))
         )
-        # self.current_page.activate()
 
         self.set_page('MyLibraryPage')
         self.log_in()
@@ -143,31 +130,30 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        config = Settings.get_config('play_settings')
         username, password, device_id, authtoken = [
-            config.get(x)
+            settings.get(x)
             for x
             in ('username', 'password', 'device_id', 'authtoken')
         ]
         if self._login_notification:
             self._login_notification.close()
         if use_token and authtoken:
-            self._login_notification = NotificationArea.notify('Using cached auth token...')
-            GP.get().use_authtoken_async(
+            self._login_notification = notification_area.notify('Using cached auth token...')
+            gp.use_authtoken_async(
                 authtoken,
                 device_id,
                 callback=self.on_check_authtoken
             )
         elif username and password and device_id:
-            self._login_notification = NotificationArea.notify('Logging in...')
-            GP.get().login_async(
+            self._login_notification = notification_area.notify('Logging in...')
+            gp.login_async(
                 username,
                 password,
                 device_id,
                 callback=self.on_login
             )
         else:
-            self._login_notification = NotificationArea.notify(
+            self._login_notification = notification_area.notify(
                 'Please set your credentials on the settings page.'
             )
 
@@ -205,7 +191,8 @@ class AppWidget(urwid.Frame):
             )
             return
 
-        Settings.set_config(dict(authtoken=GP.get().get_authtoken()))
+        with settings.edit() as config:
+            config['authtoken'] = gp.get_authtoken()
 
         self._login_notification.close()
 
@@ -275,42 +262,41 @@ class AppWidget(urwid.Frame):
         """
         Seek to the start of the song.
         """
-        Player.get().seek_absolute(0)
+        player.seek_absolute(0)
 
     @staticmethod
     def play_pause():
         """
         Toggle play/pause.
         """
-        Player.get().play_pause()
+        player.play_pause()
 
     @staticmethod
     def next_song():
         """
         Play next song.
         """
-        Player.get().next(True)
+        player.next(True)
 
     @staticmethod
     def seek_backward():
         """
         Seek 5% backward.
         """
-        Player.get().seek(-0.05)
+        player.seek(-0.05)
 
     @staticmethod
     def seek_forward():
         """
         Seek 5% forward.
         """
-        Player.get().seek(0.05)
+        player.seek(0.05)
 
     @staticmethod
     def toggle_shuffle():
         """
         Toggle random playback.
         """
-        player = Player.get()
         player.set_random(not player.get_is_random())
 
     @staticmethod
@@ -318,7 +304,6 @@ class AppWidget(urwid.Frame):
         """
         Toggle repeat mode.
         """
-        player = Player.get()
         player.set_repeat_one(not player.get_is_repeat_one())
 
     @staticmethod
@@ -335,7 +320,7 @@ class AppWidget(urwid.Frame):
         try:
             action = self._cancel_actions.pop()
         except IndexError:
-            NotificationArea.close_newest()
+            notification_area.close_newest()
         else:
             action()
 
@@ -357,24 +342,30 @@ class MultilineVersionAction(argparse.Action):
 
 
 def main():
-    # This method is required to allow Clay to be ran as script via setuptools installation.
-    # pylint: disable-all
+    """
+    Application entrypoint.
+
+    This method is required to allow Clay to be ran an application when installed via setuptools.
+    """
     parser = argparse.ArgumentParser(
         prog=meta.APP_NAME,
         description=meta.DESCRIPTION,
-        epilog="This project is neither affiliated nor endorsed by Google.")
+        epilog="This project is neither affiliated nor endorsed by Google."
+    )
 
     parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
     parser.add_argument(
         "--with-x-keybinds",
         help="define global X keybinds (requires Keybinder and PyGObject)",
-        action='store_true')
+        action='store_true'
+    )
 
     parser.add_argument(
         "--transparent",
         help="use transparent background",
-        action='store_true')
+        action='store_true'
+    )
 
     args = parser.parse_args()
 
@@ -382,7 +373,7 @@ def main():
         exit(0)
 
     if args.with_x_keybinds:
-        Player.get().enable_xorg_bindings()
+        player.enable_xorg_bindings()
 
     # Run the actual program
     app_widget = AppWidget()

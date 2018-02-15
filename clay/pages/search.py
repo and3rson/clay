@@ -3,9 +3,9 @@ Components for search page.
 """
 import urwid
 
-from clay.gp import GP
+from clay.gp import gp
 from clay.songlist import SongListBox
-from clay.notifications import NotificationArea
+from clay.notifications import notification_area
 from clay.pages.page import AbstractPage
 
 
@@ -76,14 +76,14 @@ class SearchPage(urwid.Pile, AbstractPage):
         self.songlist.set_placeholder(u' \U0001F50D Searching for "{}"...'.format(
             query
         ))
-        GP.get().search_async(query, callback=self.search_finished)
+        gp.search_async(query, callback=self.search_finished)
 
     def search_finished(self, results, error):
         """
         Populate song list with search results.
         """
         if error:
-            NotificationArea.notify('Failed to search: {}'.format(str(error)))
+            notification_area.notify('Failed to search: {}'.format(str(error)))
         else:
             self.songlist.populate(results.get_tracks())
             self.app.redraw()

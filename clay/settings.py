@@ -1,77 +1,158 @@
 """
 Application settings manager.
 """
+from threading import Lock
 import os
+import copy
 import errno
 import yaml
 import appdirs
 
 
-# Rewrite this so it keeps the settings in memory and writes on exit
-# It is sort of silly to use so much IO for simple tasks
-class Settings(object):
+class _SettingsEditor(dict):
+    """
+    Thread-safe settings editor context manager.
+
+    For example see :py:meth:`~._Settings.edit`.
+    """
+    _lock = Lock()
+
+    def __init__(self, original_config, commit_callback):
+        super(_SettingsEditor, self).__init__()
+        _SettingsEditor._lock.acquire()
+        self._commit_callback = commit_callback
+        self.update(copy.deepcopy(original_config))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        _SettingsEditor._lock.release()
+        if exc_tb is None:
+            self._commit_callback(self)
+        else:
+            # TODO: Handle this
+            pass
+
+
+class _Settings(object):
     """
     Settings management class.
     """
-    @classmethod
-    def get_config_filename(cls):
-        """
-        Returns full path to config file and will create it if it doesn't
-        already exist.
-        """
-        filedir = appdirs.user_config_dir('clay', 'Clay')
-        path = os.path.join(filedir, 'config.yaml')
+    def __init__(self):
+        self._config = {}
+        self._cached_files = set()
 
-        if os.path.exists(path):
-            return path
+        self._config_dir = None
+        self._config_file_path = None
+        self._cache_dir = None
+
+        self._ensure_directories()
+        self._load_config()
+        self._load_cache()
+
+    def _ensure_directories(self):
+        """
+        Create config dir, config file & cache dir if they do not exist yet.
+        """
+        self._config_dir = appdirs.user_config_dir('clay', 'Clay')
+        self._config_file_path = os.path.join(self._config_dir, 'config.yaml')
 
         try:
-            os.makedirs(filedir)
+            os.makedirs(self._config_dir)
         except OSError as error:
             if error.errno != errno.EEXIST:
                 raise
 
-        with open(path, 'w') as settings:
-            settings.write('{}')
+        self._cache_dir = appdirs.user_cache_dir('clay', 'Clay')
+        try:
+            os.makedirs(self._cache_dir)
+        except OSError as error:
+            if error.errno != errno.EEXIST:
+                raise
 
-        return path
+        if not os.path.exists(self._config_file_path):
+            with open(self._config_file_path, 'w') as settings_file:
+                settings_file.write('{}')
 
-    @classmethod
-    def get_config(cls, section):
+    def _load_config(self):
         """
-        Read config dictionary.
+        Read config from file.
         """
-        with open(Settings.get_config_filename(), 'r') as settings:
-            return yaml.load(settings.read()).get(section)
+        with open(self._config_file_path, 'r') as settings_file:
+            self._config = yaml.load(settings_file.read())
 
-    @classmethod
-    def set_config(cls, new_config):
+    def _load_cache(self):
         """
-        Write config dictionary.
+        Load cached files.
         """
-        config = Settings.get_config('play_settings')
-        config.update(new_config)
-        with open(Settings.get_config_filename(), 'w') as settings:
-            settings.write(yaml.dump(config, default_flow_style=False))
+        self._cached_files = set(os.listdir(self._cache_dir))
 
-    @classmethod
-    def get_cached_file_path(cls, filename):
+    def _commit_edits(self, config):
+        """
+        Write config to file.
+
+        This method is supposed to be called only
+        from :py:meth:`~._SettingsEditor.__exit__`.
+>>>>>>> master
+        """
+        self._config.update(config)
+        with open(self._config_file_path, 'w') as settings_file:
+            settings_file.write(yaml.dump(self._config, default_flow_style=False))
+
+    def get(self, key, section="play_settings", default=None):
+        if section not in self._config:
+            return default
+
+        return self._config[section].get(key, default)
+
+    def get_section(self, key, default=None):
+        """
+        Return config value.
+        """
+        return self._config.get(key, default)
+
+    def edit(self):
+        """
+        Return :py:class:`._SettingsEditor` context manager to edit config.
+
+        Settings are saved to file once the returned context manager exists.
+
+        Example usage:
+
+        .. code-block:: python
+
+            from clay.settings import settings
+
+            with settings.edit() as config:
+                config['foo']['bar'] = 'baz'
+        """
+        return _SettingsEditor(self._config, self._commit_edits)
+
+    def get_cached_file_path(self, filename):
         """
         Get full path to cached file.
         """
-        cache_dir = appdirs.user_cache_dir('clay', 'Clay')
-        path = os.path.join(cache_dir, filename)
+        path = os.path.join(self._cache_dir, filename)
         if os.path.exists(path):
             return path
         return None
 
-    @classmethod
-    def save_file_to_cache(cls, filename, content):
+    def get_is_file_cached(self, filename):
+        """
+        Return ``True`` if *filename* is present in cache.
+        """
+        return filename in self._cached_files
+
+    def save_file_to_cache(self, filename, content):
         """
         Save content into file in cache.
         """
-        cache_dir = appdirs.user_cache_dir('clay', 'Clay')
-        path = os.path.join(cache_dir, filename)
+        path = os.path.join(self._cache_dir, filename)
         with open(path, 'wb') as cachefile:
             cachefile.write(content)
+        self._cached_files.add(filename)
         return path
+
+
+settings = _Settings()  # pylint: disable=invalid-name

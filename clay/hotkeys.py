@@ -5,16 +5,19 @@ Requires "gi" package and "Gtk" & "Keybinder" modules.
 # pylint: disable=broad-except
 import threading
 
-from clay.settings import Settings
+from clay.settings import settings
 from clay.eventhook import EventHook
-from clay.notifications import NotificationArea
-from clay.log import Logger
+from clay.notifications import notification_area
+from clay.log import logger
 
 
 IS_INIT = False
-def report_error(error_msg):
+
+
+def report_error(exc):
     "Print an error message to the debug screen"
-    Logger.get().error("{0}: {1}".format(error.__class__.__name__, error_msg))
+    logger.error("{0}: {1}".format(exc.__class__.__name__, exc))
+
 
 try:
     # pylint: disable=import-error
@@ -36,7 +39,7 @@ else:
     IS_INIT = True
 
 
-class HotkeyManager(object):
+class _HotkeyManager(object):
     """
     Manages configs.
     Runs Gtk main loop in a thread.
@@ -47,10 +50,7 @@ class HotkeyManager(object):
         'prev': 'XF86AudioPrev'
     }
 
-    instance = None
-
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
         self.hotkeys = {}
         self.config = None
 
@@ -64,29 +64,20 @@ class HotkeyManager(object):
 
             threading.Thread(target=Gtk.main).start()
         else:
-            Logger.get().debug("Not loading the global shortcuts.")
-            NotificationArea.notify(ERROR_MESSAGE +
-                                    ", this means the global shortcuts will not work.\n" +
-                                    "You can check the log for more details.")
-
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.HotkeyManager` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = HotkeyManager()
-
-        return cls.instance
+            logger.debug("Not loading the global shortcuts.")
+            notification_area.notify(
+                ERROR_MESSAGE +
+                ", this means the global shortcuts will not work.\n" +
+                "You can check the log for more details."
+            )
 
     @staticmethod
     def load_keys():
         """
         Load hotkey config from settings.
         """
-        config = Settings.get_config('play_settings')
-        hotkeys = config.get('hotkeys', {})
-        for operation, default_key in HotkeyManager.DEFAULT_HOTKEYS.items():
+        hotkeys = settings.get('hotkeys', default={})
+        for operation, default_key in _HotkeyManager.DEFAULT_HOTKEYS.items():
             if operation not in hotkeys or not hotkeys[operation]:
                 hotkeys[operation] = default_key
         return hotkeys
@@ -107,3 +98,6 @@ class HotkeyManager(object):
         """
         assert key
         getattr(self, operation).fire()
+
+
+hotkey_manager = _HotkeyManager()  # pylint: disable=invalid-name

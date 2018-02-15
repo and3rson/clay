@@ -4,7 +4,7 @@ Components for "Queue" page.
 import urwid
 
 from clay.songlist import SongListBox
-from clay.player import Player
+from clay.player import player
 from clay.pages.page import AbstractPage
 
 
@@ -24,7 +24,6 @@ class QueuePage(urwid.Columns, AbstractPage):
         self.app = app
         self.songlist = SongListBox(app)
 
-        player = Player.get()
         self.songlist.populate(player.get_queue_tracks())
         player.queue_changed += self.queue_changed
         player.track_appended += self.track_appended
@@ -39,7 +38,7 @@ class QueuePage(urwid.Columns, AbstractPage):
         Called when player queue is changed.
         Updates this queue widget.
         """
-        self.songlist.populate(Player.get().get_queue_tracks())
+        self.songlist.populate(player.get_queue_tracks())
 
     def track_appended(self, track):
         """

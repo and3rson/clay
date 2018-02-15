@@ -14,7 +14,7 @@ from uuid import UUID
 from gmusicapi.clients import Mobileclient
 
 from clay.eventhook import EventHook
-from clay.log import Logger
+from clay.log import logger
 
 
 def asynchronous(func):
@@ -117,12 +117,113 @@ class Track(object):
             return self.library_id
         return self.store_id
 
+    @property
+    def filename(self):
+        """
+        Return a filename for this track.
+        """
+        return self.store_id + '.mp3'
+
     def __eq__(self, other):
         return (
             (self.library_id and self.library_id == other.library_id) or
             (self.store_id and self.store_id == other.store_id) or
             (self.playlist_item_id and self.playlist_item_id == other.playlist_item_id)
         )
+
+    @classmethod
+    def _from_search(cls, data):
+        """
+        Create track from search result data.
+        """
+        # Data contains a nested track representation.
+        return Track(
+            title=data['track']['title'],
+            artist=data['track']['artist'],
+            duration=int(data['track']['durationMillis']),
+            source=cls.SOURCE_SEARCH,
+            store_id=data['track']['storeId'],  # or data['trackId']
+            album_name=data['track']['album'],
+            album_url=data['track']['albumArtRef'][0]['url'],
+            original_data=data
+        )
+
+    @classmethod
+    def _from_station(cls, data):
+        """
+        Create track from station track data.
+        """
+        # Station tracks have all the info in place.
+        return Track(
+            title=data['title'],
+            artist=data['artist'],
+            duration=int(data['durationMillis']),
+            source=cls.SOURCE_STATION,
+            store_id=data['storeId'],
+            album_name=data['album'],
+            album_url=data['albumArtRef'][0]['url'],
+            original_data=data
+        )
+
+    @classmethod
+    def _from_library(cls, data):
+        """
+        Create track from library track data.
+        """
+        # Data contains all info about track
+        # including ID in library and ID in store.
+        UUID(data['id'])
+        return Track(
+            title=data['title'],
+            artist=data['artist'],
+            duration=int(data['durationMillis']),
+            source=cls.SOURCE_LIBRARY,
+            store_id=data['storeId'],
+            library_id=data['id'],
+            album_name=data['album'],
+            album_url=data['albumArtRef'][0]['url'],
+            original_data=data
+        )
+
+    @classmethod
+    def _from_playlist(cls, data):
+        """
+        Create track from playlist track data.
+        """
+        if 'track' in data:
+            # Data contains a nested track representation that can be used
+            # to construct new track.
+            return Track(
+                title=data['track']['title'],
+                artist=data['track']['artist'],
+                duration=int(data['track']['durationMillis']),
+                source=cls.SOURCE_PLAYLIST,
+                store_id=data['track']['storeId'],  # or data['trackId']
+                playlist_item_id=data['id'],
+                album_name=data['track']['album'],
+                album_url=data['track']['albumArtRef'][0]['url'],
+                original_data=data
+            )
+        # We need to find a track in Library by trackId.
+        UUID(data['trackId'])
+        track = gp.get_track_by_id(data['trackId'])
+        return Track(
+            title=track.title,
+            artist=track.artist,
+            duration=track.duration,
+            source=cls.SOURCE_PLAYLIST,
+            store_id=track.store_id,
+            album_name=track.album_name,
+            album_url=track.album_url,
+            original_data=data
+        )
+
+    _CREATE_TRACK = {
+        SOURCE_SEARCH: '_from_search',
+        SOURCE_STATION: '_from_station',
+        SOURCE_LIBRARY: '_from_library',
+        SOURCE_PLAYLIST: '_from_playlist',
+    }
 
     @classmethod
     def from_data(cls, data, source, many=False):
@@ -139,75 +240,9 @@ class Track(object):
             ]
 
         try:
-            if source == Track.SOURCE_SEARCH:
-                # Data contains a nested track representation.
-                return Track(
-                    title=data['track']['title'],
-                    artist=data['track']['artist'],
-                    duration=int(data['track']['durationMillis']),
-                    source=source,
-                    store_id=data['track']['storeId'],  # or data['trackId']
-                    album_name=data['track']['album'],
-                    album_url=data['track']['albumArtRef'][0]['url'],
-                    original_data=data
-                )
-            elif source == Track.SOURCE_STATION:
-                # Station tracks have all the info in place.
-                return Track(
-                    title=data['title'],
-                    artist=data['artist'],
-                    duration=int(data['durationMillis']),
-                    source=source,
-                    store_id=data['storeId'],
-                    album_name=data['album'],
-                    album_url=data['albumArtRef'][0]['url'],
-                    original_data=data
-                )
-            elif source == Track.SOURCE_LIBRARY:
-                # Data contains all info about track
-                # including ID in library and ID in store.
-                UUID(data['id'])
-                return Track(
-                    title=data['title'],
-                    artist=data['artist'],
-                    duration=int(data['durationMillis']),
-                    source=source,
-                    store_id=data['storeId'],
-                    library_id=data['id'],
-                    album_name=data['album'],
-                    album_url=data['albumArtRef'][0]['url'],
-                    original_data=data
-                )
-            elif source == Track.SOURCE_PLAYLIST:
-                if 'track' in data:
-                    # Data contains a nested track representation that can be used
-                    # to construct new track.
-                    return Track(
-                        title=data['track']['title'],
-                        artist=data['track']['artist'],
-                        duration=int(data['track']['durationMillis']),
-                        source=source,
-                        store_id=data['track']['storeId'],  # or data['trackId']
-                        playlist_item_id=data['id'],
-                        album_name=data['track']['album'],
-                        album_url=data['track']['albumArtRef'][0]['url'],
-                        original_data=data
-                    )
-                # We need to find a track in Library by trackId.
-                UUID(data['trackId'])
-                track = GP.get().get_track_by_id(data['trackId'])
-                return Track(
-                    title=track.title,
-                    artist=track.artist,
-                    duration=track.duration,
-                    source=source,
-                    store_id=track.store_id,
-                    album_name=track.album_name,
-                    album_url=track.album_url,
-                    original_data=data
-                )
+            return getattr(cls, cls._CREATE_TRACK[source])(data)
         except Exception as error:  # pylint: disable=bare-except
-            Logger.get().error(
+            logger.error(
                 'Failed to parse track data: %s, failing data: %s',
                 repr(error),
                 data
@@ -241,11 +276,11 @@ class Track(object):
             self.cached_url = url
             callback(url, error, self)
 
-        if GP.get().is_subscribed:
+        if gp.is_subscribed:
             track_id = self.store_id
         else:
             track_id = self.library_id
-        GP.get().get_stream_url_async(track_id, callback=on_get_url)
+        gp.get_stream_url_async(track_id, callback=on_get_url)
 
     @synchronized
     def create_station(self):
@@ -254,7 +289,7 @@ class Track(object):
 
         Returns :class:`.Station` instance.
         """
-        station_id = GP.get().mobile_client.create_station(
+        station_id = gp.mobile_client.create_station(
             name=u'Station - {}'.format(self.title),
             track_id=self.store_id
         )
@@ -268,7 +303,7 @@ class Track(object):
         """
         Add a track to my library.
         """
-        return GP.get().add_to_my_library(self)
+        return gp.add_to_my_library(self)
 
     add_to_my_library_async = asynchronous(add_to_my_library)
 
@@ -276,7 +311,7 @@ class Track(object):
         """
         Remove a track from my library.
         """
-        return GP.get().remove_from_my_library(self)
+        return gp.remove_from_my_library(self)
 
     remove_from_my_library_async = asynchronous(remove_from_my_library)
 
@@ -341,7 +376,7 @@ class Station(object):
         Fetch tracks related to this station and
         populate it with :class:`Track` instances.
         """
-        data = GP.get().mobile_client.get_station_tracks(self.id, 100)
+        data = gp.mobile_client.get_station_tracks(self.id, 100)
         self._tracks = Track.from_data(data, Track.SOURCE_STATION, many=True)
         self._tracks_loaded = True
 
@@ -420,7 +455,7 @@ class Playlist(object):
         )
 
 
-class GP(object):
+class _GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
     asynchronous API calls, caching and some other perks.
@@ -428,12 +463,9 @@ class GP(object):
     Singleton.
     """
     # TODO: Switch to urwid signals for more explicitness?
-    instance = None
-
     caches_invalidated = EventHook()
 
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
         # self.is_debug = os.getenv('CLAY_DEBUG')
         self.mobile_client = Mobileclient()
         self.mobile_client._make_call = self._make_call_proxy(
@@ -449,16 +481,6 @@ class GP(object):
 
         self.auth_state_changed = EventHook()
 
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.GP` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = GP()
-
-        return cls.instance
-
     def _make_call_proxy(self, func):
         """
         Return a function that wraps *fn* and logs args & return values.
@@ -467,7 +489,7 @@ class GP(object):
             """
             Wrapper function.
             """
-            Logger.get().debug('GP::{}(*{}, **{})'.format(
+            logger.debug('GP::{}(*{}, **{})'.format(
                 protocol.__name__,
                 args,
                 kwargs
@@ -633,3 +655,6 @@ class GP(object):
         Return True if user is subscribed on Google Play Music, false otherwise.
         """
         return self.mobile_client.is_subscribed
+
+
+gp = _GP()  # pylint: disable=invalid-name

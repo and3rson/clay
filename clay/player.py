@@ -14,11 +14,12 @@ except ImportError:  # Python 2.x
 
 from clay import vlc, meta
 from clay.eventhook import EventHook
-from clay.notifications import NotificationArea
-from clay.settings import Settings
-from clay.log import Logger
+from clay.notifications import notification_area
+from clay.settings import settings
+from clay.log import logger
 
-class Queue(object):
+
+class _Queue(object):
     """
     Model that represents player queue (local playlist),
     i.e. list of tracks to be played.
@@ -111,15 +112,13 @@ class Queue(object):
         return self.tracks
 
 
-class Player(object):
+class _Player(object):
     """
     Interface to libVLC. Uses Queue as a playback plan.
     Emits various events if playback state, tracks or play flags change.
 
     Singleton.
     """
-    instance = None
-
     media_position_changed = EventHook()
     media_state_changed = EventHook()
     track_changed = EventHook()
@@ -129,9 +128,6 @@ class Player(object):
     track_removed = EventHook()
 
     def __init__(self):
-        assert self.__class__.instance is None, 'Can be created only once!'
-        self.logger = Logger.get()
-
         self.instance = vlc.Instance()
         self.instance.set_user_agent(
             meta.APP_NAME,
@@ -163,26 +159,15 @@ class Player(object):
 
         self._create_station_notification = None
         self._is_loading = False
-        self.queue = Queue()
-
-    @classmethod
-    def get(cls):
-        """
-        Create new :class:`.Player` instance or return existing one.
-        """
-        if cls.instance is None:
-            cls.instance = Player()
-
-        return cls.instance
+        self.queue = _Queue()
 
     def enable_xorg_bindings(self):
         """Enable the global X bindings using keybinder"""
         if os.environ.get("DISPLAY") is None:
-            self.logger.debug("X11 isn't running so we can't load the global keybinds")
+            logger.debug("X11 isn't running so we can't load the global keybinds")
             return
 
-        from clay.hotkeys import HotkeyManager
-        hotkey_manager = HotkeyManager.get()
+        from clay.hotkeys import hotkey_manager
         hotkey_manager.play_pause += self.play_pause
         hotkey_manager.next += self.next
         hotkey_manager.prev += lambda: self.seek_absolute(0)
@@ -247,7 +232,7 @@ class Player(object):
         Load queue & start playback.
         Fires :attr:`.queue_changed` event.
 
-        See :meth:`.Queue.load`.
+        See :meth:`._Queue.load`.
         """
         self.queue.load(data, current_index)
         self.queue_changed.fire()
@@ -258,7 +243,7 @@ class Player(object):
         Append track to queue.
         Fires :attr:`.track_appended` event.
 
-        See :meth:`.Queue.append`
+        See :meth:`._Queue.append`
         """
         self.queue.append(track)
         self.track_appended.fire(track)
@@ -269,7 +254,7 @@ class Player(object):
         Remove track from queue.
         Fires :attr:`.track_removed` event.
 
-        See :meth:`.Queue.remove`
+        See :meth:`._Queue.remove`
         """
         self.queue.remove(track)
         self.track_removed.fire(track)
@@ -279,7 +264,7 @@ class Player(object):
         Request creation of new station from some track.
         Runs in background.
         """
-        self._create_station_notification = NotificationArea.notify('Creating station...')
+        self._create_station_notification = notification_area.notify('Creating station...')
         track.create_station_async(callback=self._create_station_from_track_ready)
 
     def _create_station_from_track_ready(self, station, error):
@@ -330,7 +315,7 @@ class Player(object):
 
     def get_queue_tracks(self):
         """
-        Return :attr:`.Queue.get_tracks`
+        Return :attr:`._Queue.get_tracks`
         """
         return self.queue.get_tracks()
 
@@ -346,29 +331,30 @@ class Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if Settings.get_config("play_settings").get('download_tracks', False):
-            path = Settings.get_cached_file_path(track.store_id + '.mp3')
+        if settings.get('download_tracks', default=False) or settings.get_is_file_cached(track.filename):
+            path = settings.get_cached_file_path(track.filename)
+
             if path is None:
-                self.logger.debug('Track %s not in cache, downloading...', track.store_id)
+                logger.debug('Track %s not in cache, downloading...', track.store_id)
                 track.get_url(callback=self._download_track)
             else:
-                self.logger.debug('Track %s in cache, playing', track.store_id)
+                logger.debug('Track %s in cache, playing', track.store_id)
                 self._play_ready(path, None, track)
         else:
-            self.logger.debug('Starting to stream %s', track.store_id)
+            logger.debug('Starting to stream %s', track.store_id)
             track.get_url(callback=self._play_ready)
 
     def _download_track(self, url, error, track):
         if error:
-            NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
-            self.logger.error(
+            notification_area.notify('Failed to request media URL: {}'.format(str(error)))
+            logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,
                 str(error)
             )
             return
         response = urlopen(url)
-        path = Settings.save_file_to_cache(track.store_id + '.mp3', response.read())
+        path = settings.save_file_to_cache(track.filename, response.read())
         self._play_ready(path, None, track)
 
     def _play_ready(self, url, error, track):
@@ -378,8 +364,8 @@ class Player(object):
         """
         self._is_loading = False
         if error:
-            NotificationArea.notify('Failed to request media URL: {}'.format(str(error)))
-            self.logger.error(
+            notification_area.notify('Failed to request media URL: {}'.format(str(error)))
+            logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,
                 str(error)
@@ -435,7 +421,7 @@ class Player(object):
     def next(self, force=False):
         """
         Advance to next track in queue.
-        See :meth:`.Queue.next`.
+        See :meth:`._Queue.next`.
         """
         self.queue.next(force)
         self._play()
@@ -443,7 +429,7 @@ class Player(object):
     def get_current_track(self):
         """
         Return currently played track.
-        See :meth:`.Queue.get_current_track`.
+        See :meth:`._Queue.get_current_track`.
         """
         return self.queue.get_current_track()
 
@@ -508,3 +494,6 @@ class Player(object):
                 index
             ) == 0
         self.media_player.set_equalizer(self.equalizer)
+
+
+player = _Player()  # pylint: disable=invalid-name

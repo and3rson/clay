@@ -4,9 +4,9 @@ Debug page.
 import urwid
 
 from clay.pages.page import AbstractPage
-from clay.log import Logger
+from clay.log import logger
 from clay.clipboard import copy
-from clay.gp import GP
+from clay.gp import gp
 
 
 class DebugItem(urwid.AttrMap):
@@ -49,9 +49,9 @@ class DebugPage(urwid.Pile, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.walker = urwid.SimpleListWalker([])
-        for log_record in Logger.get().get_logs():
+        for log_record in logger.get_logs():
             self._append_log(log_record)
-        Logger.get().on_log_event += self._append_log
+        logger.on_log_event += self._append_log
         self.listbox = urwid.ListBox(self.walker)
 
         self.debug_data = urwid.Text('')
@@ -64,7 +64,7 @@ class DebugPage(urwid.Pile, AbstractPage):
             self.listbox
         ])
 
-        GP.get().auth_state_changed += self.update
+        gp.auth_state_changed += self.update
 
         self.update()
 
@@ -72,12 +72,11 @@ class DebugPage(urwid.Pile, AbstractPage):
         """
         Update this widget.
         """
-        gpclient = GP.get()
         self.debug_data.set_text(
             '- Is authenticated: {}\n'
             '- Is subscribed: {}'.format(
-                gpclient.is_authenticated,
-                gpclient.is_subscribed if gpclient.is_authenticated else None
+                gp.is_authenticated,
+                gp.is_subscribed if gp.is_authenticated else None
             )
         )
 

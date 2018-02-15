@@ -12,10 +12,11 @@ except ImportError:
     # Python 2.3
     from string import letters as ascii_letters
 import urwid
-from clay.notifications import NotificationArea
-from clay.player import Player
-from clay.gp import GP
+from clay.notifications import notification_area
+from clay.player import player
+from clay.gp import gp
 from clay.clipboard import copy
+from clay.settings import settings
 
 
 class SongListItem(urwid.Pile):
@@ -35,6 +36,19 @@ class SongListItem(urwid.Pile):
     STATE_PLAYING = 2
     STATE_PAUSED = 3
 
+    LINE1_ATTRS = {
+        STATE_IDLE: ('line1', 'line1_focus'),
+        STATE_LOADING: ('line1_active', 'line1_active_focus'),
+        STATE_PLAYING: ('line1_active', 'line1_active_focus'),
+        STATE_PAUSED: ('line1_active', 'line1_active_focus')
+    }
+    LINE2_ATTRS = {
+        STATE_IDLE: ('line2', 'line2_focus'),
+        STATE_LOADING: ('line2', 'line2_focus'),
+        STATE_PLAYING: ('line2', 'line2_focus'),
+        STATE_PAUSED: ('line2', 'line2_focus')
+    }
+
     STATE_ICONS = {
         0: ' ',
         1: u'\u2505',
@@ -46,8 +60,14 @@ class SongListItem(urwid.Pile):
         self.track = track
         self.index = 0
         self.state = SongListItem.STATE_IDLE
-        self.line1 = urwid.SelectableIcon('', cursor_position=1000)
-        self.line1.set_layout('left', 'clip', None)
+        self.line1_left = urwid.SelectableIcon('', cursor_position=1000)
+        self.line1_left.set_layout('left', 'clip', None)
+        self.line1_right = urwid.Text('x')
+        self.line1 = urwid.Columns([
+            self.line1_left,
+            ('pack', self.line1_right),
+            ('pack', urwid.Text(' '))
+        ])
         self.line2 = urwid.Text('', wrap='clip')
 
         self.line1_wrap = urwid.AttrWrap(self.line1, 'line1')
@@ -90,13 +110,7 @@ class SongListItem(urwid.Pile):
         """
         Update text of this item from the attached track.
         """
-        if self.state == SongListItem.STATE_IDLE:
-            title_attr = 'line1_focus' if self.is_focused else 'line1'
-        else:
-            title_attr = 'line1_active_focus' if self.is_focused else 'line1_active'
-        artist_attr = 'line2_focus' if self.is_focused else 'line2'
-
-        self.line1.set_text(
+        self.line1_left.set_text(
             u'{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
                 index=self.index + 1,
                 icon=self.get_state_icon(self.state),
@@ -105,11 +119,15 @@ class SongListItem(urwid.Pile):
                 seconds=(self.track.duration // 1000) % 60
             )
         )
+        if settings.get_is_file_cached(self.track.filename):
+            self.line1_right.set_text(u' \u25bc Cached')
+        else:
+            self.line1_right.set_text(u'')
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )
-        self.line1_wrap.set_attr(title_attr)
-        self.line2_wrap.set_attr(artist_attr)
+        self.line1_wrap.set_attr(SongListItem.LINE1_ATTRS[self.state][self.is_focused])
+        self.line2_wrap.set_attr(SongListItem.LINE2_ATTRS[self.state][self.is_focused])
 
     @property
     def full_title(self):
@@ -198,68 +216,40 @@ class SongListBoxPopup(urwid.LineBox):
                 'panel_divider'
             )
         ]
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
-        if not GP.get().get_track_by_id(songitem.track.id):
-            options.append(urwid.AttrWrap(
-                urwid.Button('Add to my library', on_press=self.add_to_my_library),
-                'panel',
-                'panel_focus'
-            ))
+        options.append(self._create_divider())
+        if not gp.get_track_by_id(songitem.track.id):
+            options.append(self._create_button('Add to library', self.add_to_my_library))
         else:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Remove from my library', on_press=self.remove_from_my_library),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
-        options.append(urwid.AttrWrap(
-            urwid.Button('Create station', on_press=self.create_station),
-            'panel',
-            'panel_focus'
-        ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
-        if self.songitem.track in Player.get().get_queue_tracks():
-            options.append(urwid.AttrWrap(
-                urwid.Button('Remove from queue', on_press=self.remove_from_queue),
-                'panel',
-                'panel_focus'
-            ))
+            options.append(self._create_button('Remove from library', self.remove_from_my_library))
+        options.append(self._create_divider())
+        options.append(self._create_button('Create station', self.create_station))
+        options.append(self._create_divider())
+        if self.songitem.track in player.get_queue_tracks():
+            options.append(self._create_button('Remove from queue', self.remove_from_queue))
         else:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Append to queue', on_press=self.append_to_queue),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        ))
+            options.append(self._create_button('Append to queue', self.append_to_queue))
         if self.songitem.track.cached_url is not None:
-            options.append(urwid.AttrWrap(
-                urwid.Button('Copy URL to clipboard', on_press=self.copy_url),
-                'panel',
-                'panel_focus'
-            ))
-        options.append(urwid.AttrWrap(
-            urwid.Button('Close', on_press=self.close),
-            'panel',
-            'panel_focus'
-        ))
+            options.append(self._create_button('Copy URL to clipboard', self.copy_url))
+        options.append(self._create_button('Close', self.close))
         super(SongListBoxPopup, self).__init__(
             urwid.Pile(options)
+        )
+
+    def _create_divider(self):
+        """
+        Return a divider widget.
+        """
+        return urwid.AttrWrap(
+            urwid.Divider(u'\u2500'),
+            'panel_divider',
+            'panel_divider_focus'
+        )
+
+    def _create_button(self, title, on_press):
+        return urwid.AttrWrap(
+            urwid.Button(title, on_press=on_press),
+            'panel',
+            'panel_focus'
         )
 
     def add_to_my_library(self, _):
@@ -271,11 +261,11 @@ class SongListBoxPopup(urwid.LineBox):
             Show notification with song addition result.
             """
             if error or not result:
-                NotificationArea.notify('Error while adding track to my library: {}'.format(
+                notification_area.notify('Error while adding track to my library: {}'.format(
                     str(error) if error else 'reason is unknown :('
                 ))
             else:
-                NotificationArea.notify('Track added to library!')
+                notification_area.notify('Track added to library!')
         self.songitem.track.add_to_my_library_async(callback=on_add_to_my_library)
         self.close()
 
@@ -288,11 +278,11 @@ class SongListBoxPopup(urwid.LineBox):
             Show notification with song removal result.
             """
             if error or not result:
-                NotificationArea.notify('Error while removing track from my library: {}'.format(
+                notification_area.notify('Error while removing track from my library: {}'.format(
                     str(error) if error else 'reason is unknown :('
                 ))
             else:
-                NotificationArea.notify('Track removed from library!')
+                notification_area.notify('Track removed from library!')
         self.songitem.track.remove_from_my_library_async(callback=on_remove_from_my_library)
         self.close()
 
@@ -300,21 +290,21 @@ class SongListBoxPopup(urwid.LineBox):
         """
         Appends related track to queue.
         """
-        Player.get().append_to_queue(self.songitem.track)
+        player.append_to_queue(self.songitem.track)
         self.close()
 
     def remove_from_queue(self, _):
         """
         Removes related track from queue.
         """
-        Player.get().remove_from_queue(self.songitem.track)
+        player.remove_from_queue(self.songitem.track)
         self.close()
 
     def create_station(self, _):
         """
         Create a station from this track.
         """
-        Player.get().create_station_from_track(self.songitem.track)
+        player.create_station_from_track(self.songitem.track)
         self.close()
 
     def copy_url(self, _):
@@ -344,7 +334,6 @@ class SongListBox(urwid.Frame):
         self.tracks = []
         self.walker = urwid.SimpleFocusListWalker([])
 
-        player = Player.get()
         player.track_changed += self.track_changed
         player.media_state_changed += self.media_state_changed
 
@@ -432,7 +421,7 @@ class SongListBox(urwid.Frame):
         """
         Convert list of track data items into list of :class:`.SongListItem` instances.
         """
-        current_track = Player.get().get_current_track()
+        current_track = player.get_current_track()
         items = []
         current_index = None
         for index, track in enumerate(tracks):
@@ -465,7 +454,6 @@ class SongListBox(urwid.Frame):
         Toggles track playback state or loads entire playlist
         that contains current track into player queue.
         """
-        player = Player.get()
         if songitem.is_currently_played:
             player.play_pause()
         else:
@@ -477,7 +465,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *append-requested* item.
         Appends track to player queue.
         """
-        Player.get().append_to_queue(songitem.track)
+        player.append_to_queue(songitem.track)
 
     @staticmethod
     def item_unappend_requested(songitem):
@@ -485,7 +473,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *remove-requested* item.
         Removes track from player queue.
         """
-        Player.get().remove_from_queue(songitem.track)
+        player.remove_from_queue(songitem.track)
 
     @staticmethod
     def item_station_requested(songitem):
@@ -493,7 +481,7 @@ class SongListBox(urwid.Frame):
         Called when specific item emits *station-requested* item.
         Requests new station creation.
         """
-        Player.get().create_station_from_track(songitem.track)
+        player.create_station_from_track(songitem.track)
 
     def context_menu_requested(self, songitem):
         """
@@ -540,7 +528,7 @@ class SongListBox(urwid.Frame):
         Called when player media state changes.
         Updates corresponding song item state (if found in this song list).
         """
-        current_track = Player.get().get_current_track()
+        current_track = player.get_current_track()
         if current_track is None:
             return
 

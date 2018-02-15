@@ -24,3 +24,6 @@ run: | build
 docs:
 	make -C docs html
 
+check:
+	pylint clay --ignore-imports=y
+	radon cc -a -s -nC -e clay/vlc.py clay

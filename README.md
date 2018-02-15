@@ -22,7 +22,7 @@
 
 # Clay [beta]
 
-[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/and3rson/clay.svg?branch=master)](https://travis-ci.org/and3rson/clay) [![Documentation Status](https://readthedocs.org/projects/clay/badge/?version=latest)](http://clay.readthedocs.io/en/latest/?badge=latest) [![PyPI version](https://badge.fury.io/py/clay-player.svg)](https://badge.fury.io/py/clay-player) [![Maintainability](https://api.codeclimate.com/v1/badges/33fc2ac7949ddd9a51ee/maintainability?1)](https://codeclimate.com/github/and3rson/clay/maintainability)
 
 Standalone command line player for Google Play Music.
 
@@ -31,6 +31,11 @@ This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] librar
 This project is neither affiliated nor endorsed by Google.
 
 It's being actively developed, but is still in the early beta stage, so many features are missing and/or may be bugged.
+
+We're on IRC!
+
+- Server: irc.oftc.net
+- Channel: **#clay**
 
 Screenshot:
 

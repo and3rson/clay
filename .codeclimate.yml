@@ -1,0 +1,31 @@
+version: "2"  # required to adjust maintainability checks
+exclude_patterns:
+  - "clay/vlc.py"
+engines:
+  duplication:
+    enabled: false
+checks:
+  argument-count:
+    config:
+      threshold: 8  # maximum complexity for ~ B mark in Radon
+  complex-logic:
+    config:
+      threshold: 4
+  file-lines:
+    config:
+      threshold: 1000
+  method-complexity:
+    config:
+      threshold: 10
+  method-count:
+    config:
+      threshold: 40
+  method-lines:
+    config:
+      threshold: 40  # to fit in 1366x768 screen
+  nested-control-flow:
+    config:
+      threshold: 4
+  return-statements:
+    config:
+      threshold: 5
