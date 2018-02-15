@@ -361,8 +361,11 @@ def main():
         player.enable_xorg_bindings()
 
     # Run the actual program
-    palette = [(name, '', '', '', colour['foreground'], colour['background'])
-               for name, colour in settings.get_section('colours').items()]
+    palette = []
+    for name in settings.get_default_config_section("colours"):
+        res = settings.get(name, "colours")
+        palette.append((name, '', '', '', res['foreground'], res['background']))
+
     app_widget = AppWidget()
     loop = urwid.MainLoop(app_widget, palette)
     app_widget.set_loop(loop)

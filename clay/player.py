@@ -331,8 +331,7 @@ class _Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if settings.get('download_tracks', default=False) \
-           or settings.get_is_file_cached(track.filename):
+        if settings.get('download_tracks') or settings.get_is_file_cached(track.filename):
             path = settings.get_cached_file_path(track.filename)
 
             if path is None:

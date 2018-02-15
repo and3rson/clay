@@ -21,6 +21,8 @@ setup(
         'console_scripts': [
             'clay=clay.app:main'
         ]
-    }
+    },
+    package_data={
+        'clay': ['config.yaml'],
+    },
 )
-

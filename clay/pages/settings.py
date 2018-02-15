@@ -129,17 +129,17 @@ class SettingsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.username = urwid.Edit(
-            edit_text=settings.get('username', default='')
+            edit_text=settings.get('username')
         )
         self.password = urwid.Edit(
-            mask='*', edit_text=settings.get('password', default='')
+            mask='*', edit_text=settings.get('password')
         )
         self.device_id = urwid.Edit(
-            edit_text=settings.get('device_id', default='')
+            edit_text=settings.get('device_id')
         )
         self.download_tracks = urwid.CheckBox(
             'Download tracks before playback',
-            state=settings.get('download_tracks', default=False)
+            state=settings.get('download_tracks')
         )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
@@ -168,10 +168,10 @@ class SettingsPage(urwid.Columns, AbstractPage):
         Called when "Save" button is pressed.
         """
         with settings.edit() as config:
-            config['username'] = self.username.edit_text
-            config['password'] = self.password.edit_text
-            config['device_id'] = self.device_id.edit_text
-            config['download_tracks'] = self.download_tracks.state
+            config['play_settings']['username'] = self.username.edit_text
+            config['play_settings']['password'] = self.password.edit_text
+            config['play_settings']['device_id'] = self.device_id.edit_text
+            config['play_settings']['download_tracks'] = self.download_tracks.state
 
         self.app.set_page('MyLibraryPage')
         self.app.log_in()

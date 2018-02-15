@@ -1,17 +1,19 @@
+#: pylint:skip-file
+hotkeys:
 
 play_settings:
-  authtoken: 
-  device_id: 
+  authtoken: ""
+  device_id: ""
   download_tracks: false
-  password: 
-  username: 
+  password: ""
+  username: ""
 
 colours:
-  background: &def
+  default: &def
     foreground: "#FFF"
     background: "#222"
-    
-  default: *def
+
+  background: *def
   None: *def
 
   logo:
@@ -88,16 +90,16 @@ colours:
     background: "#333"
 
   line1_active:
-    foreground: "#F54"
     <<: *def
+    foreground: "#F54"
 
   line1_active_focus:
     foreground: "#F54"
     background: "#333"
 
   line2:
-    foreground: "#AAA"
     <<: *def
+    foreground: "#AAA"
 
   line2_focus:
     foreground: "#AAA"
@@ -112,8 +114,8 @@ colours:
     background: "#F54"
 
   flag:
-    foreground: "#AAA"
     <<: *def
+    foreground: "#AAA"
 
   flag-active:
     foreground: "#F54"

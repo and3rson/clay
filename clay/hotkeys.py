@@ -76,7 +76,7 @@ class _HotkeyManager(object):
         """
         Load hotkey config from settings.
         """
-        hotkeys = settings.get('hotkeys', default={})
+        hotkeys = settings.get('hotkeys')
         for operation, default_key in _HotkeyManager.DEFAULT_HOTKEYS.items():
             if operation not in hotkeys or not hotkeys[operation]:
                 hotkeys[operation] = default_key

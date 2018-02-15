@@ -7,6 +7,7 @@ import copy
 import errno
 import yaml
 import appdirs
+import pkg_resources
 
 
 class _SettingsEditor(dict):
@@ -41,6 +42,7 @@ class _Settings(object):
     """
     def __init__(self):
         self._config = {}
+        self._default_config = {}
         self._cached_files = set()
 
         self._config_dir = None
@@ -82,6 +84,9 @@ class _Settings(object):
         with open(self._config_file_path, 'r') as settings_file:
             self._config = yaml.load(settings_file.read())
 
+        # Load the configuration from Setuptools' ResourceManager API
+        self._default_config = yaml.load(pkg_resources.resource_string(__name__, "config.yaml"))
+
     def _load_cache(self):
         """
         Load cached files.
@@ -94,27 +99,38 @@ class _Settings(object):
 
         This method is supposed to be called only
         from :py:meth:`~._SettingsEditor.__exit__`.
->>>>>>> master
         """
         self._config.update(config)
         with open(self._config_file_path, 'w') as settings_file:
             settings_file.write(yaml.dump(self._config, default_flow_style=False))
 
-    def get(self, key, section="play_settings", default=None):
+    def get(self, key, section="play_settings"):
         """
         Return their configuration key in a specified section
         By default it looks in play_settings.
         """
-        if section not in self._config:
-            return default
+        try:
+            return self._config[section][key]
+        except (KeyError, TypeError):
+            return self._default_config[section][key]
 
-        return self._config[section].get(key, default)
+    def get_section(self, section):
+        """
+        Get a section from the user configuration file if it can find it,
+        else load it from the system config
+        """
+        try:
+            return self._config[section]
+        except KeyError:
+            return self._default_config[section]
 
-    def get_section(self, key, default=None):
+    def get_default_config_section(self, section):
         """
-        Return configuration section
+        Always get a section from the default/system configuration. You would use this whenever
+        you need to loop through all the values in a section. In the user config they might be
+        incomplete.
         """
-        return self._config.get(key, default)
+        return self._default_config[section]
 
     def edit(self):
         """
