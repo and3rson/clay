@@ -36,6 +36,19 @@ class SongListItem(urwid.Pile):
     STATE_PLAYING = 2
     STATE_PAUSED = 3
 
+    LINE1_ATTRS = {
+        STATE_IDLE: ('line1', 'line1_focus'),
+        STATE_LOADING: ('line1_active', 'line1_active_focus'),
+        STATE_PLAYING: ('line1_active', 'line1_active_focus'),
+        STATE_PAUSED: ('line1_active', 'line1_active_focus')
+    }
+    LINE2_ATTRS = {
+        STATE_IDLE: ('line2', 'line2_focus'),
+        STATE_LOADING: ('line2', 'line2_focus'),
+        STATE_PLAYING: ('line2', 'line2_focus'),
+        STATE_PAUSED: ('line2', 'line2_focus')
+    }
+
     STATE_ICONS = {
         0: ' ',
         1: u'\u2505',
@@ -97,12 +110,6 @@ class SongListItem(urwid.Pile):
         """
         Update text of this item from the attached track.
         """
-        if self.state == SongListItem.STATE_IDLE:
-            title_attr = 'line1_focus' if self.is_focused else 'line1'
-        else:
-            title_attr = 'line1_active_focus' if self.is_focused else 'line1_active'
-        artist_attr = 'line2_focus' if self.is_focused else 'line2'
-
         self.line1_left.set_text(
             u'{index:3d} {icon} {title} [{minutes:02d}:{seconds:02d}]'.format(
                 index=self.index + 1,
@@ -119,8 +126,8 @@ class SongListItem(urwid.Pile):
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )
-        self.line1_wrap.set_attr(title_attr)
-        self.line2_wrap.set_attr(artist_attr)
+        self.line1_wrap.set_attr(SongListItem.LINE1_ATTRS[self.state][self.is_focused])
+        self.line2_wrap.set_attr(SongListItem.LINE2_ATTRS[self.state][self.is_focused])
 
     @property
     def full_title(self):
