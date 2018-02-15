@@ -26,12 +26,6 @@ from clay.notifications import notification_area
 from clay.gp import gp
 
 
-def create_palette(transparent=False):
-    config = settings.get_section('colours')
-
-    return [(name, '', '', '', config[name]['foreground'], config[name]['background'])
-            for name in config]
-
 class AppWidget(urwid.Frame):
     """
     Root widget.
@@ -130,11 +124,8 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        username, password, device_id, authtoken = [
-            settings.get(x)
-            for x
-            in ('username', 'password', 'device_id', 'authtoken')
-        ]
+        authtoken, device_id, _, password, username = settings.get_section("play_settings").values()
+
         if self._login_notification:
             self._login_notification.close()
         if use_token and authtoken:
@@ -361,12 +352,6 @@ def main():
         action='store_true'
     )
 
-    parser.add_argument(
-        "--transparent",
-        help="use transparent background",
-        action='store_true'
-    )
-
     args = parser.parse_args()
 
     if args.version:
@@ -376,8 +361,10 @@ def main():
         player.enable_xorg_bindings()
 
     # Run the actual program
+    palette = [(name, '', '', '', colour['foreground'], colour['background'])
+               for name, colour in settings.get_section('colours').items()]
     app_widget = AppWidget()
-    loop = urwid.MainLoop(app_widget, create_palette(args.transparent))
+    loop = urwid.MainLoop(app_widget, palette)
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()

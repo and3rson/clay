@@ -101,6 +101,10 @@ class _Settings(object):
             settings_file.write(yaml.dump(self._config, default_flow_style=False))
 
     def get(self, key, section="play_settings", default=None):
+        """
+        Return their configuration key in a specified section
+        By default it looks in play_settings.
+        """
         if section not in self._config:
             return default
 
@@ -108,7 +112,7 @@ class _Settings(object):
 
     def get_section(self, key, default=None):
         """
-        Return config value.
+        Return configuration section
         """
         return self._config.get(key, default)
 
