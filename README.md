@@ -19,6 +19,7 @@
   * [Misc](#misc)
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
+- [Changelog](./CHANGELOG.rst)
 
 # Clay [beta]
 
