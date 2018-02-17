@@ -1,9 +1,11 @@
 CMD ?= "./clay/app.py"
 
+# Build Clay Docker image
 build:
 	echo $(shell id -u)
 	docker build -t clay --build-arg HOST_USER=${USER} --build-arg HOST_UID=$(shell id -u) .
 
+# Run Clay Docker image
 run: | build
 	docker run -it \
 	--rm \
@@ -20,10 +22,12 @@ run: | build
 	clay \
 	${CMD}
 
+# Generate Sphinx docs
 .PHONY: docs
 docs:
 	make -C docs html
 
+# Run pylint & radon
 check:
 	pylint clay --ignore-imports=y
 	radon cc -a -s -nC -e clay/vlc.py clay
