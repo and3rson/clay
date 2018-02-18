@@ -15,8 +15,6 @@ RUN apt-get install -y python3.6-dev python3-pip libvlc-dev vlc locales language
 RUN locale-gen en_US.UTF-8
 
 RUN useradd ${HOST_USER} -m -G audio -u ${HOST_UID}
-#RUN mkdir -p /home/${HOST_USER}/.config/clay
-#RUN chown ${HOST_USER} /home/${HOST_USER}/.config/clay
 
 WORKDIR /home/${HOST_USER}
 

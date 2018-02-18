@@ -16,10 +16,6 @@ class Slider(urwid.Widget):
     _sizing = frozenset([urwid.FLOW])
 
     CHARS = [
-        # '_',
-        # u'\u2581',
-        # u'\u2500',
-        # u'\u2594'
         u'\u2584',
         u'\u25A0',
         u'\u2580',

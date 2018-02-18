@@ -2,11 +2,7 @@
 Google Play Music integration via gmusicapi.
 """
 # pylint: disable=broad-except
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-return-statements
 # pylint: disable=protected-access
-# pylint: disable=no-self-use
 from __future__ import print_function
 from threading import Thread, Lock
 from uuid import UUID
@@ -86,7 +82,7 @@ class Track(object):
     SOURCE_PLAYLIST = 'playlist'
     SOURCE_SEARCH = 'search'
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
             self,
             title, artist, duration, source,
             library_id=None, store_id=None, playlist_item_id=None,

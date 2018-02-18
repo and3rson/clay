@@ -9,7 +9,7 @@ try:
     # Python 3.x
     from string import ascii_letters
 except ImportError:
-    # Python 2.3
+    # Python 2.x
     from string import letters as ascii_letters
 import urwid
 from clay.notifications import notification_area

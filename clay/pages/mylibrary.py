@@ -43,7 +43,6 @@ class MyLibraryPage(urwid.Columns, AbstractPage):
         if error:
             notification_area.notify('Failed to load my library: {}'.format(str(error)))
             return
-        # self.notification.close()
         self.songlist.populate(tracks)
         self.app.redraw()
 

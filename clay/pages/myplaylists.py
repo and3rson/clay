@@ -91,8 +91,6 @@ class MyPlaylistListBox(urwid.ListBox):
             )
             items.append(myplaylistlistitem)
 
-        # self.notification.close()
-
         self.walker[:] = items
 
         self.app.redraw()

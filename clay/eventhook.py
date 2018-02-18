@@ -1,7 +1,6 @@
 """
 Events implemetation for signal handling.
 """
-# pylint: disable=too-few-public-methods
 
 
 class EventHook(object):
