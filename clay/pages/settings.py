@@ -17,10 +17,14 @@ class Slider(urwid.Widget):
 
     CHARS = [
         # '_',
-        u'\u2581',
-        u'\u2500',
-        u'\u2594'
+        # u'\u2581',
+        # u'\u2500',
+        # u'\u2594'
+        u'\u2584',
+        u'\u25A0',
+        u'\u2580',
     ]
+    ZERO_CHAR = u'\u2500'
 
     def selectable(self):
         return True
@@ -35,7 +39,7 @@ class Slider(urwid.Widget):
         else:
             self.freq_str = str(freq) + '\nHz'
         self.value = 0
-        self.slider_height = 5
+        self.slider_height = 13
         self.max_value = 20
         super(Slider, self).__init__()
 
@@ -49,16 +53,18 @@ class Slider(urwid.Widget):
         """
         Render widget.
         """
-        rows = [('+' if self.value >= 0 else '') + str(self.value) + ' dB']
+        rows = [('+' if self.value > 0 else '') + str(self.value) + ' dB']
 
-        chars = [' '] * 5
+        chars = [' '] * self.slider_height
 
-        k = ((float(self.value) / (self.max_value + 1)) + 1) / 2  # Convert value to [0;1] range
-        section_index = int(k * self.slider_height)
-        char_index = int(k * self.slider_height * len(Slider.CHARS)) % len(Slider.CHARS)
-        chars[section_index] = Slider.CHARS[char_index]
+        if self.value == 0:
+            chars[self.slider_height // 2] = Slider.ZERO_CHAR
+        else:
+            k = ((float(self.value) / (self.max_value + 1)) + 1) / 2  # Convert value to [0;1] range
+            section_index = int(k * self.slider_height)
+            char_index = int(k * self.slider_height * len(Slider.CHARS)) % len(Slider.CHARS)
+            chars[section_index] = Slider.CHARS[char_index]
 
-        # rows.extend(['X'] * self.slider_height)
         rows.extend([
             (
                 u'\u2524{}\u251C'
