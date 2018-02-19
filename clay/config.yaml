@@ -1,5 +1,10 @@
 #: pylint:skip-file
 hotkeys:
+  x_hotkeys:
+    play_pause: XF86AudioPlay
+    next: XF86AudioNext
+    prev: XF86AudioPrev
+
 
 clay_settings:
   x_keybinds: false

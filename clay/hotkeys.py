@@ -44,12 +44,6 @@ class _HotkeyManager(object):
     Manages configs.
     Runs Gtk main loop in a thread.
     """
-    DEFAULT_HOTKEYS = {
-        'play_pause': 'XF86AudioPlay',
-        'next': 'XF86AudioNext',
-        'prev': 'XF86AudioPrev'
-    }
-
     def __init__(self):
         self.hotkeys = {}
         self.config = None
@@ -76,10 +70,16 @@ class _HotkeyManager(object):
         """
         Load hotkey config from settings.
         """
-        hotkeys = settings.get('hotkeys')
-        for operation, default_key in _HotkeyManager.DEFAULT_HOTKEYS.items():
-            if operation not in hotkeys or not hotkeys[operation]:
+        hotkeys = settings.get_section('hotkeys', 'x_hotkeys')
+        default_hotkeys = settings.get_default_config_section('hotkeys', 'x_hotkeys')
+
+        if hotkeys is default_hotkeys:
+            return default_hotkeys
+
+        for operation, default_key in default_hotkeys.items():
+            if operation not in hotkeys:
                 hotkeys[operation] = default_key
+
         return hotkeys
 
     def initialize(self):

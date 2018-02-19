@@ -123,23 +123,32 @@ class _Settings(object):
         except (KeyError, TypeError):
             return self._default_config[section][key]
 
-    def get_section(self, section):
+    def _get_section(self, config, *sections):
+        config = config.copy()
+
+        for section in sections:
+            config = config[section]
+
+        return config
+
+    def get_section(self, *sections):
         """
         Get a section from the user configuration file if it can find it,
         else load it from the system config
         """
         try:
-            return self._config[section]
-        except KeyError:
-            return self._default_config[section]
+            return self._get_section(self._config, *sections)
+        except (KeyError, TypeError):
+            return self._get_section(self._default_config, *sections)
 
-    def get_default_config_section(self, section):
+
+    def get_default_config_section(self, *sections):
         """
         Always get a section from the default/system configuration. You would use this whenever
         you need to loop through all the values in a section. In the user config they might be
         incomplete.
         """
-        return self._default_config[section]
+        return self._get_section(self._default_config, *sections)
 
     def edit(self):
         """

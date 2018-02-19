@@ -243,6 +243,7 @@ class AppWidget(urwid.Frame):
                 return
 
         method_name = AppWidget.KEYBINDS.get(key)
+
         if method_name:
             getattr(self, method_name)()
         else:
