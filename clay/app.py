@@ -32,20 +32,6 @@ class AppWidget(urwid.Frame):
 
     Handles tab switches, global keypresses etc.
     """
-
-    KEYBINDS = {
-        'ctrl q': 'seek_start',
-        'ctrl w': 'play_pause',
-        'ctrl e': 'next_song',
-        'shift left': 'seek_backward',
-        'shift right': 'seek_forward',
-        'ctrl s': 'toggle_shuffle',
-        'ctrl r': 'toggle_repeat_one',
-        'ctrl x': 'quit',
-        'esc': 'handle_escape_action',
-        'ctrl _': 'handle_escape_action'
-    }
-
     class Tab(urwid.Text):
         """
         Represents a single tab in header tabbar.
@@ -86,12 +72,7 @@ class AppWidget(urwid.Frame):
             SearchPage(self),
             SettingsPage(self)
         ]
-        self.tabs = [
-            AppWidget.Tab(page)
-            for page
-            in self.pages
-        ]
-
+        self.tabs = [AppWidget.Tab(page) for page in self.pages]
         self.current_page = None
         self.loop = None
 
@@ -117,6 +98,28 @@ class AppWidget(urwid.Frame):
 
         self.set_page('MyLibraryPage')
         self.log_in()
+        self._hotkeys = self._parse_hotkeys()
+
+    def _parse_hotkeys(self):
+        """
+        Read out the configuration file and parse them into a dictionary readable for urwid.
+        """
+        hotkey_config = settings.get_default_config_section('hotkeys', 'clay_hotkeys')
+        mod_key = settings.get('mod_key', 'hotkeys')
+        hotkeys = {}
+
+        for action in hotkey_config.keys():
+            key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys').replace(' ', '')
+
+            for key in key_seq.split(','):
+                hotkey = key.split('+')
+
+                if hotkey[0] == 'mod':
+                    hotkey[0] = mod_key
+
+                hotkeys[' '.join(hotkey)] = action
+
+        return hotkeys
 
     def log_in(self, use_token=True):
         """
@@ -242,7 +245,7 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
-        method_name = AppWidget.KEYBINDS.get(key)
+        method_name = self._hotkeys.get(key)
 
         if method_name:
             getattr(self, method_name)()
@@ -269,6 +272,13 @@ class AppWidget(urwid.Frame):
         Play next song.
         """
         player.next(True)
+
+    @staticmethod
+    def prev_song():
+        """
+        Play the previous song.
+        """
+        player.prev(True)
 
     @staticmethod
     def seek_backward():
@@ -305,7 +315,7 @@ class AppWidget(urwid.Frame):
         """
         sys.exit(0)
 
-    def handle_escape_action(self):
+    def handle_escape(self):
         """
         Run escape actions. If none are pending, close newest notification.
         """

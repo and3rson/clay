@@ -113,15 +113,18 @@ class _Settings(object):
         with open(self._config_file_path, 'w') as settings_file:
             settings_file.write(yaml.dump(self._config, default_flow_style=False))
 
-    def get(self, key, section="play_settings"):
+    def get(self, key, *sections):
         """
         Return their configuration key in a specified section
         By default it looks in play_settings.
         """
+        section = self.get_section(*sections)
+
         try:
-            return self._config[section][key]
+            return section[key]
         except (KeyError, TypeError):
-            return self._default_config[section][key]
+            section = self.get_default_config_section(*sections)
+            return section[key]
 
     def _get_section(self, config, *sections):
         config = config.copy()

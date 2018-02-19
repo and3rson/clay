@@ -35,6 +35,7 @@ class _Queue(object):
         self.repeat_one = False
 
         self.tracks = []
+        self._played_tracks = []
         self.current_track_index = None
 
     def load(self, tracks, current_track_index=None):
@@ -91,6 +92,8 @@ class _Queue(object):
             if not self.tracks:
                 return None
             self.current_track_index = self.tracks[0]
+        else:
+            self._played_tracks.append(self.current_track_index)
 
         if self.repeat_one and not force:
             return self.get_current_track()
@@ -103,6 +106,25 @@ class _Queue(object):
         if (self.current_track_index + 1) >= len(self.tracks):
             self.current_track_index = 0
 
+        return self.get_current_track()
+
+    def prev(self, force=False):
+        """
+        Revert to their last song and return it.
+
+        If *force* is ``True`` then tracks will be changed event if
+        tracks repition is enabled. Otherwise current tracks may be
+        yielded again.
+
+        Manual tracks switching calls this method with ``force=True``.
+        """
+        if self._played_tracks == []:
+            return None
+
+        if self.repeat_one and not force:
+            return self.get_current_track()
+
+        self.current_track_index = self._played_tracks.pop()
         return self.get_current_track()
 
     def get_tracks(self):
@@ -331,7 +353,8 @@ class _Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if settings.get('download_tracks') or settings.get_is_file_cached(track.filename):
+        if settings.get('download_tracks', 'play_settings') or \
+           settings.get_is_file_cached(track.filename):
             path = settings.get_cached_file_path(track.filename)
 
             if path is None:
@@ -424,6 +447,14 @@ class _Player(object):
         See :meth:`._Queue.next`.
         """
         self.queue.next(force)
+        self._play()
+
+    def prev(self, force=False):
+        """
+        Advance to their previous track in their queue
+        seek :meth:`._Queue.prev`
+        """
+        self.queue.prev(force)
         self._play()
 
     def get_current_track(self):

@@ -155,6 +155,7 @@ class SongListItem(urwid.Pile):
             urwid.emit_signal(self, 'station-requested', self)
         elif key == 'meta m':
             urwid.emit_signal(self, 'context-menu-requested', self)
+
         return super(SongListItem, self).keypress(size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):

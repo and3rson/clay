@@ -1,17 +1,30 @@
 #: pylint:skip-file
 hotkeys:
+  mod_key: ctrl
+
   x_hotkeys:
     play_pause: XF86AudioPlay
     next: XF86AudioNext
     prev: XF86AudioPrev
 
+  clay_hotkeys:
+    seek_start: mod + q
+    play_pause: mod + w, mod + p
+    seek_backward: shift + left
+    seek_forward: shift + right
+    quit: mod + x
+    toggle_shuffle: mod + s
+    next_song: mod + d
+    prev_song: mod + a
+    toggle_repeat_one: mod + r
+    handle_escape: esc, mod + _
 
 clay_settings:
   x_keybinds: false
 
 play_settings:
-  authtoken: ""
-  device_id: ""
+  authtoken:
+  device_id:
   download_tracks: false
-  password: ""
-  username: ""
+  password:
+  username:
