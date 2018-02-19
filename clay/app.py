@@ -183,7 +183,7 @@ class AppWidget(urwid.Frame):
             return
 
         with settings.edit() as config:
-            config['authtoken'] = gp.get_authtoken()
+            config['play_settings']['authtoken'] = gp.get_authtoken()
 
         self._login_notification.close()
 
@@ -346,9 +346,17 @@ def main():
 
     parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
-    parser.add_argument(
+    keybinds_group = parser.add_mutually_exclusive_group()
+
+    keybinds_group.add_argument(
         "--with-x-keybinds",
         help="define global X keybinds (requires Keybinder and PyGObject)",
+        action='store_true'
+    )
+
+    keybinds_group.add_argument(
+        "--without-x-keybinds",
+        help="Don't define global keybinds (overrides configuration file)",
         action='store_true'
     )
 
@@ -357,15 +365,15 @@ def main():
     if args.version:
         exit(0)
 
-    if args.with_x_keybinds:
+    if (args.with_x_keybinds or settings.get('x_keybinds', 'clay_settings')) \
+       and not args.without_x_keybinds:
         player.enable_xorg_bindings()
 
-    # Run the actual program
-    palette = []
-    for name in settings.get_default_config_section("colours"):
-        res = settings.get(name, "colours")
-        palette.append((name, '', '', '', res['foreground'], res['background']))
+    # Create a 256 colour palette.
+    palette = [(name, '', '', '', res['foreground'], res['background'])
+               for name, res in settings.colours_config.items()]
 
+    # Run the actual program
     app_widget = AppWidget()
     loop = urwid.MainLoop(app_widget, palette)
     app_widget.set_loop(loop)

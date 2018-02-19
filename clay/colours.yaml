@@ -1,0 +1,95 @@
+default: &default
+  foreground: "#FFF"
+  background: "#222"
+
+primary: &primary
+  foreground: "#F54"
+  background: "#FFF"
+
+primary_inv: &primary_inv
+  foreground: "#FFF"
+  background: "#F54"
+
+secondary: &secondary
+  foreground: "#17F"
+  background: "#FFF"
+
+secondary_inv: &secondary_inv
+  foreground: "#FFF"
+  background: "#17F"
+
+background: *default
+None: *default
+'': *default
+
+logo: *primary
+progress: *primary
+progressbar_done: *primary
+selected: *primary_inv
+
+progress_remaining:
+  foreground: "#FFF"
+  background: "#444"
+
+progressbar_done_paused:
+  <<: *default
+  foreground: null
+
+progressbar_remaining:
+  <<: *default
+  foreground: "#222"
+
+title-idle:
+  <<: *default
+  foreground: null
+
+title-playing: *primary
+
+panel:
+  foreground: "#FFF"
+  background: "#222"
+
+panel_focus: *primary_inv
+
+panel_divider:
+  foreground: "#444"
+  background: "#222"
+
+panel_divider_focus:
+  foreground: "#444"
+  background: '#F54'
+
+line1: *default
+line1_focus:
+  foreground: "#FFF"
+  background: "#333"
+
+line1_active: *primary
+
+line1_active_focus:
+  foreground: "#F54"
+  background: "#333"
+
+line2:
+  <<: *default
+  foreground: "#AAA"
+
+line2_focus:
+  foreground: "#AAA"
+  background: "#333"
+
+input:
+  foreground: "#FFF"
+  background: "#444"
+
+input_focus: *primary_inv
+
+flag:
+  <<: *default
+  foreground: "#AAA"
+
+flag-active: *primary
+
+notification:
+  foreground: "#F54"
+  background: "#222"
