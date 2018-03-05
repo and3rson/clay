@@ -46,6 +46,7 @@ class _HotkeyManager(object):
     """
     def __init__(self):
         self.hotkeys = {}
+        self._hotkeys = self._parse_hotkeys()
         self.config = None
 
         self.play_pause = EventHook()
@@ -65,6 +66,29 @@ class _HotkeyManager(object):
                 "You can check the log for more details."
             )
 
+    def _parse_hotkeys(self):
+        """
+        Read out the configuration file and parse them into a dictionary readable for urwid.
+        """
+        hotkey_config = settings.get_default_config_section('hotkeys', 'clay_hotkeys')
+        mod_key = settings.get('mod_key', 'hotkeys')
+        hotkeys = {}
+
+        for hotkey_name, hotkey_dict in hotkey_config.items():
+            hotkeys[hotkey_name] = {}
+            for action in hotkey_dict.keys():
+                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name).replace(' ', '')
+
+                for key in key_seq.split(','):
+                    hotkey = key.split('+')
+
+                    if hotkey[0] == 'mod':
+                        hotkey[0] = mod_key
+
+                    hotkeys[hotkey_name][' '.join(hotkey)] = action
+
+        return hotkeys
+
     @staticmethod
     def load_keys():
         """
@@ -81,6 +105,16 @@ class _HotkeyManager(object):
                 hotkeys[operation] = default_key
 
         return hotkeys
+
+    def keypress(self, name, caller, root, size, key):
+        method_name = self._hotkeys[name].get(key)
+
+        if method_name:
+            return getattr(caller, method_name)()
+        elif root is not None:
+            return super(root, caller).keypress(size, key)
+        else:
+            return key
 
     def initialize(self):
         """

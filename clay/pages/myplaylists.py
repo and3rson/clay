@@ -7,6 +7,7 @@ from clay.gp import gp
 from clay.songlist import SongListBox
 from clay.notifications import notification_area
 from clay.pages.page import AbstractPage
+from clay.hotkeys import hotkey_manager
 
 
 class MyPlaylistListItem(urwid.Columns):
@@ -33,10 +34,14 @@ class MyPlaylistListItem(urwid.Columns):
         """
         Handle keypress.
         """
-        if key == 'enter':
-            urwid.emit_signal(self, 'activate', self)
-            return None
-        return super(MyPlaylistListItem, self).keypress(size, key)
+        return hotkey_manager.keypress("playlist_page", self, MyPlaylistListItem, size, key)
+
+    def start_playlist(self):
+        """
+        Start playing the selected playlist
+        """
+        urwid.emit_signal(self, 'activate', self)
+        return None
 
     def get_tracks(self):
         """

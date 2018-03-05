@@ -17,6 +17,7 @@ from clay.player import player
 from clay.gp import gp
 from clay.clipboard import copy
 from clay.settings import settings
+from clay.hotkeys import hotkey_manager
 
 
 class SongListItem(urwid.Pile):
@@ -143,20 +144,7 @@ class SongListItem(urwid.Pile):
         """
         Handle keypress.
         """
-        if key == 'enter':
-            urwid.emit_signal(self, 'activate', self)
-            return None
-        elif key == 'ctrl a':
-            urwid.emit_signal(self, 'append-requested', self)
-        elif key == 'ctrl u':
-            if not self.is_currently_played:
-                urwid.emit_signal(self, 'unappend-requested', self)
-        elif key == 'ctrl p':
-            urwid.emit_signal(self, 'station-requested', self)
-        elif key == 'meta m':
-            urwid.emit_signal(self, 'context-menu-requested', self)
-
-        return super(SongListItem, self).keypress(size, key)
+        return hotkey_manager.keypress("library_item", self, SongListItem, size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
@@ -166,6 +154,40 @@ class SongListItem(urwid.Pile):
             urwid.emit_signal(self, 'activate', self)
             return None
         return super(SongListItem, self).mouse_event(size, event, button, col, row, focus)
+
+    def _send_signal(self, signal):
+        urwid.emit_signal(self, signal, self)
+
+    def play(self):
+        """
+        Play this song.
+        """
+        self._send_signal("activate")
+
+    def append(self):
+        """
+        Add this song to the queue.
+        """
+        self._send_signal("append-requested")
+
+    def unappend(self):
+        """
+        Remove this song from the queue.
+        """
+        if not self.is_currently_played:
+            self._send_signal("unappend-requested")
+
+    def request_station(self):
+        """
+        Create a Google Play Music radio for this song.
+        """
+        self._send_signal("station-requested")
+
+    def show_context_menu(self):
+        """
+        Display the context menu for this song.
+        """
+        self._send_signal("context-menu-requested")
 
     @property
     def is_currently_played(self):
@@ -505,7 +527,7 @@ class SongListBox(urwid.Frame):
         """
         Hide context menu.
         """
-        if self.popup is not None:
+        if self.popup is not None and self.is_context_menu_visible():
             self.contents['body'] = (self.content, None)
             self.app.unregister_cancel_action(self.popup.close)
             self.popup = None
@@ -583,33 +605,46 @@ class SongListBox(urwid.Frame):
             songlistitem.set_index(i)
 
     def keypress(self, size, key):
-        if self._is_filtering and key in ('up', 'down', 'home', 'end'):
-            return self.handle_filtered_keypress(key)
-        elif key == 'meta m' and self.is_context_menu_visible:
-            self.hide_context_menu()
-            return None
-        elif key in ascii_letters + digits + ' _-.,?!()[]/':
+        if key in ascii_letters + digits + ' _-.,?!()[]/':
             self.perform_filtering(key)
         elif key == 'backspace':
             self.perform_filtering(key)
-        return super(SongListBox, self).keypress(size, key)
+        elif self._is_filtering:
+            return hotkey_manager.keypress("library_view", self, SongListBox, size, key)
+        else:
+            return super(SongListBox, self).keypress(size, key)
 
-    def handle_filtered_keypress(self, key):
-        """
-        Handle up/down/home/end keypress while in fitering mode.
-        """
+    def _get_filtered(self):
         matches = self.get_filtered_items()
+
         if not matches:
             return False
+
         _, index = self.walker.get_focus()
-        if key == 'home':
-            self.list_box.set_focus(matches[0].index, 'below')
-        elif key == 'end':
-            self.list_box.set_focus(matches[-1].index, 'above')
-        elif key == 'up':
-            self.list_box.set_focus(*self.get_prev_item(matches, index))
-        else:
-            self.list_box.set_focus(*self.get_next_item(matches, index))
+
+        return (matches, index)
+
+    def move_to_beginning(self):
+        """Move to the beginning of the songlist"""
+        matches, index = self._get_filtered()
+        self.list_box.set_focus(matches[0].index, 'below')
+        return False
+
+    def move_to_end(self):
+        """Move to the end of the songlist"""
+        matches, index = self._get_filtered()
+        self.list_box.set_focus(matches[-1].index, 'above')
+        return False
+
+    def move_up(self):
+        """Move an item up in the playlist"""
+        matches, index = self._get_filtered()
+        self.list_box.set_focus(*self.get_prev_item(matches, index))
+        return False
+
+    def move_down(self):
+        matches, index = self._get_filtered()
+        self.list_box.set_focus(*self.get_next_item(matches, index))
         return False
 
     @staticmethod

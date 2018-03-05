@@ -7,17 +7,43 @@ hotkeys:
     next: XF86AudioNext
     prev: XF86AudioPrev
 
+
   clay_hotkeys:
-    seek_start: mod + q
-    play_pause: mod + w, mod + p
-    seek_backward: shift + left
-    seek_forward: shift + right
-    quit: mod + x
-    toggle_shuffle: mod + s
-    next_song: mod + d
-    prev_song: mod + a
-    toggle_repeat_one: mod + r
-    handle_escape: esc, mod + _
+    global:
+      seek_start: mod + q
+      play_pause: mod + w
+      seek_backward: shift + left
+      seek_forward: shift + right
+      quit: mod + x
+      toggle_shuffle: mod + s
+      next_song: mod + d
+      prev_song: mod + a
+      toggle_repeat_one: mod + r
+      handle_escape: esc, mod + _
+
+    library_item:
+      play: enter
+      append: mod + a
+      unappend: mod + u
+      request_station: mod + p
+      show_context_menu: meta + p
+
+    library_view:
+      move_to_beginning: home
+      move_to_end: end
+      move_up: up
+      move_down: down
+      hide_context_menu: meta + p
+
+    debug_page:
+      copy_message: enter
+
+    search_page:
+      send_query: enter
+
+    settings_page:
+      up: \+
+      down: \-
 
 clay_settings:
   x_keybinds: false

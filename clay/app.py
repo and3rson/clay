@@ -24,7 +24,7 @@ from clay.pages.settings import SettingsPage
 from clay.settings import settings
 from clay.notifications import notification_area
 from clay.gp import gp
-
+from clay.hotkeys import hotkey_manager
 
 class AppWidget(urwid.Frame):
     """
@@ -98,28 +98,6 @@ class AppWidget(urwid.Frame):
 
         self.set_page('MyLibraryPage')
         self.log_in()
-        self._hotkeys = self._parse_hotkeys()
-
-    def _parse_hotkeys(self):
-        """
-        Read out the configuration file and parse them into a dictionary readable for urwid.
-        """
-        hotkey_config = settings.get_default_config_section('hotkeys', 'clay_hotkeys')
-        mod_key = settings.get('mod_key', 'hotkeys')
-        hotkeys = {}
-
-        for action in hotkey_config.keys():
-            key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys').replace(' ', '')
-
-            for key in key_seq.split(','):
-                hotkey = key.split('+')
-
-                if hotkey[0] == 'mod':
-                    hotkey[0] = mod_key
-
-                hotkeys[' '.join(hotkey)] = action
-
-        return hotkeys
 
     def log_in(self, use_token=True):
         """
@@ -245,12 +223,7 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
-        method_name = self._hotkeys.get(key)
-
-        if method_name:
-            getattr(self, method_name)()
-        else:
-            super(AppWidget, self).keypress(size, key)
+        hotkey_manager.keypress("global", self, AppWidget, size, key)
 
     @staticmethod
     def seek_start():

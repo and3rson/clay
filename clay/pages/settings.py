@@ -6,6 +6,7 @@ import urwid
 from clay.pages.page import AbstractPage
 from clay.settings import settings
 from clay.player import player
+from clay.hotkeys import hotkey_manager
 
 
 class Slider(urwid.Widget):
@@ -78,18 +79,27 @@ class Slider(urwid.Widget):
         """
         Handle equalizer band modification.
         """
-        if key == '+':
-            if self.value < self.max_value:
-                self.value += 1
-                self.update()
-            return None
-        elif key == '-':
-            if self.value > -self.max_value:
-                self.value -= 1
-                self.update()
-            return None
-        else:
-            return key
+        return hotkey_manager.keypress("settings_page", self, None, None, key)
+
+    def up(self):
+        """
+        Turn the equalizer band up
+        """
+        if self.value < self.max_value:
+            self.value += 1
+            self.update()
+
+        return None
+
+    def down(self):
+        """
+        Turn the equalizer band down
+        """
+        if self.value > -self.max_value:
+            self.value -= 1
+            self.update()
+
+        return None
 
     def update(self):
         """
