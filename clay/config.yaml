@@ -7,7 +7,6 @@ hotkeys:
     next: XF86AudioNext
     prev: XF86AudioPrev
 
-
   clay_hotkeys:
     global:
       seek_start: mod + q
@@ -35,6 +34,9 @@ hotkeys:
       move_down: down
       hide_context_menu: meta + p
 
+    playlist_page:
+      start_playlist: enter
+
     debug_page:
       copy_message: enter
 
@@ -42,8 +44,8 @@ hotkeys:
       send_query: enter
 
     settings_page:
-      up: \+
-      down: \-
+      equalizer_up: "+"
+      equalizer_down: "-"
 
 clay_settings:
   x_keybinds: false

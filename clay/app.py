@@ -223,7 +223,7 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
-        hotkey_manager.keypress("global", self, AppWidget, size, key)
+        hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
 
     @staticmethod
     def seek_start():

@@ -144,7 +144,7 @@ class SongListItem(urwid.Pile):
         """
         Handle keypress.
         """
-        return hotkey_manager.keypress("library_item", self, SongListItem, size, key)
+        return hotkey_manager.keypress("library_item", self, super(SongListItem, self), size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
@@ -527,7 +527,7 @@ class SongListBox(urwid.Frame):
         """
         Hide context menu.
         """
-        if self.popup is not None and self.is_context_menu_visible():
+        if self.popup is not None and self.is_context_menu_visible:
             self.contents['body'] = (self.content, None)
             self.app.unregister_cancel_action(self.popup.close)
             self.popup = None
@@ -610,11 +610,15 @@ class SongListBox(urwid.Frame):
         elif key == 'backspace':
             self.perform_filtering(key)
         elif self._is_filtering:
-            return hotkey_manager.keypress("library_view", self, SongListBox, size, key)
+            return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
+                                           size, key)
         else:
             return super(SongListBox, self).keypress(size, key)
 
+        return None
+
     def _get_filtered(self):
+        """Get filtered list of items"""
         matches = self.get_filtered_items()
 
         if not matches:
@@ -625,24 +629,25 @@ class SongListBox(urwid.Frame):
         return (matches, index)
 
     def move_to_beginning(self):
-        """Move to the beginning of the songlist"""
-        matches, index = self._get_filtered()
+        """Move to the focus to beginning of the songlist"""
+        matches, _ = self._get_filtered()
         self.list_box.set_focus(matches[0].index, 'below')
         return False
 
     def move_to_end(self):
-        """Move to the end of the songlist"""
-        matches, index = self._get_filtered()
+        """Move to the focus to end of the songlist"""
+        matches, _ = self._get_filtered()
         self.list_box.set_focus(matches[-1].index, 'above')
         return False
 
     def move_up(self):
-        """Move an item up in the playlist"""
+        """Move the focus an item up in the playlist"""
         matches, index = self._get_filtered()
         self.list_box.set_focus(*self.get_prev_item(matches, index))
         return False
 
     def move_down(self):
+        """Move the focus an item down in the playlist """
         matches, index = self._get_filtered()
         self.list_box.set_focus(*self.get_next_item(matches, index))
         return False

@@ -4,6 +4,7 @@ Media player built using libVLC.
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 from random import randint
+from ctypes import CFUNCTYPE, c_void_p, c_int, c_char_p
 import json
 import os
 
@@ -133,6 +134,14 @@ class _Queue(object):
         """
         return self.tracks
 
+#+pylint: disable=unused-argument
+def _dummy_log(data, level, ctx, fmt, args):
+    """
+    A dummy callback function for VLC so it doesn't write to stdout.
+    Should probably do something in the future
+    """
+    pass
+#+pylint: disable=unused-argument
 
 class _Player(object):
     """
@@ -151,6 +160,15 @@ class _Player(object):
 
     def __init__(self):
         self.instance = vlc.Instance()
+        print_func = CFUNCTYPE(c_void_p,
+                               c_void_p, # data
+                               c_int, # level
+                               c_void_p, # context
+                               c_char_p, # fmt
+                               c_void_p) #args
+
+        self.instance.log_set(print_func(_dummy_log), None)
+
         self.instance.set_user_agent(
             meta.APP_NAME,
             meta.USER_AGENT
@@ -176,9 +194,7 @@ class _Player(object):
         )
 
         self.equalizer = vlc.libvlc_audio_equalizer_new()
-
         self.media_player.set_equalizer(self.equalizer)
-
         self._create_station_notification = None
         self._is_loading = False
         self.queue = _Queue()

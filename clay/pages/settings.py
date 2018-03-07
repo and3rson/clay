@@ -81,7 +81,7 @@ class Slider(urwid.Widget):
         """
         return hotkey_manager.keypress("settings_page", self, None, None, key)
 
-    def up(self):
+    def equalizer_up(self):
         """
         Turn the equalizer band up
         """
@@ -91,7 +91,7 @@ class Slider(urwid.Widget):
 
         return None
 
-    def down(self):
+    def equalizer_down(self):
         """
         Turn the equalizer band down
         """

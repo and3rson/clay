@@ -34,7 +34,8 @@ class MyPlaylistListItem(urwid.Columns):
         """
         Handle keypress.
         """
-        return hotkey_manager.keypress("playlist_page", self, MyPlaylistListItem, size, key)
+        return hotkey_manager.keypress("playlist_page", self, super(MyPlaylistListItem, self),
+                                       size, key)
 
     def start_playlist(self):
         """

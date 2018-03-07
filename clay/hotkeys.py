@@ -77,10 +77,11 @@ class _HotkeyManager(object):
         for hotkey_name, hotkey_dict in hotkey_config.items():
             hotkeys[hotkey_name] = {}
             for action in hotkey_dict.keys():
-                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name).replace(' ', '')
+                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)\
+                                  .replace(' ', '')
 
                 for key in key_seq.split(','):
-                    hotkey = key.split('+')
+                    hotkey = key.split('+') if key != '+' else key
 
                     if hotkey[0] == 'mod':
                         hotkey[0] = mod_key
@@ -106,15 +107,21 @@ class _HotkeyManager(object):
 
         return hotkeys
 
-    def keypress(self, name, caller, root, size, key):
+    def keypress(self, name, caller, super_, size, key):
+        """
+        Process the pressed key by looking it up in the configuration file
+
+        """
         method_name = self._hotkeys[name].get(key)
 
         if method_name:
-            return getattr(caller, method_name)()
-        elif root is not None:
-            return super(root, caller).keypress(size, key)
+            ret = getattr(caller, method_name)()
+        elif super_ is not None:
+            ret = super_.keypress(size, key)
         else:
-            return key
+            ret = key
+
+        return ret
 
     def initialize(self):
         """

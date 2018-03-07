@@ -36,7 +36,7 @@ class SearchBox(urwid.Columns):
         """
         Handle keypress.
         """
-        return hotkey_manager.keypress("search_page", self, SearchBox, size, key)
+        return hotkey_manager.keypress("search_page", self, super(SearchBox, self), size, key)
 
     def send_query(self):
         """

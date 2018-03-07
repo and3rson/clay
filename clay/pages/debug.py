@@ -40,6 +40,7 @@ class DebugItem(urwid.AttrMap):
         return hotkey_manager.keypress("debug_page", self, None, None, key)
 
     def copy_message(self):
+        """Copy the selected error message to the clipboard"""
         copy(self.log_record.formatted_message)
         return None
 
