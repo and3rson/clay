@@ -281,11 +281,11 @@ class AppWidget(urwid.Frame):
         """
         player.set_repeat_one(not player.get_is_repeat_one())
 
-    @staticmethod
-    def quit():
+    def quit(self):
         """
         Quit app.
         """
+        self.loop = None
         sys.exit(0)
 
     def handle_escape(self):

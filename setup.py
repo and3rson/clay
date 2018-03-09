@@ -23,6 +23,6 @@ setup(
         ]
     },
     package_data={
-        'clay': ['config.yaml'],
+        'clay': ['config.yaml', 'colours.yaml'],
     },
 )

@@ -45,7 +45,7 @@ class _HotkeyManager(object):
     Runs Gtk main loop in a thread.
     """
     def __init__(self):
-        self.hotkeys = {}
+        self._x_hotkeys = {}
         self._hotkeys = self._parse_hotkeys()
         self.config = None
 
@@ -56,7 +56,6 @@ class _HotkeyManager(object):
         if IS_INIT:
             Keybinder.init()
             self.initialize()
-
             threading.Thread(target=Gtk.main).start()
         else:
             logger.debug("Not loading the global shortcuts.")
@@ -66,9 +65,48 @@ class _HotkeyManager(object):
                 "You can check the log for more details."
             )
 
+    @staticmethod
+    def _to_gtk_modifier(key):
+        """
+        Translates the modifies to the way that GTK likes them.
+        """
+        key = key.strip()
+
+        if key == "meta":
+            key = "<alt>"
+        elif key in ("ctrl", "alt", "shift"):
+            key = "<" + key + ">"
+        else:
+            key = key
+
+        return key
+
+    def _parse_x_hotkeys(self):
+        """
+        Reads out them configuration file and parses them into hotkeys readable by GTK.
+        """
+        hotkey_default_config = settings.get_default_config_section('hotkeys', 'x_hotkeys')
+        mod_key = settings.get('mod_key', 'hotkeys')
+        hotkeys = {}
+
+        for action in hotkey_default_config:
+            key_seq = settings.get(action, 'hotkeys', 'x_hotkeys')
+
+            for key in key_seq.split(', '):
+                hotkey = key.split(' + ')
+
+                if hotkey[0].strip() == 'mod':
+                    hotkey[0] = mod_key
+
+                hotkey = [self._to_gtk_modifier(key) for key in hotkey]
+
+                hotkeys[action] = ''.join(hotkey)
+
+        return hotkeys
+
     def _parse_hotkeys(self):
         """
-        Read out the configuration file and parse them into a dictionary readable for urwid.
+        Reads out the configuration file and parse them into a hotkeys for urwid.
         """
         hotkey_config = settings.get_default_config_section('hotkeys', 'clay_hotkeys')
         mod_key = settings.get('mod_key', 'hotkeys')
@@ -77,34 +115,15 @@ class _HotkeyManager(object):
         for hotkey_name, hotkey_dict in hotkey_config.items():
             hotkeys[hotkey_name] = {}
             for action in hotkey_dict.keys():
-                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)\
-                                  .replace(' ', '')
+                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)
 
-                for key in key_seq.split(','):
-                    hotkey = key.split('+') if key != '+' else key
+                for key in key_seq.split(', '):
+                    hotkey = key.split(' + ')
 
-                    if hotkey[0] == 'mod':
+                    if hotkey[0].strip() == 'mod':
                         hotkey[0] = mod_key
 
                     hotkeys[hotkey_name][' '.join(hotkey)] = action
-
-        return hotkeys
-
-    @staticmethod
-    def load_keys():
-        """
-        Load hotkey config from settings.
-        """
-        hotkeys = settings.get_section('hotkeys', 'x_hotkeys')
-        default_hotkeys = settings.get_default_config_section('hotkeys', 'x_hotkeys')
-
-        if hotkeys is default_hotkeys:
-            return default_hotkeys
-
-        for operation, default_key in default_hotkeys.items():
-            if operation not in hotkeys:
-                hotkeys[operation] = default_key
-
         return hotkeys
 
     def keypress(self, name, caller, super_, size, key):
@@ -127,10 +146,12 @@ class _HotkeyManager(object):
         """
         Unbind previous hotkeys, re-read config & bind new hotkeys.
         """
-        for operation, key in self.hotkeys.items():
+        for operation, key in self._x_hotkeys.items():
             Keybinder.unbind(key)
-        self.hotkeys = self.load_keys()
-        for operation, key in self.hotkeys.items():
+
+        self._x_hotkeys = self._parse_x_hotkeys()
+
+        for operation, key in self._x_hotkeys.items():
             Keybinder.bind(key, self.fire_hook, operation)
 
     def fire_hook(self, key, operation):
