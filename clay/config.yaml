@@ -26,6 +26,8 @@ hotkeys:
       unappend: mod + u
       request_station: mod + p
       show_context_menu: meta + p
+      thumbs_up: meta + u
+      thumbs_down: meta + d
 
     library_view:
       move_to_beginning: home

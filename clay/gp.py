@@ -16,6 +16,8 @@ from gmusicapi.clients import Mobileclient
 from clay.eventhook import EventHook
 from clay.log import logger
 
+import sys
+
 def asynchronous(func):
     """
     Decorates a function to become asynchronous.
@@ -86,27 +88,29 @@ class Track(object):
     SOURCE_PLAYLIST = 'playlist'
     SOURCE_SEARCH = 'search'
 
-    def __init__(
-            self,
-            title, artist, duration, source,
-            library_id=None, store_id=None, playlist_item_id=None,
-            album_name=None, album_url=None, original_data=None
-    ):
-        self.title = title
-        self.artist = artist
-        self.duration = duration
-        self.source = source
+    def __init__(self, source, data):
+        # In playlist items and user uploaded songs the storeIds are missing so
+        self.store_id = (data['storeId'] if 'storeId' in data else data['id'])
+        self.playlist_item_id = (UUID(data['id']) if source == self.SOURCE_PLAYLIST else None)
+        self.library_id = (UUID(data['id']) if source == self.SOURCE_LIBRARY else None)
 
+        # To filter out the playlist items we need to reassign the store_id when fetching the track
+        if 'track' in data:
+            data = data['track']
+            self.store_id = data['storeId']
+
+        self.title = data['title']
+        self.artist = data['artist']
+        self.duration = int(data['durationMillis'])
+        self.rating = (data['rating'] if 'rating' in data else 0)
+        self.source = source
         self.cached_url = None
 
-        self.library_id = library_id
-        self.store_id = store_id
-        self.playlist_item_id = playlist_item_id
+        # User uploaded songs miss a store_id
+        self.album_name = data['album']
+        self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
 
-        self.album_name = album_name
-        self.album_url = album_url
-
-        self.original_data = original_data
+        self.original_data = data
 
     @property
     def id(self):  # pylint: disable=invalid-name
@@ -132,115 +136,22 @@ class Track(object):
         )
 
     @classmethod
-    def _from_search(cls, data):
-        """
-        Create track from search result data.
-        """
-        # Data contains a nested track representation.
-        return Track(
-            title=data['track']['title'],
-            artist=data['track']['artist'],
-            duration=int(data['track']['durationMillis']),
-            source=cls.SOURCE_SEARCH,
-            store_id=data['track']['storeId'],  # or data['trackId']
-            album_name=data['track']['album'],
-            album_url=data['track']['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_station(cls, data):
-        """
-        Create track from station track data.
-        """
-        # Station tracks have all the info in place.
-        return Track(
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis']),
-            source=cls.SOURCE_STATION,
-            store_id=data['storeId'],
-            album_name=data['album'],
-            album_url=data['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_library(cls, data):
-        """
-        Create track from library track data.
-        """
-        # Data contains all info about track
-        # including ID in library and ID in store.
-        UUID(data['id'])
-        return Track(
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis']),
-            source=cls.SOURCE_LIBRARY,
-            store_id=data['storeId'],
-            library_id=data['id'],
-            album_name=data['album'],
-            album_url=data['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_playlist(cls, data):
-        """
-        Create track from playlist track data.
-        """
-        if 'track' in data:
-            # Data contains a nested track representation that can be used
-            # to construct new track.
-            return Track(
-                title=data['track']['title'],
-                artist=data['track']['artist'],
-                duration=int(data['track']['durationMillis']),
-                source=cls.SOURCE_PLAYLIST,
-                store_id=data['track']['storeId'],  # or data['trackId']
-                playlist_item_id=data['id'],
-                album_name=data['track']['album'],
-                album_url=data['track']['albumArtRef'][0]['url'],
-                original_data=data
-            )
-        # We need to find a track in Library by trackId.
-        UUID(data['trackId'])
-        track = gp.get_track_by_id(data['trackId'])
-        return Track(
-            title=track.title,
-            artist=track.artist,
-            duration=track.duration,
-            source=cls.SOURCE_PLAYLIST,
-            store_id=track.store_id,
-            album_name=track.album_name,
-            album_url=track.album_url,
-            original_data=data
-        )
-
-    _CREATE_TRACK = {
-        SOURCE_SEARCH: '_from_search',
-        SOURCE_STATION: '_from_station',
-        SOURCE_LIBRARY: '_from_library',
-        SOURCE_PLAYLIST: '_from_playlist',
-    }
-
-    @classmethod
     def from_data(cls, data, source, many=False):
         """
         Construct and return one or many :class:`.Track` instances
         from Google Play Music API response.
         """
         if many:
-            return [
-                track
-                for track
-                in [cls.from_data(one, source) for one in data]
-                if track is not None
-            ]
-
+            return [track for track in
+                    [cls.from_data(one, source) for one in data]
+                    if track is not None]
         try:
-            return getattr(cls, cls._CREATE_TRACK[source])(data)
+            if source == cls.SOURCE_PLAYLIST and 'track' not in data:
+                track = gp.get_track_by_id(UUID(data['trackId']))
+            else:
+                track = Track(source, data)
+
+            return track
         except Exception as error:  # pylint: disable=bare-except
             logger.error(
                 'Failed to parse track data: %s, failing data: %s',
@@ -641,6 +552,16 @@ class _GP(object):
         if result:
             self.invalidate_caches()
         return result
+
+    def set_track_rating(self, id_, rating):
+        """
+        Set the rating for song with the specified ID.
+
+        0 for no thumb, 1 for down thumb and 5 for up thumb
+        """
+        song = self.mobile_client.get_track_info(id_)
+        song['rating'] = rating
+        self.mobileclient.change_song_metadata(song)
 
     @property
     def is_authenticated(self):

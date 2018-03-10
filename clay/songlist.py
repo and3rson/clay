@@ -107,6 +107,7 @@ class SongListItem(urwid.Pile):
         """
         return SongListItem.STATE_ICONS[state]
 
+
     def update_text(self):
         """
         Update text of this item from the attached track.
@@ -154,6 +155,21 @@ class SongListItem(urwid.Pile):
             urwid.emit_signal(self, 'activate', self)
             return None
         return super(SongListItem, self).mouse_event(size, event, button, col, row, focus)
+
+    def thumbs_up(self):
+        """
+        Toggle the thumbs up of this song.
+        """
+        if self.track.rating == 5:
+            gp.set_track_rating(self.track.id, 0)
+        else:
+            gp.set_track_rating(self.track.id, 5)
+
+    def thumbs_down(self):
+        if self.track.rating == 1:
+            gp.set_track_rating(self.track.id, 0)
+        else:
+            gp.set_track_rating(self.track.id, 1)
 
     def _send_signal(self, signal):
         urwid.emit_signal(self, signal, self)
