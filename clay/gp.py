@@ -16,7 +16,6 @@ from gmusicapi.clients import Mobileclient
 from clay.eventhook import EventHook
 from clay.log import logger
 
-import sys
 
 def asynchronous(func):
     """
@@ -225,6 +224,16 @@ class Track(object):
         return gp.remove_from_my_library(self)
 
     remove_from_my_library_async = asynchronous(remove_from_my_library)
+
+    def rate_song(self, rating):
+        """
+        Rate the song either 0 (no thumb), 1 (down thumb) or 5 (up thumb).
+        """
+        gp.mobile_client.rate_songs(self.original_data, rating)
+        self.original_data['rating'] = rating
+        self.rating = rating
+
+        # print(gp.mobile_client.rate_songs(self.original_data, rating))
 
     def __str__(self):
         return u'<Track "{} - {}" from {}>'.format(
@@ -552,16 +561,6 @@ class _GP(object):
         if result:
             self.invalidate_caches()
         return result
-
-    def set_track_rating(self, id_, rating):
-        """
-        Set the rating for song with the specified ID.
-
-        0 for no thumb, 1 for down thumb and 5 for up thumb
-        """
-        song = self.mobile_client.get_track_info(id_)
-        song['rating'] = rating
-        self.mobileclient.change_song_metadata(song)
 
     @property
     def is_authenticated(self):

@@ -160,16 +160,10 @@ class SongListItem(urwid.Pile):
         """
         Toggle the thumbs up of this song.
         """
-        if self.track.rating == 5:
-            gp.set_track_rating(self.track.id, 0)
-        else:
-            gp.set_track_rating(self.track.id, 5)
+        self.track.rate_song((0 if self.track.rating == 5 else 5))
 
     def thumbs_down(self):
-        if self.track.rating == 1:
-            gp.set_track_rating(self.track.id, 0)
-        else:
-            gp.set_track_rating(self.track.id, 1)
+        self.track.rate_song((0 if self.track.rating == 1 else 1))
 
     def _send_signal(self, signal):
         urwid.emit_signal(self, signal, self)
