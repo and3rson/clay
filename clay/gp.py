@@ -101,9 +101,12 @@ class Track(object):
         self.title = data['title']
         self.artist = data['artist']
         self.duration = int(data['durationMillis'])
-        self.rating = (data['rating'] if 'rating' in data else 0)
+        self.rating = (int(data['rating']) if 'rating' in data else 0)
         self.source = source
         self.cached_url = None
+
+        if self.rating == 5:
+            gp.cached_liked_songs.add_liked_song(self)
 
         # User uploaded songs miss a store_id
         self.album_name = data['album']
@@ -232,6 +235,9 @@ class Track(object):
         gp.mobile_client.rate_songs(self.original_data, rating)
         self.original_data['rating'] = rating
         self.rating = rating
+
+        if rating == 5:
+            gp.cached_liked_songs.add_liked_song(self)
 
         # print(gp.mobile_client.rate_songs(self.original_data, rating))
 
@@ -375,6 +381,46 @@ class Playlist(object):
         )
 
 
+class LikedSongs(object):
+    """
+    A local model that represents the songs that a user liked and displays them as a faux playlist.
+
+    This mirrors the "liked songs" generated playlist feature of the Google Play Music apps.
+    """
+    def __init__(self):
+        self._id = None  # pylint: disable=invalid-name
+        self.name = "Liked Songs"
+        self._tracks = []
+        self._sorted = False
+
+    @property
+    def tracks(self):
+        """
+        Get a sorted list of liked tracks.
+        """
+        if self._sorted:
+            tracks = self._tracks
+        else:
+            self._tracks.sort(key=lambda k: k.original_data['lastRatingChangeTimestamp'],
+                              reverse=True)
+            self._sorted = True
+            tracks = self._tracks
+
+        return tracks
+
+    def add_liked_song(self, song):
+        """
+        Add a liked song to the list.
+        """
+        self._tracks.append(song)
+
+    def remove_liked_song(self, song):
+        """
+        Remove a liked song from the list
+        """
+        self._tracks.remove(song)
+
+
 class _GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
@@ -395,6 +441,7 @@ class _GP(object):
         #     self.debug_file = open('/tmp/clay-api-log.json', 'w')
         #     self._last_call_index = 0
         self.cached_tracks = None
+        self.cached_liked_songs = LikedSongs()
         self.cached_playlists = None
 
         self.invalidate_caches()
@@ -488,6 +535,7 @@ class _GP(object):
             return self.cached_tracks
         data = self.mobile_client.get_all_songs()
         self.cached_tracks = Track.from_data(data, Track.SOURCE_LIBRARY, True)
+
         return self.cached_tracks
 
     get_all_tracks_async = asynchronous(get_all_tracks)
@@ -506,14 +554,15 @@ class _GP(object):
         Return list of :class:`.Playlist` instances.
         """
         if self.cached_playlists:
-            return self.cached_playlists
+            return [self.cached_liked_songs] + self.cached_playlists
+
         self.get_all_tracks()
 
         self.cached_playlists = Playlist.from_data(
             self.mobile_client.get_all_user_playlist_contents(),
             True
         )
-        return self.cached_playlists
+        return [self.cached_liked_songs] + self.cached_playlists
 
     get_all_user_playlist_contents_async = (  # pylint: disable=invalid-name
         asynchronous(get_all_user_playlist_contents)
