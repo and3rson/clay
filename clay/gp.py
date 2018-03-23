@@ -12,7 +12,6 @@ from gmusicapi.clients import Mobileclient
 from clay.eventhook import EventHook
 from clay.log import logger
 
-
 def asynchronous(func):
     """
     Decorates a function to become asynchronous.
@@ -45,6 +44,7 @@ def asynchronous(func):
                 callback(result, None, **extra)
 
         Thread(target=process).start()
+
     return wrapper
 
 

@@ -24,59 +24,7 @@ from clay.pages.settings import SettingsPage
 from clay.settings import settings
 from clay.notifications import notification_area
 from clay.gp import gp
-
-
-def create_palette(transparent=False):
-    """
-    Return urwid palette.
-    """
-    if transparent:
-        bgcolor = ''
-    else:
-        bgcolor = '#222'
-
-    return [
-        (None, '', '', '', '#FFF', bgcolor),
-        ('default', '', '', '', '#FFF', bgcolor),
-        ('logo', '', '', '', '#F54', bgcolor),
-
-        ('bg', '', '', '', '#FFF', '#222'),
-        ('primary', '', '', '', '#F54', '#FFF'),
-        ('secondary', '', '', '', '#17F', '#FFF'),
-        ('selected', '', '', '', '#FFF', '#444'),
-        ('primary_inv', '', '', '', '#FFF', '#17F'),
-        ('secondary_inv', '', '', '', '#FFF', '#F17'),
-        ('progress', '', '', '', '#FFF', '#F54'),
-        ('progress_remaining', '', '', '', '#FFF', '#444'),
-
-        ('progressbar_done', '', '', '', '#F54', bgcolor),
-        ('progressbar_done_paused', '', '', '', '', bgcolor),
-        ('progressbar_remaining', '', '', '', '#222', bgcolor),
-
-        ('title-idle', '', '', '', '', bgcolor),
-        ('title-playing', '', '', '', '#F54', bgcolor),
-
-        ('panel', '', '', '', '#FFF', '#222'),
-        ('panel_focus', '', '', '', '#FFF', '#F54'),
-        ('panel_divider', '', '', '', '#444', '#222'),
-        ('panel_divider_focus', '', '', '', '#444', '#F54'),
-
-        ('line1', '', '', '', '#FFF', bgcolor),
-        ('line1_focus', '', '', '', '#FFF', '#333'),
-        ('line1_active', '', '', '', '#F54', bgcolor),
-        ('line1_active_focus', '', '', '', '#F54', '#333'),
-        ('line2', '', '', '', '#AAA', bgcolor),
-        ('line2_focus', '', '', '', '#AAA', '#333'),
-
-        ('input', '', '', '', '#FFF', '#444'),
-        ('input_focus', '', '', '', '#FFF', '#F54'),
-
-        ('flag', '', '', '', '#AAA', bgcolor),
-        ('flag-active', '', '', '', '#F54', bgcolor),
-
-        ('notification', '', '', '', '#F54', '#222'),
-    ]
-
+from clay.hotkeys import hotkey_manager
 
 class AppWidget(urwid.Frame):
     """
@@ -84,20 +32,6 @@ class AppWidget(urwid.Frame):
 
     Handles tab switches, global keypresses etc.
     """
-
-    KEYBINDS = {
-        'ctrl q': 'seek_start',
-        'ctrl w': 'play_pause',
-        'ctrl e': 'next_song',
-        'shift left': 'seek_backward',
-        'shift right': 'seek_forward',
-        'ctrl s': 'toggle_shuffle',
-        'ctrl r': 'toggle_repeat_one',
-        'ctrl x': 'quit',
-        'esc': 'handle_escape_action',
-        'ctrl _': 'handle_escape_action'
-    }
-
     class Tab(urwid.Text):
         """
         Represents a single tab in header tabbar.
@@ -138,12 +72,7 @@ class AppWidget(urwid.Frame):
             SearchPage(self),
             SettingsPage(self)
         ]
-        self.tabs = [
-            AppWidget.Tab(page)
-            for page
-            in self.pages
-        ]
-
+        self.tabs = [AppWidget.Tab(page) for page in self.pages]
         self.current_page = None
         self.loop = None
 
@@ -176,11 +105,8 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        username, password, device_id, authtoken = [
-            settings.get(x)
-            for x
-            in ('username', 'password', 'device_id', 'authtoken')
-        ]
+        authtoken, device_id, _, password, username = settings.get_section("play_settings").values()
+
         if self._login_notification:
             self._login_notification.close()
         if use_token and authtoken:
@@ -238,7 +164,7 @@ class AppWidget(urwid.Frame):
             return
 
         with settings.edit() as config:
-            config['authtoken'] = gp.get_authtoken()
+            config['play_settings']['authtoken'] = gp.get_authtoken()
 
         self._login_notification.close()
 
@@ -297,11 +223,7 @@ class AppWidget(urwid.Frame):
                 self.set_page(tab.page.__class__.__name__)
                 return
 
-        method_name = AppWidget.KEYBINDS.get(key)
-        if method_name:
-            getattr(self, method_name)()
-        else:
-            super(AppWidget, self).keypress(size, key)
+        hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
 
     @staticmethod
     def seek_start():
@@ -323,6 +245,13 @@ class AppWidget(urwid.Frame):
         Play next song.
         """
         player.next(True)
+
+    @staticmethod
+    def prev_song():
+        """
+        Play the previous song.
+        """
+        player.prev(True)
 
     @staticmethod
     def seek_backward():
@@ -352,14 +281,14 @@ class AppWidget(urwid.Frame):
         """
         player.set_repeat_one(not player.get_is_repeat_one())
 
-    @staticmethod
-    def quit():
+    def quit(self):
         """
         Quit app.
         """
+        self.loop = None
         sys.exit(0)
 
-    def handle_escape_action(self):
+    def handle_escape(self):
         """
         Run escape actions. If none are pending, close newest notification.
         """
@@ -376,9 +305,6 @@ class MultilineVersionAction(argparse.Action):
     An argparser action for multiple lines so we can display the copyright notice
     Based on: https://stackoverflow.com/a/41147122
     """
-    version = "0.6.2"
-    author = "Andrew Dunai"
-
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         if nargs is not None:
             raise ValueError("nargs not allowed")
@@ -404,15 +330,17 @@ def main():
 
     parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
-    parser.add_argument(
+    keybinds_group = parser.add_mutually_exclusive_group()
+
+    keybinds_group.add_argument(
         "--with-x-keybinds",
         help="define global X keybinds (requires Keybinder and PyGObject)",
         action='store_true'
     )
 
-    parser.add_argument(
-        "--transparent",
-        help="use transparent background",
+    keybinds_group.add_argument(
+        "--without-x-keybinds",
+        help="Don't define global keybinds (overrides configuration file)",
         action='store_true'
     )
 
@@ -421,12 +349,17 @@ def main():
     if args.version:
         exit(0)
 
-    if args.with_x_keybinds:
+    if (args.with_x_keybinds or settings.get('x_keybinds', 'clay_settings')) \
+       and not args.without_x_keybinds:
         player.enable_xorg_bindings()
+
+    # Create a 256 colour palette.
+    palette = [(name, '', '', '', res['foreground'], res['background'])
+               for name, res in settings.colours_config.items()]
 
     # Run the actual program
     app_widget = AppWidget()
-    loop = urwid.MainLoop(app_widget, create_palette(args.transparent))
+    loop = urwid.MainLoop(app_widget, palette)
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()

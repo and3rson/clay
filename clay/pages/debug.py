@@ -7,6 +7,7 @@ from clay.pages.page import AbstractPage
 from clay.log import logger
 from clay.clipboard import copy
 from clay.gp import gp
+from clay.hotkeys import hotkey_manager
 
 
 class DebugItem(urwid.AttrMap):
@@ -36,10 +37,12 @@ class DebugItem(urwid.AttrMap):
         """
         Handle heypress.
         """
-        if key == 'enter':
-            copy(self.log_record.formatted_message)
-            return None
-        return key
+        return hotkey_manager.keypress("debug_page", self, None, None, key)
+
+    def copy_message(self):
+        """Copy the selected error message to the clipboard"""
+        copy(self.log_record.formatted_message)
+        return None
 
 
 class DebugPage(urwid.Pile, AbstractPage):

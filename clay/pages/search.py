@@ -6,6 +6,7 @@ import urwid
 from clay.gp import gp
 from clay.songlist import SongListBox
 from clay.notifications import notification_area
+from clay.hotkeys import hotkey_manager
 from clay.pages.page import AbstractPage
 
 
@@ -35,10 +36,14 @@ class SearchBox(urwid.Columns):
         """
         Handle keypress.
         """
-        if key == 'enter':
-            urwid.emit_signal(self, 'search-requested', self.query.edit_text)
-            return None
-        return super(SearchBox, self).keypress(size, key)
+        return hotkey_manager.keypress("search_page", self, super(SearchBox, self), size, key)
+
+    def send_query(self):
+        """
+        Send a message to urwid to search the filled in search query
+        """
+        urwid.emit_signal(self, 'search-requested', self.query.edit_text)
+        return None
 
 
 class SearchPage(urwid.Pile, AbstractPage):

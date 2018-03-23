@@ -1,0 +1,58 @@
+#: pylint:skip-file
+hotkeys:
+  mod_key: ctrl
+
+  x_hotkeys:
+    play_pause: XF86AudioPlay
+    next: XF86AudioNext
+    prev: XF86AudioPrev
+
+  clay_hotkeys:
+    global:
+      seek_start: mod + q
+      play_pause: mod + w
+      seek_backward: shift + left
+      seek_forward: shift + right
+      quit: mod + x
+      toggle_shuffle: mod + s
+      next_song: mod + d
+      prev_song: mod + a
+      toggle_repeat_one: mod + r
+      handle_escape: esc, mod + _
+
+    library_item:
+      play: enter
+      append: mod + a
+      unappend: mod + u
+      request_station: mod + p
+      show_context_menu: meta + p
+
+    library_view:
+      move_to_beginning: home
+      move_to_end: end
+      move_up: up
+      move_down: down
+      hide_context_menu: meta + p
+
+    playlist_page:
+      start_playlist: enter
+
+    debug_page:
+      copy_message: enter
+
+    search_page:
+      send_query: enter
+
+    settings_page:
+      equalizer_up: "+"
+      equalizer_down: "-"
+
+clay_settings:
+  x_keybinds: false
+
+play_settings:
+  authtoken:
+  device_id:
+  download_tracks: false
+  password:
+  username:

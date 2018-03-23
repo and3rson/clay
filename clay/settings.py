@@ -6,8 +6,8 @@ import os
 import copy
 import errno
 import yaml
-
 import appdirs
+import pkg_resources
 
 
 class _SettingsEditor(dict):
@@ -42,6 +42,7 @@ class _Settings(object):
     """
     def __init__(self):
         self._config = {}
+        self._default_config = {}
         self._cached_files = set()
 
         self._config_dir = None
@@ -58,6 +59,7 @@ class _Settings(object):
         """
         self._config_dir = appdirs.user_config_dir('clay', 'Clay')
         self._config_file_path = os.path.join(self._config_dir, 'config.yaml')
+        self._colours_file_path = os.path.join(self._config_dir, 'colours.yaml')
 
         try:
             os.makedirs(self._config_dir)
@@ -83,6 +85,17 @@ class _Settings(object):
         with open(self._config_file_path, 'r') as settings_file:
             self._config = yaml.load(settings_file.read())
 
+        # Load the configuration from Setuptools' ResourceManager API
+        self._default_config = yaml.load(pkg_resources.resource_string(__name__, "config.yaml"))
+
+        # We only either the user colour or the default colours to ease parsing logic.
+        if os.path.exists(self._colours_file_path):
+            with open(self._colours_file_path, 'r') as colours_file:
+                self.colours_config = yaml.load(colours_file.read())
+        else:
+            self.colours_config = yaml.load(pkg_resources.resource_string(__name__, "colours.yaml"))
+
+
     def _load_cache(self):
         """
         Load cached files.
@@ -100,11 +113,45 @@ class _Settings(object):
         with open(self._config_file_path, 'w') as settings_file:
             settings_file.write(yaml.dump(self._config, default_flow_style=False))
 
-    def get(self, key, default=None):
+    def get(self, key, *sections):
         """
-        Return config value.
+        Return their configuration key in a specified section
+        By default it looks in play_settings.
         """
-        return self._config.get(key, default)
+        section = self.get_section(*sections)
+
+        try:
+            return section[key]
+        except (KeyError, TypeError):
+            section = self.get_default_config_section(*sections)
+            return section[key]
+
+    def _get_section(self, config, *sections):
+        config = config.copy()
+
+        for section in sections:
+            config = config[section]
+
+        return config
+
+    def get_section(self, *sections):
+        """
+        Get a section from the user configuration file if it can find it,
+        else load it from the system config
+        """
+        try:
+            return self._get_section(self._config, *sections)
+        except (KeyError, TypeError):
+            return self._get_section(self._default_config, *sections)
+
+
+    def get_default_config_section(self, *sections):
+        """
+        Always get a section from the default/system configuration. You would use this whenever
+        you need to loop through all the values in a section. In the user config they might be
+        incomplete.
+        """
+        return self._get_section(self._default_config, *sections)
 
     def edit(self):
         """

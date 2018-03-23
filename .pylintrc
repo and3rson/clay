@@ -4,6 +4,7 @@ max-args = 8
 
 [messages control]
 disable =
+    duplicate-code,
     too-few-public-methods,
     too-many-public-methods,
     too-many-instance-attributes,

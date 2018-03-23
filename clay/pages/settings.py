@@ -6,6 +6,7 @@ import urwid
 from clay.pages.page import AbstractPage
 from clay.settings import settings
 from clay.player import player
+from clay.hotkeys import hotkey_manager
 
 
 class Slider(urwid.Widget):
@@ -80,18 +81,27 @@ class Slider(urwid.Widget):
         """
         Handle equalizer band modification.
         """
-        if key == '+':
-            if self.value < self.max_value:
-                self.value += 1
-                self.update()
-            return None
-        elif key == '-':
-            if self.value > -self.max_value:
-                self.value -= 1
-                self.update()
-            return None
-        else:
-            return key
+        return hotkey_manager.keypress("settings_page", self, None, None, key)
+
+    def equalizer_up(self):
+        """
+        Turn the equalizer band up
+        """
+        if self.value < self.max_value:
+            self.value += 1
+            self.update()
+
+        return None
+
+    def equalizer_down(self):
+        """
+        Turn the equalizer band down
+        """
+        if self.value > -self.max_value:
+            self.value -= 1
+            self.update()
+
+        return None
 
     def update(self):
         """
@@ -131,17 +141,17 @@ class SettingsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.username = urwid.Edit(
-            edit_text=settings.get('username', '')
+            edit_text=settings.get('username', 'play_settings')
         )
         self.password = urwid.Edit(
-            mask='*', edit_text=settings.get('password', '')
+            mask='*', edit_text=settings.get('password', 'play_settings')
         )
         self.device_id = urwid.Edit(
-            edit_text=settings.get('device_id', '')
+            edit_text=settings.get('device_id', 'play_settings')
         )
         self.download_tracks = urwid.CheckBox(
             'Download tracks before playback',
-            state=settings.get('download_tracks', False)
+            state=settings.get('download_tracks', 'play_settings')
         )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
@@ -170,10 +180,10 @@ class SettingsPage(urwid.Columns, AbstractPage):
         Called when "Save" button is pressed.
         """
         with settings.edit() as config:
-            config['username'] = self.username.edit_text
-            config['password'] = self.password.edit_text
-            config['device_id'] = self.device_id.edit_text
-            config['download_tracks'] = self.download_tracks.state
+            config['play_settings']['username'] = self.username.edit_text
+            config['play_settings']['password'] = self.password.edit_text
+            config['play_settings']['device_id'] = self.device_id.edit_text
+            config['play_settings']['download_tracks'] = self.download_tracks.state
 
         self.app.set_page('MyLibraryPage')
         self.app.log_in()

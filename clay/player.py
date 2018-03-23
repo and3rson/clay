@@ -4,6 +4,7 @@ Media player built using libVLC.
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 from random import randint
+from ctypes import CFUNCTYPE, c_void_p, c_int, c_char_p
 import json
 import os
 
@@ -35,6 +36,7 @@ class _Queue(object):
         self.repeat_one = False
 
         self.tracks = []
+        self._played_tracks = []
         self.current_track_index = None
 
     def load(self, tracks, current_track_index=None):
@@ -91,6 +93,8 @@ class _Queue(object):
             if not self.tracks:
                 return None
             self.current_track_index = self.tracks[0]
+        else:
+            self._played_tracks.append(self.current_track_index)
 
         if self.repeat_one and not force:
             return self.get_current_track()
@@ -105,12 +109,39 @@ class _Queue(object):
 
         return self.get_current_track()
 
+    def prev(self, force=False):
+        """
+        Revert to their last song and return it.
+
+        If *force* is ``True`` then tracks will be changed event if
+        tracks repition is enabled. Otherwise current tracks may be
+        yielded again.
+
+        Manual tracks switching calls this method with ``force=True``.
+        """
+        if self._played_tracks == []:
+            return None
+
+        if self.repeat_one and not force:
+            return self.get_current_track()
+
+        self.current_track_index = self._played_tracks.pop()
+        return self.get_current_track()
+
     def get_tracks(self):
         """
         Return current queue, i.e. a list of :class:`Track` instances.
         """
         return self.tracks
 
+#+pylint: disable=unused-argument
+def _dummy_log(data, level, ctx, fmt, args):
+    """
+    A dummy callback function for VLC so it doesn't write to stdout.
+    Should probably do something in the future
+    """
+    pass
+#+pylint: disable=unused-argument
 
 class _Player(object):
     """
@@ -129,6 +160,15 @@ class _Player(object):
 
     def __init__(self):
         self.instance = vlc.Instance()
+        print_func = CFUNCTYPE(c_void_p,
+                               c_void_p, # data
+                               c_int, # level
+                               c_void_p, # context
+                               c_char_p, # fmt
+                               c_void_p) #args
+
+        self.instance.log_set(print_func(_dummy_log), None)
+
         self.instance.set_user_agent(
             meta.APP_NAME,
             meta.USER_AGENT
@@ -154,9 +194,7 @@ class _Player(object):
         )
 
         self.equalizer = vlc.libvlc_audio_equalizer_new()
-
         self.media_player.set_equalizer(self.equalizer)
-
         self._create_station_notification = None
         self._is_loading = False
         self.queue = _Queue()
@@ -331,8 +369,10 @@ class _Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if settings.get('download_tracks', False) or settings.get_is_file_cached(track.filename):
+        if settings.get('download_tracks', 'play_settings') or \
+           settings.get_is_file_cached(track.filename):
             path = settings.get_cached_file_path(track.filename)
+
             if path is None:
                 logger.debug('Track %s not in cache, downloading...', track.store_id)
                 track.get_url(callback=self._download_track)
@@ -423,6 +463,14 @@ class _Player(object):
         See :meth:`._Queue.next`.
         """
         self.queue.next(force)
+        self._play()
+
+    def prev(self, force=False):
+        """
+        Advance to their previous track in their queue
+        seek :meth:`._Queue.prev`
+        """
+        self.queue.prev(force)
         self._play()
 
     def get_current_track(self):
