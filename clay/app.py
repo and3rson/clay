@@ -105,7 +105,11 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        authtoken, device_id, _, password, username = settings.get_section("play_settings").values()
+        authtoken, device_id, username, password = [
+            settings.get(key, "play_settings")
+            for key
+            in ('authtoken', 'device_id', 'username', 'password')
+        ]
 
         if self._login_notification:
             self._login_notification.close()

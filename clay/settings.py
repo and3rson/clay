@@ -121,10 +121,10 @@ class _Settings(object):
         section = self.get_section(*sections)
 
         try:
-            return section[key]
+            return section.get(key)
         except (KeyError, TypeError):
             section = self.get_default_config_section(*sections)
-            return section[key]
+            return section.get(key)
 
     def _get_section(self, config, *sections):
         config = config.copy()

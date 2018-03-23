@@ -141,17 +141,17 @@ class SettingsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.username = urwid.Edit(
-            edit_text=settings.get('username', 'play_settings')
+            edit_text=settings.get('username', 'play_settings') or ''
         )
         self.password = urwid.Edit(
-            mask='*', edit_text=settings.get('password', 'play_settings')
+            mask='*', edit_text=settings.get('password', 'play_settings') or ''
         )
         self.device_id = urwid.Edit(
-            edit_text=settings.get('device_id', 'play_settings')
+            edit_text=settings.get('device_id', 'play_settings') or ''
         )
         self.download_tracks = urwid.CheckBox(
             'Download tracks before playback',
-            state=settings.get('download_tracks', 'play_settings')
+            state=settings.get('download_tracks', 'play_settings') or False
         )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
@@ -180,6 +180,8 @@ class SettingsPage(urwid.Columns, AbstractPage):
         Called when "Save" button is pressed.
         """
         with settings.edit() as config:
+            if 'play_settings' not in config:
+                config['play_settings'] = {}
             config['play_settings']['username'] = self.username.edit_text
             config['play_settings']['password'] = self.password.edit_text
             config['play_settings']['device_id'] = self.device_id.edit_text
