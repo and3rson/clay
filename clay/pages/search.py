@@ -58,7 +58,7 @@ class SearchPage(urwid.Pile, AbstractPage):
 
     @property
     def key(self):
-        return 4
+        return 5
 
     def __init__(self, app):
         self.app = app
