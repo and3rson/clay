@@ -142,7 +142,7 @@ class MyStationsPage(urwid.Columns, AbstractPage):
         self.songlist.set_placeholder(u'\n \uf01e Loading station tracks...')
         mystationlistitem.station.load_tracks_async(callback=self.on_station_loaded)
 
-    def on_station_loaded(self,  station, error):
+    def on_station_loaded(self, station, error):
         """
         Called when station  tracks  fetch completes.
         Populates songlist with tracks from the selected station.

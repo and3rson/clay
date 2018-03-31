@@ -375,7 +375,7 @@ class Station(object):
         Fetch tracks related to this station and
         populate it with :class:`Track` instances.
         """
-        data = gp.mobile_client.get_station_tracks(self.id,  STATION_FETCH_LEN)
+        data = gp.mobile_client.get_station_tracks(self.id, STATION_FETCH_LEN)
         self._tracks = Track.from_data(data, Track.SOURCE_STATION, many=True)
         self._tracks_loaded = True
         return self
