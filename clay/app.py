@@ -18,6 +18,7 @@ from clay.playbar import PlayBar
 from clay.pages.debug import DebugPage
 from clay.pages.mylibrary import MyLibraryPage
 from clay.pages.myplaylists import MyPlaylistsPage
+from clay.pages.mystations import MyStationsPage
 from clay.pages.playerqueue import QueuePage
 from clay.pages.search import SearchPage
 from clay.pages.settings import SettingsPage
@@ -68,6 +69,7 @@ class AppWidget(urwid.Frame):
             DebugPage(self),
             MyLibraryPage(self),
             MyPlaylistsPage(self),
+            MyStationsPage(self),
             QueuePage(self),
             SearchPage(self),
             SettingsPage(self)
