@@ -12,8 +12,6 @@ from gmusicapi.clients import Mobileclient
 from clay.eventhook import EventHook
 from clay.log import logger
 
-STATION_FETCH_LEN = 50
-
 def asynchronous(func):
     """
     Decorates a function to become asynchronous.
@@ -357,8 +355,7 @@ class Station(object):
     """
     Model that represents specific station on Google Play Music.
     """
-    def __init__(self, station_id, name):
-        self.name = name
+    def __init__(self, station_id):
         self._id = station_id
         self._tracks = []
         self._tracks_loaded = False
@@ -375,12 +372,9 @@ class Station(object):
         Fetch tracks related to this station and
         populate it with :class:`Track` instances.
         """
-        data = gp.mobile_client.get_station_tracks(self.id,  STATION_FETCH_LEN)
+        data = gp.mobile_client.get_station_tracks(self.id, 100)
         self._tracks = Track.from_data(data, Track.SOURCE_STATION, many=True)
         self._tracks_loaded = True
-        return self
-
-    load_tracks_async = asynchronous(load_tracks)
 
     def get_tracks(self):
         """
@@ -388,20 +382,6 @@ class Station(object):
         """
         assert self._tracks_loaded, 'Must call ".load_tracks()" before ".get_tracks()"'
         return self._tracks
-
-    @classmethod
-    def from_data(cls, data, many=False):
-        """
-        Construct and return one or many :class:`.Station` instances
-        from Google Play Music API response.
-        """
-        if many:
-            return [cls.from_data(one) for one in data if one['inLibrary']]
-
-        return Station(
-            station_id=data['id'],
-            name=data['name']
-        )
 
 
 class SearchResults(object):
@@ -492,7 +472,6 @@ class _GP(object):
         #     self._last_call_index = 0
         self.cached_tracks = None
         self.cached_playlists = None
-        self.cached_stations = None
 
         self.invalidate_caches()
 
@@ -525,11 +504,10 @@ class _GP(object):
 
     def invalidate_caches(self):
         """
-        Clear cached tracks & playlists & stations.
+        Clear cached tracks & playlists.
         """
         self.cached_tracks = None
         self.cached_playlists = None
-        self.cached_stations = None
         self.caches_invalidated.fire()
 
     @synchronized
@@ -597,25 +575,6 @@ class _GP(object):
         return self.mobile_client.get_stream_url(stream_id)
 
     get_stream_url_async = asynchronous(get_stream_url)
-
-    @synchronized
-    def get_all_user_station_contents(self, **_):
-        """
-              Return list of :class:`.Station` instances.
-              """
-        if self.cached_stations:
-            return self.cached_stations
-        self.get_all_tracks()
-
-        self.cached_stations = Station.from_data(
-            self.mobile_client.get_all_stations(),
-            True
-        )
-        return self.cached_stations
-
-    get_all_user_station_contents_async = (  # pylint: disable=invalid-name
-        asynchronous(get_all_user_station_contents)
-    )
 
     @synchronized
     def get_all_user_playlist_contents(self, **_):
