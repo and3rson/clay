@@ -14,6 +14,7 @@ from clay.log import logger
 
 STATION_FETCH_LEN = 50
 
+
 def asynchronous(func):
     """
     Decorates a function to become asynchronous.
@@ -287,11 +288,12 @@ class Track(object):
 
         Returns :class:`.Station` instance.
         """
+        station_name = u'Station - {}'.format(self.title)
         station_id = gp.mobile_client.create_station(
-            name=u'Station - {}'.format(self.title),
+            name=station_name,
             track_id=self.store_id
         )
-        station = Station(station_id)
+        station = Station(station_id, station_name)
         station.load_tracks()
         return station
 

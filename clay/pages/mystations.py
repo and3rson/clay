@@ -9,6 +9,7 @@ from clay.notifications import notification_area
 from clay.pages.page import AbstractPage
 from clay.hotkeys import hotkey_manager
 
+
 class MyStationListItem(urwid.Columns):
     """
     One station in the list of stations.
@@ -17,7 +18,7 @@ class MyStationListItem(urwid.Columns):
 
     def __init__(self, station):
         self.station = station
-        self.text = urwid.SelectableIcon(u' \u2630 {} '.format(
+        self.text = urwid.SelectableIcon(u' \u2708 {} '.format(
             self.station.name
         ), cursor_position=3)
         self.text.set_layout('left', 'clip', None)
