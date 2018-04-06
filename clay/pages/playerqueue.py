@@ -18,7 +18,7 @@ class QueuePage(urwid.Columns, AbstractPage):
 
     @property
     def key(self):
-        return 3
+        return 4
 
     def __init__(self, app):
         self.app = app
