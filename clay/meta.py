@@ -2,7 +2,7 @@
 Predefined values.
 """
 APP_NAME = 'Clay Player'
-VERSION = '0.7.2'
+VERSION = '1.0.0'
 AUTHOR = "Andrew Dunai"
 DESCRIPTION = "Awesome standalone command line player for Google Play Music"
 

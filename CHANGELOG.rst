@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+Clay 1.0.0
+==========
+
+ * Configurable keybinds (by Valentijn)
+ * Configurable colors (by Valentijn)
+ * Pluggable X keybinds (by Valentijn)
+ * "My stations" page (by @Fluctuz)
+ * Better settings management (by Valentijn)
+ * Equalizer
+ * Track caching indicator
+ * Optimized settings & cache
+ * Code complexity & code climate integration
+ * Countless fixes
+ * Badges!
+ * IRC channel!
+
 Clay 0.7.2
 ==========
 
