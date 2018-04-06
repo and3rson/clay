@@ -4,6 +4,8 @@ Changelog
 Clay 1.0.0
 ==========
 
+2018-04-06
+
  * Configurable keybinds (by Valentijn)
  * Configurable colors (by Valentijn)
  * Pluggable X keybinds (by Valentijn)
