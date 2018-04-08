@@ -56,7 +56,7 @@ clay
 
 # Documentation
 
-Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
+Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 
 # Requirements
 
@@ -240,7 +240,7 @@ People who contribute to this project:
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
-[urwid]: urwid.org/
+[urwid]: http://www.urwid.org/
 [pyyaml]: https://github.com/yaml/pyyaml
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
 [Keybinder]: https://github.com/kupferlauncher/keybinder
