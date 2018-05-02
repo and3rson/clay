@@ -5,6 +5,8 @@ Components for song listing.
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 from string import digits
+from operator import lt, gt
+
 try:
     # Python 3.x
     from string import ascii_letters
@@ -610,8 +612,11 @@ class SongListBox(urwid.Frame):
         elif key == 'backspace':
             self.perform_filtering(key)
         elif self._is_filtering:
-            return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
-                                           size, key)
+            try:
+                return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
+                                               size, key)
+            except IndexError:
+                pass
         else:
             return super(SongListBox, self).keypress(size, key)
 
@@ -620,12 +625,7 @@ class SongListBox(urwid.Frame):
     def _get_filtered(self):
         """Get filtered list of items"""
         matches = self.get_filtered_items()
-
-        if not matches:
-            return False
-
         _, index = self.walker.get_focus()
-
         return (matches, index)
 
     def move_to_beginning(self):
@@ -643,34 +643,29 @@ class SongListBox(urwid.Frame):
     def move_up(self):
         """Move the focus an item up in the playlist"""
         matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_prev_item(matches, index))
+        self.list_box.set_focus(*self.get_item(matches, index, lt))
         return False
 
     def move_down(self):
         """Move the focus an item down in the playlist """
         matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_next_item(matches, index))
+        self.list_box.set_focus(*self.get_item(matches, index, gt))
         return False
 
     @staticmethod
-    def get_prev_item(matches, current_index):
+    def get_item(matches, current_index, callback):
         """
-        Get previous item index from matches list.
+        Get an item index from the matches list
         """
-        prev_items = [item for item in matches if item.index < current_index]
-        if prev_items:
-            return prev_items[-1].index, 'below'
-        return matches[-1].index, 'above'
+        # Some not so very nice code to get to be nice and generic
+        order = ['above', 'below']
+        if callback is lt:
+            order.reverse()
 
-    @staticmethod
-    def get_next_item(matches, current_index):
-        """
-        Get next item index from matches list.
-        """
-        next_items = [item for item in matches if item.index > current_index]
-        if next_items:
-            return next_items[0].index, 'above'
-        return matches[0].index, 'below'
+        items = [item for item in matches if callback(item.index, current_index)]
+        if items:
+            return items[-1].index, order[0]
+        return matches[-1].index, order[1]
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
