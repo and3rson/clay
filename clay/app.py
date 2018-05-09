@@ -27,6 +27,7 @@ from clay.notifications import notification_area
 from clay.gp import gp
 from clay.hotkeys import hotkey_manager
 
+
 class AppWidget(urwid.Frame):
     """
     Root widget.
@@ -326,7 +327,7 @@ def main():
     """
     Application entrypoint.
 
-    This method is required to allow Clay to be ran an application when installed via setuptools.
+    This function is required to allow Clay to be ran as application when installed via setuptools.
     """
     parser = argparse.ArgumentParser(
         prog=meta.APP_NAME,
@@ -362,6 +363,13 @@ def main():
     # Create a 256 colour palette.
     palette = [(name, '', '', '', res['foreground'], res['background'])
                for name, res in settings.colours_config.items()]
+
+    try:
+        from setproctitle import setproctitle
+    except ImportError:
+        pass
+    else:
+        setproctitle('clay')
 
     # Run the actual program
     app_widget = AppWidget()

@@ -64,9 +64,10 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - [gmusicapi] (PYPI)
 - [urwid] (PYPI)
 - [PyYAML] (PYPI)
-- [PyGObject] (native, optional, used for global X keybinds)
-- [Keybinder] (native, optional, used for global X keybinds)
 - lib[VLC] (native, distributed with VLC player)
+- [PyGObject] (optional) (native, used for global X keybinds)
+- [Keybinder] (optional) (native, used for global X keybinds)
+- [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
 
 # What works
 - Playback
@@ -244,3 +245,4 @@ People who contribute to this project:
 [pyyaml]: https://github.com/yaml/pyyaml
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
 [Keybinder]: https://github.com/kupferlauncher/keybinder
+[setproctitle]: https://pypi.org/project/setproctitle/
