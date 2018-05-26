@@ -24,8 +24,10 @@ class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
     """
+    _unicode = settings.get('unicode', 'clay_settings')
     signals = [
         'activate',
+        'play',
         'append-requested',
         'unappend-requested',
         'station-requested',
@@ -57,8 +59,13 @@ class SongListItem(urwid.Pile):
         3: u'\u25A0'
     }
 
+    RATING_ICONS = {0: ' ',
+                    1: u'\U0001F593' if _unicode else '-',
+                    5: u'\U0001F592' if _unicode else '+'}
+
     def __init__(self, track):
         self.track = track
+        self.rating = self.RATING_ICONS[track.rating]
         self.index = 0
         self.state = SongListItem.STATE_IDLE
         self.line1_left = urwid.SelectableIcon('', cursor_position=1000)
@@ -107,7 +114,6 @@ class SongListItem(urwid.Pile):
         """
         return SongListItem.STATE_ICONS[state]
 
-
     def update_text(self):
         """
         Update text of this item from the attached track.
@@ -118,13 +124,16 @@ class SongListItem(urwid.Pile):
                 icon=self.get_state_icon(self.state),
                 title=self.track.title,
                 minutes=self.track.duration // (1000 * 60),
-                seconds=(self.track.duration // 1000) % 60
+                seconds=(self.track.duration // 1000) % 60,
             )
         )
+
         if settings.get_is_file_cached(self.track.filename):
             self.line1_right.set_text(u' \u25bc Cached')
         else:
             self.line1_right.set_text(u'')
+
+        self.line1_right.set_text(u'{rating}'.format(rating=self.rating))
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )
@@ -136,9 +145,10 @@ class SongListItem(urwid.Pile):
         """
         Return song artist and title.
         """
-        return u'{} - {}'.format(
+        return u'{} - {} {}'.format(
             self.track.artist,
-            self.track.title
+            self.track.title,
+            self.rating
         )
 
     def keypress(self, size, key):
@@ -158,27 +168,37 @@ class SongListItem(urwid.Pile):
 
     def thumbs_up(self):
         """
-        Toggle the thumbs up of this song.
+        Thumb the currently selected song up.
         """
         self.track.rate_song((0 if self.track.rating == 5 else 5))
 
     def thumbs_down(self):
+        """
+        Thumb the currently selected song down.
+        """
         self.track.rate_song((0 if self.track.rating == 1 else 1))
 
     def _send_signal(self, signal):
         urwid.emit_signal(self, signal, self)
 
+    def activate(self):
+        """
+        Add the entire list to queue and begin playing
+        """
+        self._send_signal("activate")
+
     def play(self):
         """
         Play this song.
         """
-        self._send_signal("activate")
+        self._send_signal("play")
 
     def append(self):
         """
         Add this song to the queue.
         """
         self._send_signal("append-requested")
+        self.play()
 
     def unappend(self):
         """
@@ -466,6 +486,10 @@ class SongListBox(urwid.Frame):
             urwid.connect_signal(
                 songitem, 'activate', self.item_activated
             )
+
+            urwid.connect_signal(
+                songitem, 'play', self.item_play_pause
+            )
             urwid.connect_signal(
                 songitem, 'append-requested', self.item_append_requested
             )
@@ -480,6 +504,13 @@ class SongListBox(urwid.Frame):
             )
             items.append(songitem)
         return (items, current_index)
+
+    def item_play_pause(self, songitem):
+        """
+        Called when you want to start playing a song.
+        """
+        if songitem.is_currently_played:
+            player.play_pause()
 
     def item_activated(self, songitem):
         """

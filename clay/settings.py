@@ -144,7 +144,6 @@ class _Settings(object):
         except (KeyError, TypeError):
             return self._get_section(self._default_config, *sections)
 
-
     def get_default_config_section(self, *sections):
         """
         Always get a section from the default/system configuration. You would use this whenever
