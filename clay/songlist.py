@@ -227,7 +227,7 @@ class SongListBoxPopup(urwid.LineBox):
 
     def __init__(self, songitem):
         self.songitem = songitem
-        options = [
+        self.options = [
             urwid.AttrWrap(
                 urwid.Text(' ' + songitem.full_title),
                 'panel'
@@ -241,41 +241,51 @@ class SongListBoxPopup(urwid.LineBox):
                 'panel_divider'
             )
         ]
-        options.append(self._create_divider())
+
         if not gp.get_track_by_id(songitem.track.id):
-            options.append(self._create_button('Add to library', self.add_to_my_library))
+            self._add_item('Add to library', self.add_to_my_library)
         else:
-            options.append(self._create_button('Remove from library', self.remove_from_my_library))
-        options.append(self._create_divider())
-        options.append(self._create_button('Create station', self.create_station))
-        options.append(self._create_divider())
+            self._add_item('Remove from library', self.remove_from_my_library)
+
+        self._add_item('Create station', self.create_station)
+
         if self.songitem.track in player.get_queue_tracks():
-            options.append(self._create_button('Remove from queue', self.remove_from_queue))
+            self._add_item('Remove from queue', self.from_queue)
         else:
-            options.append(self._create_button('Append to queue', self.append_to_queue))
+            self._add_item('Append to queue', self.append_to_queue)
+
         if self.songitem.track.cached_url is not None:
-            options.append(self._create_button('Copy URL to clipboard', self.copy_url))
-        options.append(self._create_button('Close', self.close))
+            self._add_item('Copy URL to clipboard', self.copy_url)
+
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Button('Close', on_press=self.close),
+                'panel',
+                'panel_focus'))
+
         super(SongListBoxPopup, self).__init__(
-            urwid.Pile(options)
+            urwid.Pile(self.options)
         )
 
-    def _create_divider(self):
+    def _add_item(self, name, func):
         """
-        Return a divider widget.
-        """
-        return urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        )
+        Add an item to the list with a divider.
 
-    def _create_button(self, title, on_press):
-        return urwid.AttrWrap(
-            urwid.Button(title, on_press=on_press),
-            'panel',
-            'panel_focus'
-        )
+        Args:
+           name (str): The name of the option
+           func: The function to call afterwards
+        """
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Divider(u'\u2500'),
+                'panel_divider',
+                'panel_divider_focus'))
+
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Button(name, on_press=func),
+                'panel',
+                'panel_focus'))
 
     def add_to_my_library(self, _):
         """
