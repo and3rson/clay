@@ -5,6 +5,7 @@ PlayBar widget.
 import urwid
 
 from clay.player import player
+from clay.settings import settings
 from clay import meta
 
 
@@ -71,8 +72,11 @@ class PlayBar(urwid.Pile):
     """
     A widget that shows currently played track, playback progress and flags.
     """
-
+    _unicode = settings.get('unicode', 'clay_settings')
     ROTATING = u'|' u'/' u'\u2014' u'\\'
+    RATING_ICONS = {0: ' ',
+                    1: u'\U0001F593' if _unicode else '-',
+                    5: u'\U0001F592' if _unicode else '+'}
 
     def __init__(self, app):
         # super(PlayBar, self).__init__(*args, **kwargs)
@@ -130,7 +134,7 @@ class PlayBar(urwid.Pile):
             )
         progress = player.get_play_progress_seconds()
         total = player.get_length_seconds()
-        return (self.get_style(), u' {} {} - {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
+        return (self.get_style(), u' {} {} - {} {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
             # self.get_rotating_bar(),
             u'\u2505' if player.is_loading
@@ -138,6 +142,7 @@ class PlayBar(urwid.Pile):
             else u'\u25A0',
             track.artist,
             track.title,
+            self.RATING_ICONS[track.rating],
             progress // 60,
             progress % 60,
             total // 60,

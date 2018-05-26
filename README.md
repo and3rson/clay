@@ -70,6 +70,8 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 
 # What works
 - Playback
+- Configurable keybinds and colours
+- Liked songs playlist (cur. static)
 - Music library browsing & management
 - Playlists
 - Radio stations
@@ -88,7 +90,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 
 # What is being developed
 
-- Like/dislike tracks
+- Like/dislike tracks (mostly done but currently is a one time only action)
 - Playlist editing
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
@@ -189,6 +191,8 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - `<CTRL> u` - remove highlighted song from the queue
 - `<CTRL> p` - start station from highlighted song
 - `<ALT> m` - show context menu for this song
+- `<ALT> u` - thumb up the highlighted song
+- `<ALT> d` - thumb down the highlighted song
 
 ## Playback
 

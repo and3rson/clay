@@ -21,11 +21,14 @@ hotkeys:
       handle_escape: esc, mod + _
 
     library_item:
-      play: enter
+      activate: enter
+      play: mod + p
       append: mod + a
       unappend: mod + u
-      request_station: mod + p
+      request_station: meta + s
       show_context_menu: meta + p
+      thumbs_up: meta + u
+      thumbs_down: meta + d
 
     library_view:
       move_to_beginning: home
@@ -52,6 +55,7 @@ hotkeys:
 
 clay_settings:
   x_keybinds: false
+  unicode: true
 
 play_settings:
   authtoken:

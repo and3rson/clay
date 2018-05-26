@@ -143,6 +143,7 @@ def _dummy_log(data, level, ctx, fmt, args):
     pass
 #+pylint: disable=unused-argument
 
+
 class _Player(object):
     """
     Interface to libVLC. Uses Queue as a playback plan.
@@ -161,11 +162,11 @@ class _Player(object):
     def __init__(self):
         self.instance = vlc.Instance()
         print_func = CFUNCTYPE(c_void_p,
-                               c_void_p, # data
-                               c_int, # level
-                               c_void_p, # context
-                               c_char_p, # fmt
-                               c_void_p) #args
+                               c_void_p,  # data
+                               c_int,     # level
+                               c_void_p,  # context
+                               c_char_p,  # fmt
+                               c_void_p)  # args
 
         self.instance.log_set(print_func(_dummy_log), None)
 
