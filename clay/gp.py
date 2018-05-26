@@ -87,7 +87,7 @@ class Track(object):
 
     def __init__(self, source, data):
         # In playlist items and user uploaded songs the storeIds are missing so
-        self.store_id = (data['storeId'] if 'storeId' in data else data['id'])
+        self.store_id = (data['storeId'] if 'storeId' in data else data.get('id'))
         self.playlist_item_id = (UUID(data['id']) if source == self.SOURCE_PLAYLIST else None)
         self.library_id = (UUID(data['id']) if source == self.SOURCE_LIBRARY else None)
 

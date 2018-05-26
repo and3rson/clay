@@ -10,7 +10,7 @@ hotkeys:
   clay_hotkeys:
     global:
       seek_start: mod + q
-      play_pause: mod + w
+      play_pause: mod + p
       seek_backward: shift + left
       seek_forward: shift + right
       quit: mod + x
@@ -22,7 +22,6 @@ hotkeys:
 
     library_item:
       activate: enter
-      play: mod + p
       append: mod + a
       unappend: mod + u
       request_station: meta + s
