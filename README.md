@@ -19,6 +19,7 @@
   * [Misc](#misc)
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
+- [Changelog](./CHANGELOG.rst)
 
 # Clay [beta]
 
@@ -55,7 +56,7 @@ clay
 
 # Documentation
 
-Documentation is ![available here](http://clay.readthedocs.io/en/latest/).
+Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 
 # Requirements
 
@@ -235,14 +236,15 @@ Made by Andrew Dunai.
 
 Regards to [gmusicapi] and [VLC] who made this possible.
 
-Special thanks to the people who contribute to this project:
+People who contribute to this project:
 
-- [Valentijn (@ValentijnvdBeek)](https://github.com/ValentijnvdBeek)
-- [Sam Kingston (@sjkingo)](https://github.com/sjkingo)
+- [@ValentijnvdBeek (Valentijn)](https://github.com/ValentijnvdBeek)
+- [@Fluctuz](https://github.com/Fluctuz)
+- [@sjkingo (Sam Kingston)](https://github.com/sjkingo)
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
-[urwid]: urwid.org/
+[urwid]: http://www.urwid.org/
 [pyyaml]: https://github.com/yaml/pyyaml
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
 [Keybinder]: https://github.com/kupferlauncher/keybinder

@@ -40,6 +40,9 @@ hotkeys:
     playlist_page:
       start_playlist: enter
 
+    station_page:
+      start_station: enter
+
     debug_page:
       copy_message: enter
 

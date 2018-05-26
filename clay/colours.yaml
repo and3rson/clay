@@ -1,10 +1,10 @@
 default: &default
   foreground: "#FFF"
-  background: "#222"
+  background: null
 
 primary: &primary
   foreground: "#F54"
-  background: "#FFF"
+  background: null
 
 primary_inv: &primary_inv
   foreground: "#FFF"

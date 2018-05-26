@@ -18,6 +18,7 @@ from clay.playbar import PlayBar
 from clay.pages.debug import DebugPage
 from clay.pages.mylibrary import MyLibraryPage
 from clay.pages.myplaylists import MyPlaylistsPage
+from clay.pages.mystations import MyStationsPage
 from clay.pages.playerqueue import QueuePage
 from clay.pages.search import SearchPage
 from clay.pages.settings import SettingsPage
@@ -68,6 +69,7 @@ class AppWidget(urwid.Frame):
             DebugPage(self),
             MyLibraryPage(self),
             MyPlaylistsPage(self),
+            MyStationsPage(self),
             QueuePage(self),
             SearchPage(self),
             SettingsPage(self)
@@ -105,7 +107,11 @@ class AppWidget(urwid.Frame):
 
         Request user authorization.
         """
-        authtoken, device_id, _, password, username = settings.get_section("play_settings").values()
+        authtoken, device_id, username, password = [
+            settings.get(key, "play_settings")
+            for key
+            in ('authtoken', 'device_id', 'username', 'password')
+        ]
 
         if self._login_notification:
             self._login_notification.close()
