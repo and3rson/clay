@@ -43,6 +43,7 @@ class MyLibraryPage(urwid.Columns, AbstractPage):
         if error:
             notification_area.notify('Failed to load my library: {}'.format(str(error)))
             return
+        tracks.sort(key=lambda k: k.original_data['title'])
         self.songlist.populate(tracks)
         self.app.redraw()
 

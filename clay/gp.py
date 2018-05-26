@@ -238,8 +238,6 @@ class Track(object):
         if rating == 5:
             gp.cached_liked_songs.add_liked_song(self)
 
-        # print(gp.mobile_client.rate_songs(self.original_data, rating))
-
     def __str__(self):
         return u'<Track "{} - {}" from {}>'.format(
             self.artist,
@@ -252,7 +250,7 @@ class Track(object):
 
 class Artist(object):
     """
-    Model that represents artist.
+    Model that represents an artist.
     """
     def __init__(self, artist_id, name):
         self._id = artist_id
@@ -429,7 +427,7 @@ class LikedSongs(object):
         """
         Add a liked song to the list.
         """
-        self._tracks.append(song)
+        self._tracks.insert(0, song)
 
     def remove_liked_song(self, song):
         """

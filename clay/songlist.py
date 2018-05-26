@@ -280,7 +280,7 @@ class SongListBoxPopup(urwid.LineBox):
         self._add_item('Create station', self.create_station)
 
         if self.songitem.track in player.get_queue_tracks():
-            self._add_item('Remove from queue', self.from_queue)
+            self._add_item('Remove from queue', self.remove_from_queue)
         else:
             self._add_item('Append to queue', self.append_to_queue)
 
