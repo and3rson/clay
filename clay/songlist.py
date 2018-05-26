@@ -4,8 +4,8 @@ Components for song listing.
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
-from string import digits
 from operator import lt, gt
+from string import digits
 
 try:
     # Python 3.x
