@@ -102,6 +102,7 @@ class Track(object):
         self.rating = (int(data['rating']) if 'rating' in data else 0)
         self.source = source
         self.cached_url = None
+        self.explicit_rating = (int(data['explicitType']))
 
         if self.rating == 5:
             gp.cached_liked_songs.add_liked_song(self)

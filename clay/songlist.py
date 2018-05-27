@@ -61,13 +61,23 @@ class SongListItem(urwid.Pile):
         3: u'\u25A0'
     }
 
-    RATING_ICONS = {0: ' ',
-                    1: u'\U0001F593' if _unicode else '-',
-                    5: u'\U0001F592' if _unicode else '+'}
+    RATING_ICONS = {
+        0: ' ',
+        1: u'\U0001F593' if _unicode else '-',
+        5: u'\U0001F592' if _unicode else '+'
+    }
+
+    EXPLICIT_ICONS = {
+        0: ' ',  # not actually used?
+        1: u'\U0001F174' if _unicode else '[E]',
+        2: ' ',
+        3: ' '
+    }
 
     def __init__(self, track):
         self.track = track
         self.rating = self.RATING_ICONS[track.rating]
+        self.explicit = self.EXPLICIT_ICONS[track.explicit_rating]
         self.index = 0
         self.state = SongListItem.STATE_IDLE
         self.line1_left = urwid.SelectableIcon('', cursor_position=1000)
@@ -135,7 +145,9 @@ class SongListItem(urwid.Pile):
         else:
             self.line1_right.set_text(u'')
 
-        self.line1_right.set_text(u'{rating}'.format(rating=self.rating))
+        self.line1_right.set_text(u'{explicit} {rating}'.format(explicit=self.explicit,
+                                                                rating=self.rating))
+
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )

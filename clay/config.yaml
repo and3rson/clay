@@ -14,10 +14,10 @@ hotkeys:
       seek_backward: shift + left
       seek_forward: shift + right
       quit: mod + x
-      toggle_shuffle: mod + s
+      toggle_shuffle: mod + r
       next_song: mod + d
       prev_song: mod + a
-      toggle_repeat_one: mod + r
+      toggle_repeat_one: mod + o
       handle_escape: esc, mod + _
 
     library_item:
