@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+Clay 1.1.0
+=========
+
+TBA
+
+* Liked Songs Playlist (by Valentijn)
+* Thumbs Up / Thumbs Down (by Valentijn)
+* Alphabetical Sorting in Library View (by Valentijn)
+* Explicit Rating Icon (by Valentijn)
+* Various bugfixes
+
+
 Clay 1.0.0
 ==========
 
@@ -140,4 +152,3 @@ Clay 0.3
  * Auth token caching
  * Colors
  * Copy URL to clipboard
-

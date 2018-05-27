@@ -69,31 +69,31 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - lib[VLC] (native, distributed with VLC player)
 
 # What works
-- Playback
-- Configurable keybinds and colours
-- Liked songs playlist (cur. static)
-- Music library browsing & management
-- Playlists
-- Radio stations
-- Song search
-- Filtering results
-- Queue management
-- Notifications
 - Audio equalizer
-- Global hotkeys
-- Song file caching
-- Configuration UI
-- Token caching for faster authorizations
-- Song operations (add to library, start station etc.)
 - Caching (not for song data, that one is coming soon)
+- Configurable keybinds and colours
+- Configuration UI
+- Filtering results
+- Global hotkeys
+- Like/dislike tracks
+- Liked songs playlist
+- Music library browsing & management
+- Notifications
 - PYPI package
+- Playback
+- Playlists
+- Queue management
+- Radio stations
+- Song file caching
+- Song operations (add to library, start station etc.)
+- Song search
+- Token caching for faster authorizations
 
 # What is being developed
-
-- Like/dislike tracks (mostly done but currently is a one time only action)
-- Playlist editing
+- Artist/album display
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
+- Playlist editing
 
 # Installation
 
