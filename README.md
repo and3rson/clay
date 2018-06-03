@@ -70,29 +70,31 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
 
 # What works
-- Playback
-- Music library browsing & management
-- Playlists
-- Radio stations
-- Song search
-- Filtering results
-- Queue management
-- Notifications
 - Audio equalizer
-- Global hotkeys
-- Song file caching
-- Configuration UI
-- Token caching for faster authorizations
-- Song operations (add to library, start station etc.)
 - Caching (not for song data, that one is coming soon)
+- Configurable keybinds and colours
+- Configuration UI
+- Filtering results
+- Global hotkeys
+- Like/dislike tracks
+- Liked songs playlist
+- Music library browsing & management
+- Notifications
 - PYPI package
+- Playback
+- Playlists
+- Queue management
+- Radio stations
+- Song file caching
+- Song operations (add to library, start station etc.)
+- Song search
+- Token caching for faster authorizations
 
 # What is being developed
-
-- Like/dislike tracks
-- Playlist editing
+- Artist/album display
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
+- Playlist editing
 
 # Installation
 
@@ -190,6 +192,8 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - `<CTRL> u` - remove highlighted song from the queue
 - `<CTRL> p` - start station from highlighted song
 - `<ALT> m` - show context menu for this song
+- `<ALT> u` - thumb up the highlighted song
+- `<ALT> d` - thumb down the highlighted song
 
 ## Playback
 

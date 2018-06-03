@@ -85,27 +85,33 @@ class Track(object):
     SOURCE_PLAYLIST = 'playlist'
     SOURCE_SEARCH = 'search'
 
-    def __init__(  # pylint: disable=too-many-arguments
-            self,
-            title, artist, duration, source,
-            library_id=None, store_id=None, playlist_item_id=None,
-            album_name=None, album_url=None, original_data=None
-    ):
-        self.title = title
-        self.artist = artist
-        self.duration = duration
+    def __init__(self, source, data):
+        # In playlist items and user uploaded songs the storeIds are missing so
+        self.store_id = (data['storeId'] if 'storeId' in data else data.get('id'))
+        self.playlist_item_id = (UUID(data['id']) if source == self.SOURCE_PLAYLIST else None)
+        self.library_id = (UUID(data['id']) if source == self.SOURCE_LIBRARY else None)
+
+        # To filter out the playlist items we need to reassign the store_id when fetching the track
+        if 'track' in data:
+            data = data['track']
+            self.store_id = data['storeId']
+
+        self.title = data['title']
+        self.artist = data['artist']
+        self.duration = int(data['durationMillis'])
+        self.rating = (int(data['rating']) if 'rating' in data else 0)
         self.source = source
-
         self.cached_url = None
+        self.explicit_rating = (int(data['explicitType']))
 
-        self.library_id = library_id
-        self.store_id = store_id
-        self.playlist_item_id = playlist_item_id
+        if self.rating == 5:
+            gp.cached_liked_songs.add_liked_song(self)
 
-        self.album_name = album_name
-        self.album_url = album_url
+        # User uploaded songs miss a store_id
+        self.album_name = data['album']
+        self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
 
-        self.original_data = original_data
+        self.original_data = data
 
     @property
     def id(self):  # pylint: disable=invalid-name
@@ -131,115 +137,22 @@ class Track(object):
         )
 
     @classmethod
-    def _from_search(cls, data):
-        """
-        Create track from search result data.
-        """
-        # Data contains a nested track representation.
-        return Track(
-            title=data['track']['title'],
-            artist=data['track']['artist'],
-            duration=int(data['track']['durationMillis']),
-            source=cls.SOURCE_SEARCH,
-            store_id=data['track']['storeId'],  # or data['trackId']
-            album_name=data['track']['album'],
-            album_url=data['track']['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_station(cls, data):
-        """
-        Create track from station track data.
-        """
-        # Station tracks have all the info in place.
-        return Track(
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis']),
-            source=cls.SOURCE_STATION,
-            store_id=data['storeId'],
-            album_name=data['album'],
-            album_url=data['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_library(cls, data):
-        """
-        Create track from library track data.
-        """
-        # Data contains all info about track
-        # including ID in library and ID in store.
-        UUID(data['id'])
-        return Track(
-            title=data['title'],
-            artist=data['artist'],
-            duration=int(data['durationMillis']),
-            source=cls.SOURCE_LIBRARY,
-            store_id=data['storeId'],
-            library_id=data['id'],
-            album_name=data['album'],
-            album_url=data['albumArtRef'][0]['url'],
-            original_data=data
-        )
-
-    @classmethod
-    def _from_playlist(cls, data):
-        """
-        Create track from playlist track data.
-        """
-        if 'track' in data:
-            # Data contains a nested track representation that can be used
-            # to construct new track.
-            return Track(
-                title=data['track']['title'],
-                artist=data['track']['artist'],
-                duration=int(data['track']['durationMillis']),
-                source=cls.SOURCE_PLAYLIST,
-                store_id=data['track']['storeId'],  # or data['trackId']
-                playlist_item_id=data['id'],
-                album_name=data['track']['album'],
-                album_url=data['track']['albumArtRef'][0]['url'],
-                original_data=data
-            )
-        # We need to find a track in Library by trackId.
-        UUID(data['trackId'])
-        track = gp.get_track_by_id(data['trackId'])
-        return Track(
-            title=track.title,
-            artist=track.artist,
-            duration=track.duration,
-            source=cls.SOURCE_PLAYLIST,
-            store_id=track.store_id,
-            album_name=track.album_name,
-            album_url=track.album_url,
-            original_data=data
-        )
-
-    _CREATE_TRACK = {
-        SOURCE_SEARCH: '_from_search',
-        SOURCE_STATION: '_from_station',
-        SOURCE_LIBRARY: '_from_library',
-        SOURCE_PLAYLIST: '_from_playlist',
-    }
-
-    @classmethod
     def from_data(cls, data, source, many=False):
         """
         Construct and return one or many :class:`.Track` instances
         from Google Play Music API response.
         """
         if many:
-            return [
-                track
-                for track
-                in [cls.from_data(one, source) for one in data]
-                if track is not None
-            ]
-
+            return [track for track in
+                    [cls.from_data(one, source) for one in data]
+                    if track is not None]
         try:
-            return getattr(cls, cls._CREATE_TRACK[source])(data)
+            if source == cls.SOURCE_PLAYLIST and 'track' not in data:
+                track = gp.get_track_by_id(UUID(data['trackId']))
+            else:
+                track = Track(source, data)
+
+            return track
         except Exception as error:  # pylint: disable=bare-except
             logger.error(
                 'Failed to parse track data: %s, failing data: %s',
@@ -315,6 +228,17 @@ class Track(object):
 
     remove_from_my_library_async = asynchronous(remove_from_my_library)
 
+    def rate_song(self, rating):
+        """
+        Rate the song either 0 (no thumb), 1 (down thumb) or 5 (up thumb).
+        """
+        gp.mobile_client.rate_songs(self.original_data, rating)
+        self.original_data['rating'] = rating
+        self.rating = rating
+
+        if rating == 5:
+            gp.cached_liked_songs.add_liked_song(self)
+
     def __str__(self):
         return u'<Track "{} - {}" from {}>'.format(
             self.artist,
@@ -327,7 +251,7 @@ class Track(object):
 
 class Artist(object):
     """
-    Model that represents artist.
+    Model that represents an artist.
     """
     def __init__(self, artist_id, name):
         self._id = artist_id
@@ -473,6 +397,46 @@ class Playlist(object):
         )
 
 
+class LikedSongs(object):
+    """
+    A local model that represents the songs that a user liked and displays them as a faux playlist.
+
+    This mirrors the "liked songs" generated playlist feature of the Google Play Music apps.
+    """
+    def __init__(self):
+        self._id = None  # pylint: disable=invalid-name
+        self.name = "Liked Songs"
+        self._tracks = []
+        self._sorted = False
+
+    @property
+    def tracks(self):
+        """
+        Get a sorted list of liked tracks.
+        """
+        if self._sorted:
+            tracks = self._tracks
+        else:
+            self._tracks.sort(key=lambda k: k.original_data['lastRatingChangeTimestamp'],
+                              reverse=True)
+            self._sorted = True
+            tracks = self._tracks
+
+        return tracks
+
+    def add_liked_song(self, song):
+        """
+        Add a liked song to the list.
+        """
+        self._tracks.insert(0, song)
+
+    def remove_liked_song(self, song):
+        """
+        Remove a liked song from the list
+        """
+        self._tracks.remove(song)
+
+
 class _GP(object):
     """
     Interface to :class:`gmusicapi.Mobileclient`. Implements
@@ -493,6 +457,7 @@ class _GP(object):
         #     self.debug_file = open('/tmp/clay-api-log.json', 'w')
         #     self._last_call_index = 0
         self.cached_tracks = None
+        self.cached_liked_songs = LikedSongs()
         self.cached_playlists = None
         self.cached_stations = None
 
@@ -588,6 +553,7 @@ class _GP(object):
             return self.cached_tracks
         data = self.mobile_client.get_all_songs()
         self.cached_tracks = Track.from_data(data, Track.SOURCE_LIBRARY, True)
+
         return self.cached_tracks
 
     get_all_tracks_async = asynchronous(get_all_tracks)
@@ -625,14 +591,15 @@ class _GP(object):
         Return list of :class:`.Playlist` instances.
         """
         if self.cached_playlists:
-            return self.cached_playlists
+            return [self.cached_liked_songs] + self.cached_playlists
+
         self.get_all_tracks()
 
         self.cached_playlists = Playlist.from_data(
             self.mobile_client.get_all_user_playlist_contents(),
             True
         )
-        return self.cached_playlists
+        return [self.cached_liked_songs] + self.cached_playlists
 
     get_all_user_playlist_contents_async = (  # pylint: disable=invalid-name
         asynchronous(get_all_user_playlist_contents)

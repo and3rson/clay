@@ -124,6 +124,7 @@ class _HotkeyManager(object):
                         hotkey[0] = mod_key
 
                     hotkeys[hotkey_name][' '.join(hotkey)] = action
+
         return hotkeys
 
     def keypress(self, name, caller, super_, size, key):

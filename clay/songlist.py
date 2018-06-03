@@ -4,7 +4,9 @@ Components for song listing.
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
+from operator import lt, gt
 from string import digits
+
 try:
     # Python 3.x
     from string import ascii_letters
@@ -24,8 +26,10 @@ class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
     """
+    _unicode = settings.get('unicode', 'clay_settings')
     signals = [
         'activate',
+        'play',
         'append-requested',
         'unappend-requested',
         'station-requested',
@@ -57,8 +61,23 @@ class SongListItem(urwid.Pile):
         3: u'\u25A0'
     }
 
+    RATING_ICONS = {
+        0: ' ',
+        1: u'\U0001F593' if _unicode else '-',
+        5: u'\U0001F592' if _unicode else '+'
+    }
+
+    EXPLICIT_ICONS = {
+        0: ' ',  # not actually used?
+        1: u'\U0001F174' if _unicode else '[E]',
+        2: ' ',
+        3: ' '
+    }
+
     def __init__(self, track):
         self.track = track
+        self.rating = self.RATING_ICONS[track.rating]
+        self.explicit = self.EXPLICIT_ICONS[track.explicit_rating]
         self.index = 0
         self.state = SongListItem.STATE_IDLE
         self.line1_left = urwid.SelectableIcon('', cursor_position=1000)
@@ -117,13 +136,18 @@ class SongListItem(urwid.Pile):
                 icon=self.get_state_icon(self.state),
                 title=self.track.title,
                 minutes=self.track.duration // (1000 * 60),
-                seconds=(self.track.duration // 1000) % 60
+                seconds=(self.track.duration // 1000) % 60,
             )
         )
+
         if settings.get_is_file_cached(self.track.filename):
             self.line1_right.set_text(u' \u25bc Cached')
         else:
             self.line1_right.set_text(u'')
+
+        self.line1_right.set_text(u'{explicit} {rating}'.format(explicit=self.explicit,
+                                                                rating=self.rating))
+
         self.line2.set_text(
             u'      {} \u2015 {}'.format(self.track.artist, self.track.album_name)
         )
@@ -135,9 +159,10 @@ class SongListItem(urwid.Pile):
         """
         Return song artist and title.
         """
-        return u'{} - {}'.format(
+        return u'{} - {} {}'.format(
             self.track.artist,
-            self.track.title
+            self.track.title,
+            self.rating
         )
 
     def keypress(self, size, key):
@@ -155,20 +180,39 @@ class SongListItem(urwid.Pile):
             return None
         return super(SongListItem, self).mouse_event(size, event, button, col, row, focus)
 
+    def thumbs_up(self):
+        """
+        Thumb the currently selected song up.
+        """
+        self.track.rate_song((0 if self.track.rating == 5 else 5))
+
+    def thumbs_down(self):
+        """
+        Thumb the currently selected song down.
+        """
+        self.track.rate_song((0 if self.track.rating == 1 else 1))
+
     def _send_signal(self, signal):
         urwid.emit_signal(self, signal, self)
+
+    def activate(self):
+        """
+        Add the entire list to queue and begin playing
+        """
+        self._send_signal("activate")
 
     def play(self):
         """
         Play this song.
         """
-        self._send_signal("activate")
+        self._send_signal("play")
 
     def append(self):
         """
         Add this song to the queue.
         """
         self._send_signal("append-requested")
+        self.play()
 
     def unappend(self):
         """
@@ -225,7 +269,7 @@ class SongListBoxPopup(urwid.LineBox):
 
     def __init__(self, songitem):
         self.songitem = songitem
-        options = [
+        self.options = [
             urwid.AttrWrap(
                 urwid.Text(' ' + songitem.full_title),
                 'panel'
@@ -239,41 +283,51 @@ class SongListBoxPopup(urwid.LineBox):
                 'panel_divider'
             )
         ]
-        options.append(self._create_divider())
+
         if not gp.get_track_by_id(songitem.track.id):
-            options.append(self._create_button('Add to library', self.add_to_my_library))
+            self._add_item('Add to library', self.add_to_my_library)
         else:
-            options.append(self._create_button('Remove from library', self.remove_from_my_library))
-        options.append(self._create_divider())
-        options.append(self._create_button('Create station', self.create_station))
-        options.append(self._create_divider())
+            self._add_item('Remove from library', self.remove_from_my_library)
+
+        self._add_item('Create station', self.create_station)
+
         if self.songitem.track in player.get_queue_tracks():
-            options.append(self._create_button('Remove from queue', self.remove_from_queue))
+            self._add_item('Remove from queue', self.remove_from_queue)
         else:
-            options.append(self._create_button('Append to queue', self.append_to_queue))
+            self._add_item('Append to queue', self.append_to_queue)
+
         if self.songitem.track.cached_url is not None:
-            options.append(self._create_button('Copy URL to clipboard', self.copy_url))
-        options.append(self._create_button('Close', self.close))
+            self._add_item('Copy URL to clipboard', self.copy_url)
+
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Button('Close', on_press=self.close),
+                'panel',
+                'panel_focus'))
+
         super(SongListBoxPopup, self).__init__(
-            urwid.Pile(options)
+            urwid.Pile(self.options)
         )
 
-    def _create_divider(self):
+    def _add_item(self, name, func):
         """
-        Return a divider widget.
-        """
-        return urwid.AttrWrap(
-            urwid.Divider(u'\u2500'),
-            'panel_divider',
-            'panel_divider_focus'
-        )
+        Add an item to the list with a divider.
 
-    def _create_button(self, title, on_press):
-        return urwid.AttrWrap(
-            urwid.Button(title, on_press=on_press),
-            'panel',
-            'panel_focus'
-        )
+        Args:
+           name (str): The name of the option
+           func: The function to call afterwards
+        """
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Divider(u'\u2500'),
+                'panel_divider',
+                'panel_divider_focus'))
+
+        self.options.append(
+            urwid.AttrWrap(
+                urwid.Button(name, on_press=func),
+                'panel',
+                'panel_focus'))
 
     def add_to_my_library(self, _):
         """
@@ -456,6 +510,10 @@ class SongListBox(urwid.Frame):
             urwid.connect_signal(
                 songitem, 'activate', self.item_activated
             )
+
+            urwid.connect_signal(
+                songitem, 'play', self.item_play_pause
+            )
             urwid.connect_signal(
                 songitem, 'append-requested', self.item_append_requested
             )
@@ -470,6 +528,13 @@ class SongListBox(urwid.Frame):
             )
             items.append(songitem)
         return (items, current_index)
+
+    def item_play_pause(self, songitem):
+        """
+        Called when you want to start playing a song.
+        """
+        if songitem.is_currently_played:
+            player.play_pause()
 
     def item_activated(self, songitem):
         """
@@ -610,8 +675,11 @@ class SongListBox(urwid.Frame):
         elif key == 'backspace':
             self.perform_filtering(key)
         elif self._is_filtering:
-            return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
-                                           size, key)
+            try:
+                return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
+                                               size, key)
+            except IndexError:
+                pass
         else:
             return super(SongListBox, self).keypress(size, key)
 
@@ -620,12 +688,7 @@ class SongListBox(urwid.Frame):
     def _get_filtered(self):
         """Get filtered list of items"""
         matches = self.get_filtered_items()
-
-        if not matches:
-            return False
-
         _, index = self.walker.get_focus()
-
         return (matches, index)
 
     def move_to_beginning(self):
@@ -643,34 +706,29 @@ class SongListBox(urwid.Frame):
     def move_up(self):
         """Move the focus an item up in the playlist"""
         matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_prev_item(matches, index))
+        self.list_box.set_focus(*self.get_item(matches, index, lt))
         return False
 
     def move_down(self):
         """Move the focus an item down in the playlist """
         matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_next_item(matches, index))
+        self.list_box.set_focus(*self.get_item(matches, index, gt))
         return False
 
     @staticmethod
-    def get_prev_item(matches, current_index):
+    def get_item(matches, current_index, callback):
         """
-        Get previous item index from matches list.
+        Get an item index from the matches list
         """
-        prev_items = [item for item in matches if item.index < current_index]
-        if prev_items:
-            return prev_items[-1].index, 'below'
-        return matches[-1].index, 'above'
+        # Some not so very nice code to get to be nice and generic
+        order = ['above', 'below']
+        if callback is lt:
+            order.reverse()
 
-    @staticmethod
-    def get_next_item(matches, current_index):
-        """
-        Get next item index from matches list.
-        """
-        next_items = [item for item in matches if item.index > current_index]
-        if next_items:
-            return next_items[0].index, 'above'
-        return matches[0].index, 'below'
+        items = [item for item in matches if callback(item.index, current_index)]
+        if items:
+            return items[-1].index, order[0]
+        return matches[-1].index, order[1]
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
