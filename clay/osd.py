@@ -11,7 +11,7 @@ try:
     IS_INIT = True
 except ImportError:
     ERROR_MESSAGE = 'Could not import dbus. OSD notifications will be disabled.'
-except Exception as exception:
+except Exception as exception:  # pylint: disable=broad-except
     ERROR_MESSAGE = 'Error while importing dbus: \'{}\''.format(str(exception))
 
 if not IS_INIT:
