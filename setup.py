@@ -7,6 +7,8 @@ setup(
     name='clay-player',
     version=VERSION,
     description='Command Line Player for Google Play Music',
+    long_description=open('README.md', 'r').read(),
+    long_description_content_type='text/markdown',
     author='Andrew Dunai',
     author_email='a@dun.ai',
     url='https://github.com/and3rson/clay',

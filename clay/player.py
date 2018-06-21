@@ -16,6 +16,7 @@ except ImportError:  # Python 2.x
 from clay import vlc, meta
 from clay.eventhook import EventHook
 from clay.notifications import notification_area
+from clay.osd import osd_manager
 from clay.settings import settings
 from clay.log import logger
 
@@ -416,6 +417,11 @@ class _Player(object):
         self.media_player.set_media(media)
 
         self.media_player.play()
+
+        osd_manager.notify('Now playing', '{} - {}'.format(
+            track.artist,
+            track.title
+        ))
 
     @property
     def is_loading(self):

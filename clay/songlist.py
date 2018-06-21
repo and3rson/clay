@@ -64,6 +64,7 @@ class SongListItem(urwid.Pile):
     RATING_ICONS = {
         0: ' ',
         1: u'\U0001F593' if _unicode else '-',
+        4: u'\U0001F593' if _unicode else '-',
         5: u'\U0001F592' if _unicode else '+'
     }
 

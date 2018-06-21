@@ -417,7 +417,7 @@ class LikedSongs(object):
         if self._sorted:
             tracks = self._tracks
         else:
-            self._tracks.sort(key=lambda k: k.original_data['lastRatingChangeTimestamp'],
+            self._tracks.sort(key=lambda k: k.original_data.get('lastRatingChangeTimestamp', '0'),
                               reverse=True)
             self._sorted = True
             tracks = self._tracks
