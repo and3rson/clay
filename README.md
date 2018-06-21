@@ -68,6 +68,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - [PyGObject] (optional) (native, used for global X keybinds)
 - [Keybinder] (optional) (native, used for global X keybinds)
 - [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
+- python-dbus (optional)
 
 # What works
 - Audio equalizer
@@ -79,7 +80,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Like/dislike tracks
 - Liked songs playlist
 - Music library browsing & management
-- Notifications
+- Notifications - in-app & OSD (via DBus)
 - PYPI package
 - Playback
 - Playlists
@@ -107,7 +108,7 @@ it is probably caused by this. So, for example, on Arch Linux you need
 the `libkeybinder3` package instead.
 
 1. Install Python 3, and VLC from your package manager.
-2. Optionally, you can install PyGObject, and keybinder plus bindings
+2. Optionally, you can install PyGObject, DBus for Python and keybinder plus bindings
    if you want global X keybinds.
 
 ## Method 1 (PyPi, automatic)
