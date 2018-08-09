@@ -1,17 +1,25 @@
 Changelog
 ---------
 
-Clay 1.1.0
-=========
+Clay 1.2.0
+==========
 
 TBA
+
+Clay 1.1.0
+==========
+
+2018-08-09
 
 * Liked Songs Playlist (by Valentijn)
 * Thumbs Up / Thumbs Down (by Valentijn)
 * Alphabetical Sorting in Library View (by Valentijn)
 * Explicit Rating Icon (by Valentijn)
+* OSD notifications
+* setproctitle to nicely display clay in process list
 * Various bugfixes
-
+* Fix #29 (customizable tab activation hotkeys)
+* Fix #31 (rating issues)
 
 Clay 1.0.0
 ==========
