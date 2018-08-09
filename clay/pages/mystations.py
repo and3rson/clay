@@ -119,6 +119,13 @@ class MyStationsPage(urwid.Columns, AbstractPage):
     def key(self):
         return 3
 
+    @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "stations"
+
     def __init__(self, app):
         self.app = app
 

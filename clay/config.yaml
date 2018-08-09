@@ -19,6 +19,13 @@ hotkeys:
       prev_song: mod + a
       toggle_repeat_one: mod + o
       handle_escape: esc, mod + _
+      show_debug: meta + 0
+      show_library: meta + 1
+      show_playlists: meta + 2
+      show_stations: meta + 3
+      show_queue: meta + 4
+      show_search: meta + 5
+      show_settings: meta + 9
 
     library_item:
       activate: enter

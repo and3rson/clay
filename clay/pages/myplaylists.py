@@ -126,6 +126,13 @@ class MyPlaylistsPage(urwid.Columns, AbstractPage):
     def key(self):
         return 2
 
+    @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "playlists"
+
     def __init__(self, app):
         self.app = app
 

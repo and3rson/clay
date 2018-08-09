@@ -99,7 +99,7 @@ class AppWidget(urwid.Frame):
             body=urwid.Filler(urwid.Text('Loading...', align='center'))
         )
 
-        self.set_page('MyLibraryPage')
+        self.set_page('library')
         self.log_in()
 
     def log_in(self, use_token=True):
@@ -181,11 +181,11 @@ class AppWidget(urwid.Frame):
         """
         self.loop = loop
 
-    def set_page(self, classname):
+    def set_page(self, slug):
         """
         Switch to a different tab.
         """
-        page = [page for page in self.pages if page.__class__.__name__ == classname][0]
+        page = [page for page in self.pages if page.slug == slug][0]
         self.current_page = page
         self.contents['body'] = (page, None)
 
@@ -225,12 +225,40 @@ class AppWidget(urwid.Frame):
         Handle keypress.
         Can switch tabs, control playback, flags, notifications and app state.
         """
-        for tab in self.tabs:
-            if 'meta {}'.format(tab.page.key) == key:
-                self.set_page(tab.page.__class__.__name__)
-                return
+        # for tab in self.tabs:
+        #     if 'meta {}'.format(tab.page.key) == key:
+        #         self.set_page(tab.page.__class__.__name__)
+        #         return
 
         hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
+
+    def show_debug(self):
+        """ Show debug page. """
+        self.set_page('debug')
+
+    def show_library(self):
+        """ Show library page. """
+        self.set_page('library')
+
+    def show_playlists(self):
+        """ Show playlists page. """
+        self.set_page('playlists')
+
+    def show_stations(self):
+        """ Show stations page. """
+        self.set_page('stations')
+
+    def show_queue(self):
+        """ Show queue page. """
+        self.set_page('queue')
+
+    def show_search(self):
+        """ Show search page. """
+        self.set_page('search')
+
+    def show_settings(self):
+        """ Show settings page. """
+        self.set_page('settings')
 
     @staticmethod
     def seek_start():

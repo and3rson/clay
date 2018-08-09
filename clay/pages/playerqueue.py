@@ -20,6 +20,13 @@ class QueuePage(urwid.Columns, AbstractPage):
     def key(self):
         return 4
 
+    @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "queue"
+
     def __init__(self, app):
         self.app = app
         self.songlist = SongListBox(app)

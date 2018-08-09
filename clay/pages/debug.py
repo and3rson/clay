@@ -98,6 +98,13 @@ class DebugPage(urwid.Pile, AbstractPage):
         return "Debug"
 
     @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "debug"
+
+    @property
     def key(self):
         """
         Return page key (``int``), used for hotkeys.

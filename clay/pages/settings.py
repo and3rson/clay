@@ -138,6 +138,13 @@ class SettingsPage(urwid.Columns, AbstractPage):
     def key(self):
         return 9
 
+    @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "settings"
+
     def __init__(self, app):
         self.app = app
         self.username = urwid.Edit(

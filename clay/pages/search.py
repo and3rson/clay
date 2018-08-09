@@ -60,6 +60,13 @@ class SearchPage(urwid.Pile, AbstractPage):
     def key(self):
         return 5
 
+    @property
+    def slug(self):
+        """
+        Return page ID (str).
+        """
+        return "search"
+
     def __init__(self, app):
         self.app = app
         self.songlist = SongListBox(app)
