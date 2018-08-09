@@ -4,6 +4,16 @@ Google Play Music integration via gmusicapi.
 # pylint: disable=broad-except
 # pylint: disable=protected-access
 from __future__ import print_function
+try:  # Python 3.x
+    from urllib.request import urlopen
+except ImportError:  # Python 2.x
+    from urllib import urlopen
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+from io import BytesIO
+from hashlib import sha1
 from threading import Thread, Lock
 from uuid import UUID
 
@@ -11,6 +21,7 @@ from gmusicapi.clients import Mobileclient
 
 from clay.eventhook import EventHook
 from clay.log import logger
+from clay.settings import settings
 
 STATION_FETCH_LEN = 50
 
@@ -96,12 +107,27 @@ class Track(object):
             data = data['track']
             self.store_id = data['storeId']
 
+        artist_art_ref = next(iter(sorted(
+            [
+                ref
+                for ref
+                in data.get('artistArtRef', [])
+            ],
+            key=lambda x: x['aspectRatio']
+        )), None)
         self.title = data['title']
         self.artist = data['artist']
         self.duration = int(data['durationMillis'])
         self.rating = (int(data['rating']) if 'rating' in data else 0)
         self.source = source
         self.cached_url = None
+        self.artist_art_url = None
+        self.artist_art_filename = None
+        if artist_art_ref is not None:
+            self.artist_art_url = artist_art_ref['url']
+            self.artist_art_filename = sha1(
+                self.artist_art_url.encode('utf-8')
+            ).hexdigest() + u'.jpg'
         self.explicit_rating = (int(data['explicitType']))
 
         if self.rating == 5:
@@ -193,6 +219,30 @@ class Track(object):
         else:
             track_id = self.library_id
         gp.get_stream_url_async(track_id, callback=on_get_url)
+
+    @synchronized
+    def get_artist_art_filename(self):
+        """
+        Return artist art filename, None if this track doesn't have any.
+        Downloads if necessary.
+        """
+        if self.artist_art_url is None:
+            return None
+
+        if not settings.get_is_file_cached(self.artist_art_filename):
+            response = urlopen(self.artist_art_url)
+            data = response.read()
+            if Image:
+                image = Image.open(BytesIO(data))
+                image.thumbnail((128, 128))
+                out = BytesIO()
+                image.save(out, format='JPEG')
+                data = out.getvalue()
+            settings.save_file_to_cache(self.artist_art_filename, data)
+
+        return settings.get_cached_file_path(self.artist_art_filename)
+
+    # get_artist_arg_filename_async = asynchronous(get_artist_art_filename)
 
     @synchronized
     def create_station(self):

@@ -418,10 +418,7 @@ class _Player(object):
 
         self.media_player.play()
 
-        osd_manager.notify('Now playing', '{} - {}'.format(
-            track.artist,
-            track.title
-        ))
+        osd_manager.notify(track)
 
     @property
     def is_loading(self):

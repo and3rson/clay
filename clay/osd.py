@@ -1,6 +1,8 @@
 """
 On-screen display stuff.
 """
+from threading import Thread
+
 from clay.notifications import notification_area
 from clay import meta
 
@@ -33,21 +35,27 @@ class _OSDManager(object):
             )
             self.notify_interface = Interface(self.notifcations, "org.freedesktop.Notifications")
 
-    def notify(self, title, message):
+    def notify(self, track):
         """
         Create new or update existing notification.
         """
         if IS_INIT:
-            self._last_id = self.notify_interface.Notify(
-                meta.APP_NAME,
-                self._last_id,
-                'audio-headphones',
-                title,
-                message,
-                [],
-                dict(),
-                5000
-            )
+            thread = Thread(target=self._notify, args=(track,))
+            thread.daemon = True
+            thread.start()
+
+    def _notify(self, track):
+        artist_art_filename = track.get_artist_art_filename()
+        self._last_id = self.notify_interface.Notify(
+            meta.APP_NAME,
+            self._last_id,
+            artist_art_filename if artist_art_filename is not None else 'audio-headphones',
+            track.title,
+            u'by {}\nfrom {}'.format(track.artist, track.album_name),
+            [],
+            dict(),
+            5000
+        )
 
 
 osd_manager = _OSDManager()  # pylint: disable=invalid-name
