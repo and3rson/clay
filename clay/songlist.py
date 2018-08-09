@@ -729,9 +729,14 @@ class SongListBox(urwid.Frame):
             order.reverse()
 
         items = [item for item in matches if callback(item.index, current_index)]
+
+        # Please witness some terrible code below.
+
+        index = -1 if callback is lt else 0
+
         if items:
-            return items[-1].index, order[0]
-        return matches[-1].index, order[1]
+            return items[index].index, order[0]
+        return matches[index].index, order[1]
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
