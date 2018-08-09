@@ -42,7 +42,6 @@ class DebugItem(urwid.AttrMap):
     def copy_message(self):
         """Copy the selected error message to the clipboard"""
         copy(self.log_record.formatted_message)
-        return None
 
 
 class DebugPage(urwid.Pile, AbstractPage):

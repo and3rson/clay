@@ -41,7 +41,6 @@ class MyStationListItem(urwid.Columns):
         Start playing the selected station
         """
         urwid.emit_signal(self, 'activate', self)
-        return None
 
 
 class MyStationListBox(urwid.ListBox):

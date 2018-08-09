@@ -43,7 +43,6 @@ class SearchBox(urwid.Columns):
         Send a message to urwid to search the filled in search query
         """
         urwid.emit_signal(self, 'search-requested', self.query.edit_text)
-        return None
 
 
 class SearchPage(urwid.Pile, AbstractPage):
@@ -109,6 +108,5 @@ class SearchPage(urwid.Pile, AbstractPage):
                 self.focus_position = 2
             else:
                 self.focus_position = 0
-            return None
         else:
             return super(SearchPage, self).keypress(size, key)

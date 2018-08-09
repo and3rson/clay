@@ -4,12 +4,13 @@ max-args = 8
 
 [messages control]
 disable =
-    duplicate-code,
-    too-few-public-methods,
-    too-many-public-methods,
-    too-many-instance-attributes,
-    no-self-use,
-    too-many-ancestors
+    duplicate-code,  # Meh.
+    too-few-public-methods,  # Namespaces are great. (c)
+    too-many-public-methods,  # Namespaces are really great!
+    too-many-instance-attributes,  # Ditto.
+    no-self-use,  # Makes code less readable.
+    too-many-ancestors,  # Mixins FTW.
+    useless-object-inheritance  # Silly pylint, you forgot Python 2.x!
 
 
 [miscellaneous]

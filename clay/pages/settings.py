@@ -91,8 +91,6 @@ class Slider(urwid.Widget):
             self.value += 1
             self.update()
 
-        return None
-
     def equalizer_down(self):
         """
         Turn the equalizer band down
@@ -100,8 +98,6 @@ class Slider(urwid.Widget):
         if self.value > -self.max_value:
             self.value -= 1
             self.update()
-
-        return None
 
     def update(self):
         """

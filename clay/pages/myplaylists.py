@@ -42,7 +42,6 @@ class MyPlaylistListItem(urwid.Columns):
         Start playing the selected playlist
         """
         urwid.emit_signal(self, 'activate', self)
-        return None
 
     def get_tracks(self):
         """
