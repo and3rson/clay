@@ -3,7 +3,9 @@ Hotkeys management.
 Requires "gi" package and "Gtk" & "Keybinder" modules.
 """
 # pylint: disable=broad-except
+import os
 import threading
+
 
 from clay.core import EventHook, settings_manager, logger
 from .notifications import notification_area
@@ -51,11 +53,12 @@ class _HotkeyManager(object):
         self.next = EventHook()
         self.prev = EventHook()
 
-        if IS_INIT:
+        if IS_INIT and os.environ.get("DISPLAY") is not None and \
+           settings_manager.get('x_keybinds', 'clay_settings'):
             Keybinder.init()
             self.initialize()
             threading.Thread(target=Gtk.main).start()
-        else:
+        elif not IS_INIT:
             logger.debug("Not loading the global shortcuts.")
             notification_area.notify(
                 ERROR_MESSAGE +
@@ -125,6 +128,10 @@ class _HotkeyManager(object):
 
         return hotkeys
 
+    def quit(self):
+        """Quits the keybinder"""
+        Gtk.main_quit()
+
     def keypress(self, name, caller, super_, size, key):
         """
         Process the pressed key by looking it up in the configuration file
@@ -159,6 +166,7 @@ class _HotkeyManager(object):
         """
         assert key
         getattr(self, operation).fire()
+
 
 
 hotkey_manager = _HotkeyManager()  # pylint: disable=invalid-name

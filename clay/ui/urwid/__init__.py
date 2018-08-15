@@ -1,5 +1,6 @@
 import urwid
 import sys
+import threading
 
 from clay.core import gp, settings_manager
 from clay.playback.vlc import player
@@ -305,6 +306,7 @@ class AppWidget(urwid.Frame):
         Quit app.
         """
         self.loop = None
+        hotkey_manager.quit()
         sys.exit(0)
 
     def handle_escape(self):

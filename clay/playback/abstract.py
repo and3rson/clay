@@ -376,3 +376,5 @@ class AbstractPlayer:
         Set a list of equalizer amplifications for each band.
         """
         raise NotImplementedError
+
+player = AbstractPlayer() # pylint: disable=invalid-name

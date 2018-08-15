@@ -12,6 +12,9 @@ try:
     from PIL import Image
 except ImportError:
     Image = None
+
+import sys
+
 from io import BytesIO
 from hashlib import sha1
 from threading import Thread, Lock
@@ -19,7 +22,8 @@ from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
 from clay.core.log import logger
-from . import EventHook, settings
+from .settings import settings_manager
+from . import EventHook
 
 STATION_FETCH_LEN = 50
 
@@ -73,8 +77,9 @@ def synchronized(func):
         """
         Inner function.
         """
+        lock.acquire()
+
         try:
-            lock.acquire()
             return func(*args, **kwargs)
         finally:
             lock.release()
@@ -227,7 +232,7 @@ class Track(object):
         if self.artist_art_url is None:
             return None
 
-        if not settings.get_is_file_cached(self.artist_art_filename):
+        if not settings_manager.get_is_file_cached(self.artist_art_filename):
             response = urlopen(self.artist_art_url)
             data = response.read()
             if Image:
@@ -236,9 +241,9 @@ class Track(object):
                 out = BytesIO()
                 image.save(out, format='JPEG')
                 data = out.getvalue()
-            settings.save_file_to_cache(self.artist_art_filename, data)
+            settings_manager.save_file_to_cache(self.artist_art_filename, data)
 
-        return settings.get_cached_file_path(self.artist_art_filename)
+        return settings_manager.get_cached_file_path(self.artist_art_filename)
 
     # get_artist_arg_filename_async = asynchronous(get_artist_art_filename)
 
