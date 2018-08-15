@@ -1,7 +1,8 @@
 import urwid
 import sys
 
-from clay.core import player, gp, settings_manager
+from clay.core import gp, settings_manager
+from clay.playback.vlc import player
 
 from .clipboard import copy
 from .hotkeys import hotkey_manager

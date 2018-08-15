@@ -4,7 +4,7 @@ Components for "Queue" page.
 import urwid
 
 from .page import AbstractPage
-from clay.core import player
+from clay.playback.vlc import player
 from clay.ui.urwid import SongListBox
 
 class QueuePage(urwid.Columns, AbstractPage):

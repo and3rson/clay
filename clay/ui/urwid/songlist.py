@@ -15,7 +15,9 @@ except ImportError:
     from string import letters as ascii_letters
 import urwid
 
-from clay.core import player, gp, settings_manager
+from clay.core import gp, settings_manager
+from clay.playback.vlc import player
+
 from .notifications import notification_area
 from .hotkeys import hotkey_manager
 from .clipboard import copy

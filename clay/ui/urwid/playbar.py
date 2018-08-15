@@ -4,7 +4,8 @@ PlayBar widget.
 # pylint: disable=too-many-instance-attributes
 import urwid
 
-from clay.core import player, settings_manager, meta
+from clay.core import settings_manager, meta
+from clay.playback.vlc import player
 
 class ProgressBar(urwid.Widget):
     """

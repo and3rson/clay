@@ -4,7 +4,8 @@ Components for "Settings" page.
 import urwid
 
 from .page import AbstractPage
-from clay.core import settings_manager, player
+from clay.core import settings_manager
+from clay.playback.vlc import player
 from clay.ui.urwid import hotkey_manager
 
 class Slider(urwid.Widget):

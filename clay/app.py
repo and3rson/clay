@@ -8,7 +8,8 @@ sys.path.insert(0, '.')  # noqa
 
 import argparse
 
-from clay.core import meta, settings_manager, player
+from clay.core import meta, settings_manager
+from clay.playback.vlc import player
 import clay.ui.urwid as urwid
 
 class MultilineVersionAction(argparse.Action):
