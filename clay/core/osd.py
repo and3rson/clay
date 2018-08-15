@@ -3,8 +3,8 @@ On-screen display stuff.
 """
 from threading import Thread
 
-from clay.notifications import notification_area
-from clay import meta
+from clay.core import meta
+#from clay.ui.urwid.notifications import notification_area
 
 IS_INIT = False
 
@@ -16,8 +16,8 @@ except ImportError:
 except Exception as exception:  # pylint: disable=broad-except
     ERROR_MESSAGE = 'Error while importing dbus: \'{}\''.format(str(exception))
 
-if not IS_INIT:
-    notification_area.notify(ERROR_MESSAGE)
+#if not IS_INIT:
+    #notification_area.notify(ERROR_MESSAGE)
 
 
 class _OSDManager(object):

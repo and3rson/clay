@@ -5,10 +5,8 @@ Requires "gi" package and "Gtk" & "Keybinder" modules.
 # pylint: disable=broad-except
 import threading
 
-from clay.settings import settings
-from clay.eventhook import EventHook
-from clay.notifications import notification_area
-from clay.log import logger
+from clay.core import EventHook, settings_manager, logger
+from .notifications import notification_area
 
 
 IS_INIT = False
@@ -85,12 +83,12 @@ class _HotkeyManager(object):
         """
         Reads out them configuration file and parses them into hotkeys readable by GTK.
         """
-        hotkey_default_config = settings.get_default_config_section('hotkeys', 'x_hotkeys')
-        mod_key = settings.get('mod_key', 'hotkeys')
+        hotkey_default_config = settings_manager.get_default_config_section('hotkeys', 'x_hotkeys')
+        mod_key = settings_manager.get('mod_key', 'hotkeys')
         hotkeys = {}
 
         for action in hotkey_default_config:
-            key_seq = settings.get(action, 'hotkeys', 'x_hotkeys')
+            key_seq = settings_manager.get(action, 'hotkeys', 'x_hotkeys')
 
             for key in key_seq.split(', '):
                 hotkey = key.split(' + ')
@@ -108,14 +106,14 @@ class _HotkeyManager(object):
         """
         Reads out the configuration file and parse them into a hotkeys for urwid.
         """
-        hotkey_config = settings.get_default_config_section('hotkeys', 'clay_hotkeys')
-        mod_key = settings.get('mod_key', 'hotkeys')
+        hotkey_config = settings_manager.get_default_config_section('hotkeys', 'clay_hotkeys')
+        mod_key = settings_manager.get('mod_key', 'hotkeys')
         hotkeys = {}
 
         for hotkey_name, hotkey_dict in hotkey_config.items():
             hotkeys[hotkey_name] = {}
             for action in hotkey_dict.keys():
-                key_seq = settings.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)
+                key_seq = settings_manager.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)
 
                 for key in key_seq.split(', '):
                     hotkey = key.split(' + ')

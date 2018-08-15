@@ -195,4 +195,4 @@ class _Settings(object):
         return path
 
 
-settings = _Settings()  # pylint: disable=invalid-name
+settings_manager = _Settings()  # pylint: disable=invalid-name

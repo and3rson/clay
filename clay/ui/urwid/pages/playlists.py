@@ -1,16 +1,14 @@
 """
-Components for "My playlists" page.
+Components for " playlists" page.
 """
 import urwid
 
-from clay.gp import gp
-from clay.songlist import SongListBox
-from clay.notifications import notification_area
-from clay.pages.page import AbstractPage
-from clay.hotkeys import hotkey_manager
+from .page import AbstractPage
+from clay.core import gp
+from clay.ui.urwid import SongListBox, notification_area, hotkey_manager
 
 
-class MyPlaylistListItem(urwid.Columns):
+class PlaylistListItem(urwid.Columns):
     """
     One playlist in the list of playlists.
     """
@@ -28,13 +26,13 @@ class MyPlaylistListItem(urwid.Columns):
             'default',
             'selected'
         )
-        super(MyPlaylistListItem, self).__init__([self.content])
+        super(PlaylistListItem, self).__init__([self.content])
 
     def keypress(self, size, key):
         """
         Handle keypress.
         """
-        return hotkey_manager.keypress("playlist_page", self, super(MyPlaylistListItem, self),
+        return hotkey_manager.keypress("playlist_page", self, super(PlaylistListItem, self),
                                        size, key)
 
     def start_playlist(self):
@@ -50,7 +48,7 @@ class MyPlaylistListItem(urwid.Columns):
         return self.playlist.tracks
 
 
-class MyPlaylistListBox(urwid.ListBox):
+class PlaylistListBox(urwid.ListBox):
     """
     List of playlists.
     """
@@ -66,7 +64,7 @@ class MyPlaylistListBox(urwid.ListBox):
 
         gp.auth_state_changed += self.auth_state_changed
 
-        super(MyPlaylistListBox, self).__init__(self.walker)
+        super(PlaylistListBox, self).__init__(self.walker)
 
     def auth_state_changed(self, is_auth):
         """
@@ -90,31 +88,31 @@ class MyPlaylistListBox(urwid.ListBox):
 
         items = []
         for playlist in playlists:
-            myplaylistlistitem = MyPlaylistListItem(playlist)
+            playlistlistitem = PlaylistListItem(playlist)
             urwid.connect_signal(
-                myplaylistlistitem, 'activate', self.item_activated
+                playlistlistitem, 'activate', self.item_activated
             )
-            items.append(myplaylistlistitem)
+            items.append(playlistlistitem)
 
         self.walker[:] = items
 
         self.app.redraw()
 
-    def item_activated(self, myplaylistlistitem):
+    def item_activated(self, playlistlistitem):
         """
         Called when a specific playlist is selected.
         Re-emits this event.
         """
-        urwid.emit_signal(self, 'activate', myplaylistlistitem)
+        urwid.emit_signal(self, 'activate', playlistlistitem)
 
 
-class MyPlaylistsPage(urwid.Columns, AbstractPage):
+class PlaylistsPage(urwid.Columns, AbstractPage):
     """
     Playlists page.
 
     Contains two parts:
 
-    - List of playlists (:class:`.MyPlaylistListBox`)
+    - List of playlists (:class:`.PlaylistListBox`)
     - List of songs in selected playlist (:class:`clay:songlist:SongListBox`)
     """
     @property
@@ -135,26 +133,26 @@ class MyPlaylistsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
 
-        self.myplaylistlist = MyPlaylistListBox(app)
+        self.playlistlist = PlaylistListBox(app)
         self.songlist = SongListBox(app)
         self.songlist.set_placeholder('\n Select a playlist.')
 
         urwid.connect_signal(
-            self.myplaylistlist, 'activate', self.myplaylistlistitem_activated
+            self.playlistlist, 'activate', self.playlistlistitem_activated
         )
 
-        super(MyPlaylistsPage, self).__init__([
-            self.myplaylistlist,
+        super(PlaylistsPage, self).__init__([
+            self.playlistlist,
             self.songlist
         ])
 
-    def myplaylistlistitem_activated(self, myplaylistlistitem):
+    def playlistlistitem_activated(self, playlistlistitem):
         """
         Called when specific playlist is selected.
         Populates songlist with tracks from the selected playlist.
         """
         self.songlist.populate(
-            myplaylistlistitem.get_tracks()
+            playlistlistitem.get_tracks()
         )
 
     def activate(self):

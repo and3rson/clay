@@ -14,26 +14,24 @@ except ImportError:
     # Python 2.x
     from string import letters as ascii_letters
 import urwid
-from clay.notifications import notification_area
-from clay.player import player
-from clay.gp import gp
-from clay.clipboard import copy
-from clay.settings import settings
-from clay.hotkeys import hotkey_manager
+
+from clay.core import player, gp, settings_manager
+from .notifications import notification_area
+from .hotkeys import hotkey_manager
+from .clipboard import copy
 
 
 class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
     """
-    _unicode = settings.get('unicode', 'clay_settings')
+    _unicode = settings_manager.get('unicode', 'clay_settings')
     signals = [
         'activate',
         'play',
         'append-requested',
         'unappend-requested',
-        'station-requested',
-        'context-menu-requested'
+        'station-requested', 'context-menu-requested'
     ]
 
     STATE_IDLE = 0
@@ -143,7 +141,7 @@ class SongListItem(urwid.Pile):
             )
         )
 
-        if settings.get_is_file_cached(self.track.filename):
+        if settings_manager.get_is_file_cached(self.track.filename):
             self.line1_right.set_text(u' \u25bc Cached')
         else:
             self.line1_right.set_text(u'')

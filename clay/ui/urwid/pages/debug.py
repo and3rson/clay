@@ -3,11 +3,9 @@ Debug page.
 """
 import urwid
 
-from clay.pages.page import AbstractPage
-from clay.log import logger
-from clay.clipboard import copy
-from clay.gp import gp
-from clay.hotkeys import hotkey_manager
+from .page import AbstractPage
+from .. import hotkey_manager, copy  # short for clay.ui.urwid
+from clay.core import logger, gp
 
 
 class DebugItem(urwid.AttrMap):

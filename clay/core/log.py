@@ -5,7 +5,7 @@ Logger implementation.
 from threading import Lock
 from datetime import datetime
 
-from clay.eventhook import EventHook
+from . import EventHook
 
 
 class _LoggerRecord(object):

@@ -3,13 +3,12 @@ Library page.
 """
 import urwid
 
-from clay.gp import gp
-from clay.songlist import SongListBox
-from clay.notifications import notification_area
-from clay.pages.page import AbstractPage
+from .page import AbstractPage
+from .. import SongListBox, notification_area
+from clay.core import gp
 
 
-class MyLibraryPage(urwid.Columns, AbstractPage):
+class LibraryPage(urwid.Columns, AbstractPage):
     """
     My library page.
 
@@ -38,7 +37,7 @@ class MyLibraryPage(urwid.Columns, AbstractPage):
         gp.auth_state_changed += self.get_all_songs
         gp.caches_invalidated += self.get_all_songs
 
-        super(MyLibraryPage, self).__init__([
+        super(LibraryPage, self).__init__([
             self.songlist
         ])
 

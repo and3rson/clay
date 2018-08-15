@@ -3,11 +3,9 @@ Components for search page.
 """
 import urwid
 
-from clay.gp import gp
-from clay.songlist import SongListBox
-from clay.notifications import notification_area
-from clay.hotkeys import hotkey_manager
-from clay.pages.page import AbstractPage
+from .page import AbstractPage
+from clay.core import gp
+from clay.ui.urwid import SongListBox, notification_area, hotkey_manager
 
 
 class ArtistListBox(urwid.ListBox):

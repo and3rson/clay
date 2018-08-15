@@ -3,11 +3,9 @@ Components for "Settings" page.
 """
 import urwid
 
-from clay.pages.page import AbstractPage
-from clay.settings import settings
-from clay.player import player
-from clay.hotkeys import hotkey_manager
-
+from .page import AbstractPage
+from clay.core import settings_manager, player
+from clay.ui.urwid import hotkey_manager
 
 class Slider(urwid.Widget):
     """
@@ -144,17 +142,17 @@ class SettingsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.username = urwid.Edit(
-            edit_text=settings.get('username', 'play_settings') or ''
+            edit_text=settings_manager.get('username', 'play_settings') or ''
         )
         self.password = urwid.Edit(
-            mask='*', edit_text=settings.get('password', 'play_settings') or ''
+            mask='*', edit_text=settings_manager.get('password', 'play_settings') or ''
         )
         self.device_id = urwid.Edit(
-            edit_text=settings.get('device_id', 'play_settings') or ''
+            edit_text=settings_manager.get('device_id', 'play_settings') or ''
         )
         self.download_tracks = urwid.CheckBox(
             'Download tracks before playback',
-            state=settings.get('download_tracks', 'play_settings') or False
+            state=settings_manager.get('download_tracks', 'play_settings') or False
         )
         self.equalizer = Equalizer()
         super(SettingsPage, self).__init__([urwid.ListBox(urwid.SimpleListWalker([
@@ -182,7 +180,7 @@ class SettingsPage(urwid.Columns, AbstractPage):
         """
         Called when "Save" button is pressed.
         """
-        with settings.edit() as config:
+        with settings_manager.edit() as config:
             if 'play_settings' not in config:
                 config['play_settings'] = {}
             config['play_settings']['username'] = self.username.edit_text

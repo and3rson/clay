@@ -2,8 +2,7 @@
 Clipboard utils.
 """
 from subprocess import Popen, PIPE
-
-from clay.notifications import notification_area
+from clay.ui.urwid.notifications import notification_area
 
 
 COMMANDS = [

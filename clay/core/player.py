@@ -13,12 +13,15 @@ try:  # Python 3.x
 except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
-from clay import vlc, meta
-from clay.eventhook import EventHook
-from clay.notifications import notification_area
-from clay.osd import osd_manager
-from clay.settings import settings
-from clay.log import logger
+
+from clay.playback import vlc
+
+from . import meta
+from .settings import settings_manager
+from .log import logger
+from .eventhook import EventHook
+from .osd import osd_manager
+# from clay.ui.urwid.notifications import notification_area
 
 
 class _Queue(object):
@@ -30,7 +33,7 @@ class _Queue(object):
 
     Queue handles shuffling & repeating.
 
-    Can be populated with :class:`clay.gp.Track` instances.
+    Can be populated with :class:`clay.core.gp.Track` instances.
     """
     def __init__(self):
         self.random = False
@@ -73,7 +76,7 @@ class _Queue(object):
 
     def get_current_track(self):
         """
-        Return current :class:`clay.gp.Track`
+        Return current :class:`clay.core.gp.Track`
         """
         if self.current_track_index is None:
             return None
@@ -207,7 +210,7 @@ class _Player(object):
             logger.debug("X11 isn't running so we can't load the global keybinds")
             return
 
-        from clay.hotkeys import hotkey_manager
+        from clay.ui.urwid.hotkeys import hotkey_manager
         hotkey_manager.play_pause += self.play_pause
         hotkey_manager.next += self.next
         hotkey_manager.prev += lambda: self.seek_absolute(0)
@@ -304,7 +307,7 @@ class _Player(object):
         Request creation of new station from some track.
         Runs in background.
         """
-        self._create_station_notification = notification_area.notify('Creating station...')
+        #self._create_station_notification = notification_area.notify('Creating station...')
         track.create_station_async(callback=self._create_station_from_track_ready)
 
     def _create_station_from_track_ready(self, station, error):
@@ -371,9 +374,9 @@ class _Player(object):
         self.broadcast_state()
         self.track_changed.fire(track)
 
-        if settings.get('download_tracks', 'play_settings') or \
-           settings.get_is_file_cached(track.filename):
-            path = settings.get_cached_file_path(track.filename)
+        if settings_manager.get('download_tracks', 'play_settings') or \
+           settings_manager.get_is_file_cached(track.filename):
+            path = settings_manager.get_cached_file_path(track.filename)
 
             if path is None:
                 logger.debug('Track %s not in cache, downloading...', track.store_id)
@@ -387,7 +390,7 @@ class _Player(object):
 
     def _download_track(self, url, error, track):
         if error:
-            notification_area.notify('Failed to request media URL: {}'.format(str(error)))
+            #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,
@@ -395,7 +398,7 @@ class _Player(object):
             )
             return
         response = urlopen(url)
-        path = settings.save_file_to_cache(track.filename, response.read())
+        path = settings_manager.save_file_to_cache(track.filename, response.read())
         self._play_ready(path, None, track)
 
     def _play_ready(self, url, error, track):
@@ -405,7 +408,7 @@ class _Player(object):
         """
         self._is_loading = False
         if error:
-            notification_area.notify('Failed to request media URL: {}'.format(str(error)))
+            #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
                 'Failed to request media URL for track %s: %s',
                 track.original_data,

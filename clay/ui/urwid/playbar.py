@@ -4,10 +4,7 @@ PlayBar widget.
 # pylint: disable=too-many-instance-attributes
 import urwid
 
-from clay.player import player
-from clay.settings import settings
-from clay import meta
-
+from clay.core import player, settings_manager, meta
 
 class ProgressBar(urwid.Widget):
     """
@@ -72,7 +69,7 @@ class PlayBar(urwid.Pile):
     """
     A widget that shows currently played track, playback progress and flags.
     """
-    _unicode = settings.get('unicode', 'clay_settings')
+    _unicode = settings_manager.get('unicode', 'clay_settings')
     ROTATING = u'|' u'/' u'\u2014' u'\\'
     RATING_ICONS = {0: ' ',
                     1: u'\U0001F593' if _unicode else '-',

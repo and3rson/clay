@@ -18,10 +18,8 @@ from threading import Thread, Lock
 from uuid import UUID
 
 from gmusicapi.clients import Mobileclient
-
-from clay.eventhook import EventHook
-from clay.log import logger
-from clay.settings import settings
+from clay.core.log import logger
+from . import EventHook, settings
 
 STATION_FETCH_LEN = 50
 

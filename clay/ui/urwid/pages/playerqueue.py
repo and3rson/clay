@@ -3,10 +3,9 @@ Components for "Queue" page.
 """
 import urwid
 
-from clay.songlist import SongListBox
-from clay.player import player
-from clay.pages.page import AbstractPage
-
+from .page import AbstractPage
+from clay.core import player
+from clay.ui.urwid import SongListBox
 
 class QueuePage(urwid.Columns, AbstractPage):
     """
