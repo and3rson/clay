@@ -2,11 +2,6 @@
 hotkeys:
   mod_key: ctrl
 
-  x_hotkeys:
-    play_pause: XF86AudioPlay
-    next: XF86AudioNext
-    prev: XF86AudioPrev
-
   clay_hotkeys:
     global:
       seek_start: mod + q
@@ -60,7 +55,6 @@ hotkeys:
       equalizer_down: "-"
 
 clay_settings:
-  x_keybinds: false
   unicode: true
 
 play_settings:

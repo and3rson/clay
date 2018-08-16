@@ -94,16 +94,8 @@ class VLCPlayer(AbstractPlayer):
         assert event
         self.broadcast_state()
         self.media_position_changed.fire(
-            self.get_play_progress()
+            self.play_progress
         )
-
-#    def create_station_from_track(self, track):
-#        """
-#        Request creation of new station from some track.
-#        Runs in background.
-#        """
-#        #self._create_station_notification = notification_area.notify('Creating station...')
-#        track.create_station_async(callback=self._create_station_from_track_ready)
 
     def _create_station_ready(self, station, error):
         """
@@ -195,31 +187,89 @@ class VLCPlayer(AbstractPlayer):
             self.media_player.pause()
         else:
             self.media_player.play()
-
-    def get_play_progress(self):
+    @property
+    def play_progress(self):
         """
-        Return current playback position in range ``[0;1]`` (``float``).
+        Returns:
+            A float of the current playback position in range of 0 to 1.
         """
         return self.media_player.get_position()
 
-    def get_play_progress_seconds(self):
+    @property
+    def play_progress_seconds(self):
         """
-        Return current playback position in seconds (``int``).
-        """
-        return int(self.media_player.get_position() * self.media_player.get_length() / 1000)
+        Returns:
+            The current playback position in seconds.
 
-    def get_length_seconds(self):
         """
-        Return currently played track's length in seconds (``int``).
+        return int(self.play_progress * self.media_player.get_length() / 1000)
+
+    @property
+    def time(self):
         """
-        return int(self.media_player.get_length() // 1000)
+        Returns:
+           Get their current movie length in microseconds
+        """
+        return self.media_player.get_time()
+
+    @time.setter
+    def time(self, time):
+        """
+        Sets the current time in microseconds.
+        This is a pythonic alternative to seeking using absolute times instead of percentiles.
+
+        Args:
+           time: Time in microseconds.
+        """
+        self.media_player.set_time(time)
+
+    @property
+    def volume(self):
+        """
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        return self.media_player.audio_get_volume()
+
+    @volume.setter
+    def volume(self, volume):
+        """
+        Args:
+           volume: the volume in percentiles (0 = mute, 1000 = 0dB)
+
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        return self.media_player.audio_set_volume(volume)
+
+    def mute(self):
+        """
+        Mutes or unmutes the volume
+        """
+        self.media_player.set_mute(not self.media_player.audio_get_mute())
+
+    @property
+    def length(self):
+        """
+        Returns:
+            The current playback position in microseconds
+        """
+        return self.media_player.get_length()
+
+    @property
+    def length_seconds(self):
+        """
+        Returns:
+           The current playback in position in seconds
+        """
+        return self.length // 1000
 
     def seek(self, delta):
         """
         Seek to relative position.
         *delta* must be a ``float`` in range ``[-1;1]``.
         """
-        self.media_player.set_position(self.get_play_progress() + delta)
+        self.media_player.set_position(self.play_progress + delta)
 
     def seek_absolute(self, position):
         """
@@ -275,5 +325,6 @@ class VLCPlayer(AbstractPlayer):
                 index
             ) == 0
         self.media_player.set_equalizer(self.equalizer)
+
 
 player = VLCPlayer() # pylint: disable=invalid-name

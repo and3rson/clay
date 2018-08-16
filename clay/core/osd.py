@@ -9,7 +9,7 @@ from clay.core import meta
 IS_INIT = False
 
 try:
-    from dbus import SessionBus, Interface
+    from pydbus import SessionBus
     IS_INIT = True
 except ImportError:
     ERROR_MESSAGE = 'Could not import dbus. OSD notifications will be disabled.'
@@ -29,11 +29,7 @@ class _OSDManager(object):
 
         if IS_INIT:
             self.bus = SessionBus()
-            self.notifcations = self.bus.get_object(
-                "org.freedesktop.Notifications",
-                "/org/freedesktop/Notifications"
-            )
-            self.notify_interface = Interface(self.notifcations, "org.freedesktop.Notifications")
+            self.notifications = self.bus.get(".Notifications")
 
     def notify(self, track):
         """
@@ -46,7 +42,7 @@ class _OSDManager(object):
 
     def _notify(self, track):
         artist_art_filename = track.get_artist_art_filename()
-        self._last_id = self.notify_interface.Notify(
+        self._last_id = self.notifications.Notify(
             meta.APP_NAME,
             self._last_id,
             artist_art_filename if artist_art_filename is not None else 'audio-headphones',

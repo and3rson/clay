@@ -166,24 +166,13 @@ class AbstractPlayer:
                 playing=self._is_playing,
                 artist=track.artist,
                 title=track.title,
-                progress=self.get_play_progress_seconds(),
-                length=self.get_length_seconds(),
+                progress=self.play_progress_seconds,
+                length=self.length_seconds,
                 album_name=track.album_name,
                 album_url=track.album_url
             )
         with open('/tmp/clay.json', 'w') as statefile:
             statefile.write(json.dumps(data, indent=4))
-
-    def enable_xorg_bindings(self):
-        """Enable the global X bindings using keybinder"""
-        if os.environ.get("DISPLAY") is None:
-            logger.debug("X11 isn't running so we can't load the global keybinds")
-            return
-
-        from clay.ui.urwid.hotkeys import hotkey_manager
-        hotkey_manager.play_pause += self.play_pause
-        hotkey_manager.next += self.next
-        hotkey_manager.prev += lambda: self.seek_absolute(0)
 
     def load_queue(self, data, current_index=None):
         """
@@ -264,12 +253,6 @@ class AbstractPlayer:
         """
         raise NotImplementedError
 
-    def get_play_progress(self):
-        """
-        Return the current playback position in range ``[0;1]`` (``float``)
-        """
-        raise NotImplementedError
-
     def _download_track(self, url, error, track):
         if error:
             logger.error(
@@ -297,19 +280,74 @@ class AbstractPlayer:
         """
         raise NotImplementedError
 
-    def get_play_progress(self):
+    @property
+    def play_progress(self):
         """
         Return current playback position in range ``[0;1]`` (``float``)
         """
         raise NotImplementedError
 
-    def get_play_progress_seconds(self):
+    @property
+    def play_progress_seconds(self):
         """
         Return the current playback position in seconds (``int``)
         """
         raise NotImplementedError
 
-    def get_length_seconds(self):
+    @property
+    def time(self):
+        """
+        Returns:
+           Get their current movie length in microseconds
+e        """
+        raise NotImplementedError
+
+    @time.setter
+    def time(self, time):
+        """
+        Sets the current time in microseconds.
+        This is a pythonic alternative to seeking using absolute times instead of percentiles.
+
+        Args:
+           time: Time in microseconds.
+        """
+        raise NotImplementedError
+
+    @property
+    def volume(self):
+        """
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        raise NotImplementedError
+
+    @volume.setter
+    def volume(self, volume):
+        """
+        Args:
+           volume: the volume in percentiles (0 = mute, 1000 = 0dB)
+
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        raise NotImplementedError
+
+    def mute(self):
+        """
+        Mutes or unmutes the volume
+        """
+        raise NotImplementedError
+
+    @property
+    def length(self):
+        """
+        Returns:
+          The current playback position in microseconds
+        """
+        raise NotImplementedError
+
+    @property
+    def length_seconds(self):
         """
         Return currently played track's length in seconds (``int``).
         """

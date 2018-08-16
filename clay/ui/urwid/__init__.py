@@ -210,11 +210,6 @@ class AppWidget(urwid.Frame):
         Handle keypress.
         Can switch tabs, control playback, flags, notifications and app state.
         """
-        # for tab in self.tabs:
-        #     if 'meta {}'.format(tab.page.key) == key:
-        #         self.set_page(tab.page.__class__.__name__)
-        #         return
-
         hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
 
     def show_debug(self):
@@ -306,7 +301,6 @@ class AppWidget(urwid.Frame):
         Quit app.
         """
         self.loop = None
-        hotkey_manager.quit()
         sys.exit(0)
 
     def handle_escape(self):
@@ -335,7 +329,7 @@ def main():
 
     # Run the actual program
     app_widget = AppWidget()
-    loop = urwid.MainLoop(app_widget, palette)
+    loop = urwid.MainLoop(app_widget, palette, event_loop=urwid.GLibEventLoop())
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()

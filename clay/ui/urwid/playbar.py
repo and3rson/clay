@@ -131,8 +131,8 @@ class PlayBar(urwid.Pile):
                 meta.APP_NAME,
                 meta.VERSION_WITH_CODENAME
             )
-        progress = player.get_play_progress_seconds()
-        total = player.get_length_seconds()
+        progress = player.play_progress_seconds
+        total = player.length_seconds
         return (self.get_style(), u' {} {} - {} {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
             # self.get_rotating_bar(),
@@ -155,7 +155,7 @@ class PlayBar(urwid.Pile):
         e.g. current track or playback flags.
         """
         self.text.set_text(self.get_text())
-        self.progressbar.set_progress(player.get_play_progress())
+        self.progressbar.set_progress(player.play_progress)
         self.progressbar.set_done_style(
             'progressbar_done'
             if player.is_playing
