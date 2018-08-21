@@ -30,6 +30,7 @@ class VLCPlayer(AbstractPlayer):
 
     def __init__(self):
         self.instance = vlc.Instance()
+
         print_func = CFUNCTYPE(c_void_p,
                                c_void_p,  # data
                                c_int,     # level
@@ -67,7 +68,6 @@ class VLCPlayer(AbstractPlayer):
         self.media_player.set_equalizer(self.equalizer)
         self._create_station_notification = None
         AbstractPlayer.__init__(self)
-
 
     def _media_state_changed(self, event):
         """
@@ -160,10 +160,10 @@ class VLCPlayer(AbstractPlayer):
         assert track
         media = vlc.Media(url)
         self.media_player.set_media(media)
-
         self.media_player.play()
-
-        osd_manager.notify(track)
+        osd_manager.notify(track.title, "by {}\nfrom {}\n".format(track.artist, track.album_name),
+                           ("media-skip-backward", "media-playback-start", "media-skip-forward"),
+                           track.get_artist_art_filename())
 
     @property
     def is_loading(self):
@@ -183,10 +183,18 @@ class VLCPlayer(AbstractPlayer):
         """
         Toggle playback, i.e. play if paused or pause if playing.
         """
+        track = self.get_current_track()
+        body = "Currently playing {}\nby {}\n".format(track.title, track.artist)
+
         if self.is_playing:
             self.media_player.pause()
+            osd_manager.notify("Paused", body, ("media-skip-backward", "media-playback-start",
+                                                "media-skip-forward"), "media-playback-pause")
         else:
+            osd_manager.notify("Playing", body, ("media-skip-backward", "media-playback-pause",
+                                                 "media-skip-forward"), "media-playback-start")
             self.media_player.play()
+
     @property
     def play_progress(self):
         """

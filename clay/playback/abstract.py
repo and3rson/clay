@@ -13,7 +13,7 @@ except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
 
-from clay.core import meta, settings_manager, logger, EventHook
+from clay.core import meta, settings_manager, logger, EventHook, osd_manager
 
 class _Queue(object):
     """
@@ -146,6 +146,13 @@ class AbstractPlayer:
         self._is_loading = False
         self._is_playing = False
         self.queue = _Queue()
+
+        # Add notification actions that we are going to use.
+        osd_manager.add_to_action("media-skip-backward", "Previous", lambda: self.prev(force=True))
+        osd_manager.add_to_action("media-playback-pause", "Pause", self.play_pause)
+        osd_manager.add_to_action("media-playback-start", "Toggle", self.play_pause)
+        osd_manager.add_to_action("media-skip-forward", "next", self.next)
+
 
     def broadcast_state(self):
         """
