@@ -24,7 +24,7 @@ from clay.core.log import logger
 from .artist import Artist
 from .track import Track
 from .playlist import Playlist, LikedSongs
-from .station import Station
+from .station import Station, IFLStation
 from .search import SearchResults
 from .utils import synchronized, asynchronous, Source
 
@@ -171,6 +171,7 @@ class _GP(object):
             self.mobile_client.get_all_stations(),
             True
         )
+        self.cached_stations.insert(0, IFLStation())
         return self.cached_stations
 
     get_all_user_station_contents_async = (  # pylint: disable=invalid-name

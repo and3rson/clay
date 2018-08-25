@@ -16,8 +16,7 @@
 """
 Contains the classes and functions for Google Music stations
 """
-from clay.core import gp
-from . import track
+from . import track, client
 from .utils import asynchronous, Source
 
 class Station(object):
@@ -44,7 +43,7 @@ class Station(object):
         Fetch tracks related to this station and
         populate it with :class:`Track` instances.
         """
-        data = gp.mobile_client.get_station_tracks(self.id, self.FETCH_LENGTH)
+        data = client.gp.mobile_client.get_station_tracks(self.id, self.FETCH_LENGTH)
         self._tracks = track.Track.from_data(data, Source.station, many=True)
         self._tracks_loaded = True
         return self
@@ -71,3 +70,10 @@ class Station(object):
             station_id=data['id'],
             name=data['name']
         )
+
+class IFLStation(Station):
+    """
+    I'm feeling lucky station
+    """
+    def __init__(self):
+        Station.__init__(self, 'IFL', "I'm Feeling Lucky")

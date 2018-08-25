@@ -85,6 +85,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Playlists
 - Queue management
 - Radio stations
+- I'm Feeling Lucky station
 - Song file caching
 - Song operations (add to library, start station etc.)
 - Song search
