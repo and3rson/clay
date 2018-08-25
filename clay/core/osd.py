@@ -30,7 +30,7 @@ class _OSDManager(object):
         """
         self._actions[action] = (action_name, function)
 
-    def notify(self, title, body, actions, icon, replace=False):
+    def notify(self, title, body, actions, icon, replace=True):
         """
         Create new or update existing notification.
 
@@ -57,7 +57,7 @@ class _OSDManager(object):
         else:
             self._actions.get("default")[1]()
 
-    def _notify(self, summary, body, replace=False, actions=None, hints=None, expiration=5000,
+    def _notify(self, summary, body, replace=True, actions=None, hints=None, expiration=5000,
                 icon='audio-headphones'):
         """
         An implementation of Desktop Notifications Specification 1.2.

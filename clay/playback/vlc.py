@@ -76,7 +76,7 @@ class VLCPlayer(AbstractPlayer):
         """
         assert event
         self.broadcast_state()
-        self.media_state_changed.fire(self.is_loading, self.is_playing)
+        self.media_state_changed.fire(self.loading, self.playing)
 
     def _media_end_reached(self, event):
         """
@@ -125,7 +125,7 @@ class VLCPlayer(AbstractPlayer):
         track = self.queue.get_current_track()
         if track is None:
             return
-        self._is_loading = True
+        self._loading = True
         self.broadcast_state()
         self.track_changed.fire(track)
 
@@ -148,7 +148,7 @@ class VLCPlayer(AbstractPlayer):
         Called once track's media stream URL request completes.
         If *error* is ``None``, tell libVLC to play media by *url*.
         """
-        self._is_loading = False
+        self._loading = False
         if error:
             #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
@@ -162,18 +162,10 @@ class VLCPlayer(AbstractPlayer):
         self.media_player.set_media(media)
         self.media_player.play()
         osd_manager.notify(track.title, "by {}\nfrom {}\n".format(track.artist, track.album_name),
-                           ("media-skip-backward", "media-playback-start", "media-skip-forward"),
+                           ("media-skip-backward", "media-playback-pause", "media-skip-forward"),
                            track.get_artist_art_filename())
-
     @property
-    def is_loading(self):
-        """
-        True if current libVLC state is :attr:`vlc.State.Playing`
-        """
-        return self._is_loading
-
-    @property
-    def is_playing(self):
+    def playing(self):
         """
         True if current libVLC state is :attr:`vlc.State.Playing`
         """
@@ -186,7 +178,7 @@ class VLCPlayer(AbstractPlayer):
         track = self.get_current_track()
         body = "Currently playing {}\nby {}\n".format(track.title, track.artist)
 
-        if self.is_playing:
+        if self.playing:
             self.media_player.pause()
             osd_manager.notify("Paused", body, ("media-skip-backward", "media-playback-start",
                                                 "media-skip-forward"), "media-playback-pause")
@@ -230,6 +222,7 @@ class VLCPlayer(AbstractPlayer):
            time: Time in microseconds.
         """
         self.media_player.set_time(time)
+        self._seeked()
 
     @property
     def volume(self):
@@ -278,6 +271,7 @@ class VLCPlayer(AbstractPlayer):
         *delta* must be a ``float`` in range ``[-1;1]``.
         """
         self.media_player.set_position(self.play_progress + delta)
+        self._seeked()
 
     def seek_absolute(self, position):
         """
@@ -285,6 +279,7 @@ class VLCPlayer(AbstractPlayer):
         *position* must be a ``float`` in range ``[0;1]``.
         """
         self.media_player.set_position(position)
+        self._seeked()
 
     @staticmethod
     def get_equalizer_freqs():

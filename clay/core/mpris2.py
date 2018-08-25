@@ -5,6 +5,7 @@ import sys
 import pkg_resources
 
 from pydbus import SessionBus, Variant
+from pydbus.generic import signal
 from clay.core import meta
 from clay.playback.vlc import player
 
@@ -83,7 +84,7 @@ class MPRIS2:
         """
         Pauses the backback
         """
-        if player.is_playing:
+        if player.playing:
             player.play_pause()
 
     def PlayPause(self):
@@ -107,7 +108,7 @@ class MPRIS2:
         if self._stopped:
             self._stopped = False
 
-        if not player.is_playing:
+        if not player.playing:
             player.play_pause()
 
     def Seek(self, offset):
@@ -127,6 +128,8 @@ class MPRIS2:
         """
         pass
 
+    Seeked = signal()
+
     # pylint: disable=no-else-return
     @property
     def PlaybackStatus(self):
@@ -135,7 +138,7 @@ class MPRIS2:
         """
         if self._stopped or player.queue.get_tracks() == []:
             return "Stopped"
-        elif player.is_playing:
+        elif player.playing:
             return "Playing"
         else:
             return "Paused"
@@ -146,7 +149,7 @@ class MPRIS2:
         Returns:
            Whether the song is not, single or playlist looping
         """
-        if player.get_is_repeat_one():
+        if player.repeat_one:
             return "Track"
         else:
             return "None"
@@ -210,7 +213,7 @@ class MPRIS2:
 
     @property
     def Shuffle(self):
-        return player.get_is_random()
+        return player.random
 
     @property
     def Volume(self):
@@ -273,6 +276,12 @@ bus = SessionBus()
 MPRIS2.dbus = [pkg_resources.resource_string(__name__, "mpris/org.mpris.MediaPlayer2" +name+ ".xml")
                .decode("utf-8")
                for name in ("", ".Player", ".Playlists", ".TrackList")]
+mpris2_manager = MPRIS2()
 
-bus.publish("org.mpris.MediaPlayer2.clay", MPRIS2(),
-            ('/org/mpris/MediaPlayer2', MPRIS2()))
+try:
+
+    bus.publish("org.mpris.MediaPlayer2.clay", mpris2_manager,
+                ('/org/mpris/MediaPlayer2', mpris2_manager))
+except RuntimeError as e:
+    print(e)
+    print("An another instance of Clay is already running so we can't start MPRIS2")

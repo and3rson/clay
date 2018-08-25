@@ -34,6 +34,9 @@
       <arg type="s" direction="in"/>
     </method>
 
+    <signal name="Seeked">
+      <arg type="x" direction="out"/>
+    </signal>
     <!-- Clay additions -->
     <method name="Mute"/>
     <property name="Rating" type="x" access="readwrite"/>

@@ -287,14 +287,14 @@ class AppWidget(urwid.Frame):
         """
         Toggle random playback.
         """
-        player.set_random(not player.get_is_random())
+        player.random = not player.random
 
     @staticmethod
     def toggle_repeat_one():
         """
         Toggle repeat mode.
         """
-        player.set_repeat_one(not player.get_is_repeat_one())
+        player.repeat_one = not player.repeat_one
 
     def quit(self):
         """

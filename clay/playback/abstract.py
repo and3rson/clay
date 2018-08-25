@@ -13,7 +13,7 @@ except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
 
-from clay.core import meta, settings_manager, logger, EventHook, osd_manager
+from clay.core import meta, settings_manager, logger, EventHook, osd_manager, mpris2
 
 class _Queue(object):
     """
@@ -106,7 +106,7 @@ class _Queue(object):
 
     def prev(self, force=False):
         """
-        Revert to their last song and return it.
+        Revert to the last song and return it.
 
         If *force* is ``True`` then tracks will be changed event if
         tracks repition is enabled. Otherwise current tracks may be
@@ -118,6 +118,7 @@ class _Queue(object):
             return None
 
         if self.repeat_one and not force:
+            mpris2.mpris2_manager.Seeked.emit(0)
             return self.get_current_track()
 
         self.current_track_index = self._played_tracks.pop()
@@ -143,14 +144,14 @@ class AbstractPlayer:
 
     def __init__(self):
         self._create_station_notification = None
-        self._is_loading = False
-        self._is_playing = False
+        self._loading = False
+        self._playing = False
         self.queue = _Queue()
 
         # Add notification actions that we are going to use.
         osd_manager.add_to_action("media-skip-backward", "Previous", lambda: self.prev(force=True))
         osd_manager.add_to_action("media-playback-pause", "Pause", self.play_pause)
-        osd_manager.add_to_action("media-playback-start", "Toggle", self.play_pause)
+        osd_manager.add_to_action("media-playback-start", "Play", self.play_pause)
         osd_manager.add_to_action("media-skip-forward", "next", self.next)
 
 
@@ -169,8 +170,8 @@ class AbstractPlayer:
             )
         else:
             data = dict(
-                loading=self._is_loading,
-                playing=self._is_playing,
+                loading=self._loading,
+                playing=self._playing,
                 artist=track.artist,
                 title=track.title,
                 progress=self.play_progress_seconds,
@@ -220,29 +221,37 @@ class AbstractPlayer:
         track.create_station_async(callback=self._create_station_ready)
         #raise NotImplementedError
 
-    # Enum containing all these values?
-    def get_is_random(self):
+    @property
+    def random(self):
         """
-        Return whether the track selection from the queue is random
+        Returns:
+           Whether the track selection is random
         """
         return self.queue.random
 
-    def get_is_repeat_one(self):
-        """
-        Return whether single track repition is enabled.
-        """
-        return self.queue.repeat_one
-
-    def set_random(self, value):
+    @random.setter
+    def random(self, value):
         """
         Enable or disable random track selection
+
+        Args:
+           value (`bool`):  Whether random track selection should be enabled or disabled.
         """
         self.queue.random = value
         self.playback_flags_changed.fire()
 
-    def set_repeat_one(self, value):
+    @property
+    def repeat_one(self):
         """
-        Enable or disable random track selection
+        Returns:
+           Whether single track repition is enabled.
+        """
+        return self.queue.repeat_one
+
+    @repeat_one.setter
+    def repeat_one(self, value):
+        """
+        Enables or disabled single track repition
         """
         self.queue.repeat_one = value
         self.playback_flags_changed.fire()
@@ -274,13 +283,14 @@ class AbstractPlayer:
         self._ready_track(path, None, track)
 
     @property
-    def is_loading(self):
-        return self._is_loading
+    def loading(self):
+        return self._loading
 
     @property
-    def is_playing(self):
+    def playing(self):
         raise NotImplementedError
 
+    # Implement as a setter instead?
     def play_pause(self):
         """
         Toggle playback, i.e. play if pause or pause if playing.
@@ -308,6 +318,9 @@ class AbstractPlayer:
            Get their current movie length in microseconds
 e        """
         raise NotImplementedError
+
+    def _seeked(self):
+        mpris2.mpris2_manager.Seeked.emit(self.time)
 
     @time.setter
     def time(self, time):
