@@ -16,6 +16,10 @@
 """
 A file containing the classes and methods for Google Music Artists
 """
+from . import client
+from .track import Track
+from .album import Album, AllSongs, TopSongs
+from .utils import Source
 
 class Artist(object):
     """
@@ -23,7 +27,31 @@ class Artist(object):
     """
     def __init__(self, artist_id, name):
         self._id = artist_id
+        self._original_data = None
+        self._albums = None
         self.name = name
+
+    def __str__(self):
+        return self.name
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    @property
+    def albums(self):
+        """
+        Return the albums by an artist
+        """
+        if self._original_data is None:
+            self._original_data = client.gp.get_artist_info(self._id)
+            albums = [Album(self, album) for album in self._original_data['albums']]
+            albums.sort()
+            albums.insert(0, TopSongs(self, Track.from_data(self._original_data['topTracks'],
+                                                            Source.album, many=True)))
+            albums.insert(1, AllSongs(self, albums.copy()))
+            self._albums = albums
+
+        return self._albums  #: Warning: passes by reference for efficiency
 
     @property
     def id(self):  # pylint: disable=invalid-name

@@ -36,7 +36,7 @@ class _OSDManager(object):
 
         Args:
            track (`clay.gp.Track`): The track that you want to send the notification for
-           actions (`list`): A list with the action names that you want the notification to react to.
+           actions (`list`): A list with the actions that you want the notification to react to.
         """
         actions_ = []
         for action in actions:
@@ -67,7 +67,7 @@ class _OSDManager(object):
            summary (`str`): A single line overview of the notification
            body (`str`): A mutli-line body of the text
            replace (`bool`): Should the notification be updated or should a new one be made
-           actions (`list`): The actions a notification can perform, might be ignored. Default empty.
+           actions (`list`): The actions a notification can perform, might be ignored. Default empty
            hints (`dict`): Extra information the server might be able to make use of
            expiration (`int`): The time until the notification automatically closes. -1 to make the
               server decide and 0 for never. Defaults to 5000.

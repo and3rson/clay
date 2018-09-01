@@ -37,6 +37,7 @@ class Source(Enum):
     station = 'station'
     playlist = 'playlist'
     search = 'search'
+    album = 'album'
 
 
 def asynchronous(func):

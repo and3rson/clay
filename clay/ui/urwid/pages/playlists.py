@@ -121,7 +121,7 @@ class PlaylistsPage(urwid.Columns, AbstractPage):
 
     @property
     def key(self):
-        return 2
+        return 4
 
     @property
     def slug(self):

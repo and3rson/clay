@@ -54,10 +54,11 @@ class AppWidget(urwid.Frame):
         self.pages = [
             DebugPage(self),
             LibraryPage(self),
-            PlaylistsPage(self),
+            ArtistsPage(self),
             StationsPage(self),
-            QueuePage(self),
+            PlaylistsPage(self),
             SearchPage(self),
+            QueuePage(self),
             SettingsPage(self)
         ]
         self.tabs = [AppWidget.Tab(page) for page in self.pages]
@@ -219,6 +220,10 @@ class AppWidget(urwid.Frame):
     def show_library(self):
         """ Show library page. """
         self.set_page('library')
+
+    def show_artists(self):
+        """ Show artist page"""
+        self.set_page('artists')
 
     def show_playlists(self):
         """ Show playlists page. """

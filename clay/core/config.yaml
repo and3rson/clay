@@ -16,10 +16,11 @@ hotkeys:
       handle_escape: esc, mod + _
       show_debug: meta + 0
       show_library: meta + 1
-      show_playlists: meta + 2
+      show_artists: meta + 2
       show_stations: meta + 3
-      show_queue: meta + 4
+      show_playlists: meta + 4
       show_search: meta + 5
+      show_queue: meta + 6
       show_settings: meta + 9
 
     library_item:
@@ -49,6 +50,12 @@ hotkeys:
 
     search_page:
       send_query: enter
+
+    artist_page:
+      get_albums: enter
+
+    albums_list:
+      load_tracks: enter
 
     settings_page:
       equalizer_up: "+"

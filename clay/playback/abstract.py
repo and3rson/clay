@@ -172,7 +172,7 @@ class AbstractPlayer:
             data = dict(
                 loading=self._loading,
                 playing=self._playing,
-                artist=track.artist,
+                artist=track.artist.name,
                 title=track.title,
                 progress=self.play_progress_seconds,
                 length=self.length_seconds,

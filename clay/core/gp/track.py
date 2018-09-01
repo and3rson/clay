@@ -26,10 +26,10 @@ from io import BytesIO
 from uuid import UUID
 from hashlib import sha1
 
-from . import station, client
-from .utils import synchronized, asynchronous, Type, Source
 from clay.core.settings import settings_manager
 from clay.core.log import logger
+from . import station, client
+from .utils import synchronized, asynchronous, Type, Source
 
 
 class Track(object):
@@ -56,7 +56,14 @@ class Track(object):
             key=lambda x: x['aspectRatio']
         )), None)
         self.title = data['title']
-        self.artist = data['artist']
+        if 'artistId' in data:
+            self.artist = client.gp.add_artist(data['artistId'][0], data['artist'])
+        else:
+            self.artist = data['artist']
+            # TODO: How to deal with uploaded music
+            # client.gp.add_artist(UUID().hex, data['artist'])
+
+        #self.artist = client.gp.add_artist(data['artistId'][0])
         self.duration = int(data['durationMillis'])
         self.rating = (int(data['rating']) if 'rating' in data else 0)
         self.source = source
@@ -78,6 +85,7 @@ class Track(object):
         self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
 
         self.original_data = data
+
 
     @property
     def id(self):  # pylint: disable=invalid-name

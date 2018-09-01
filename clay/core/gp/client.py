@@ -52,6 +52,8 @@ class _GP(object):
         self.cached_liked_songs = LikedSongs()
         self.cached_playlists = None
         self.cached_stations = None
+        self.cached_artists = {}
+        self.cached_albums = {}
 
         self.invalidate_caches()
 
@@ -89,6 +91,7 @@ class _GP(object):
         self.cached_tracks = None
         self.cached_playlists = None
         self.cached_stations = None
+        self.cached_artist = None
         self.caches_invalidated.fire()
 
     @synchronized
@@ -105,6 +108,36 @@ class _GP(object):
         return result
 
     login_async = asynchronous(login)
+
+    @synchronized
+    def get_artist_info(self, artist_id):
+        """
+        Get the artist info
+        """
+        return self.mobile_client.get_artist_info(artist_id)
+
+    @synchronized
+    def get_album_tracks(self, album_id):
+        """
+        Get album tracks
+        """
+        return self.mobile_client.get_album_info(album_id, include_tracks=True)['tracks']
+
+    @synchronized
+    def add_artist(self, artist_id, name):
+        """
+        Creates or lookup an artist object and return it.
+
+        Args:
+           artist_id (`str`): The Artist id given by Google Play Music
+
+        Returns:
+           The artist class
+        """
+        if artist_id not in self.cached_artists:
+            self.cached_artists[artist_id] = Artist(artist_id, name)
+
+        return self.cached_artists[artist_id]
 
     @synchronized
     def use_authtoken(self, authtoken, device_id):
