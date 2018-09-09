@@ -114,7 +114,7 @@ class _GP(object):
         """
         Get the artist info
         """
-        return self.mobile_client.get_artist_info(artist_id)
+        return self.mobile_client.get_artist_info(artist_id, max_rel_artist=0, max_top_tracks=15)
 
     @synchronized
     def get_album_tracks(self, album_id):
@@ -134,10 +134,11 @@ class _GP(object):
         Returns:
            The artist class
         """
-        if artist_id not in self.cached_artists:
-            self.cached_artists[artist_id] = Artist(artist_id, name)
+        lname = name.lower()
+        if lname not in self.cached_artists:
+            self.cached_artists[lname] = Artist(artist_id, name)
 
-        return self.cached_artists[artist_id]
+        return self.cached_artists[lname]
 
     @synchronized
     def use_authtoken(self, authtoken, device_id):

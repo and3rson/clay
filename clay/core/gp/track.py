@@ -56,11 +56,19 @@ class Track(object):
             key=lambda x: x['aspectRatio']
         )), None)
         self.title = data['title']
-        if 'artistId' in data:
-            self.artist = client.gp.add_artist(data['artistId'][0], data['artist'])
-        else:
-            self.artist = data['artist']
-            # TODO: How to deal with uploaded music
+        self.artist = data['artist']
+
+        if 'artistId' in data and data['artistId'] != "" and source == Source.library:
+            if 'albumArtist' not in data or data['albumArtist'] == "":
+                self.album_artist = client.gp.add_artist(data['artistId'][0], data['artist'])
+
+            self.album_artist = client.gp.add_artist(data['artistId'][0], data['albumArtist'])
+        #elif source == Source.library:
+         #   import sys
+          #  print(data['artist'], file=sys.stderr)
+         #   self.album_artist = client.gp.add_artist(data.get('albumArtist', self.artist))
+
+        # TODO: How to deal with uploaded music
             # client.gp.add_artist(UUID().hex, data['artist'])
 
         #self.artist = client.gp.add_artist(data['artistId'][0])

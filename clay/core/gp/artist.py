@@ -46,9 +46,10 @@ class Artist(object):
             self._original_data = client.gp.get_artist_info(self._id)
             albums = [Album(self, album) for album in self._original_data['albums']]
             albums.sort()
+            albums.insert(0, AllSongs(self, albums.copy()))
             albums.insert(0, TopSongs(self, Track.from_data(self._original_data['topTracks'],
                                                             Source.album, many=True)))
-            albums.insert(1, AllSongs(self, albums.copy()))
+
             self._albums = albums
 
         return self._albums  #: Warning: passes by reference for efficiency
