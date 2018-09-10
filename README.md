@@ -27,7 +27,7 @@
 
 Standalone command line player for Google Play Music.
 
-This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] libraries.
+This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] & MPV libraries.
 
 This project is neither affiliated nor endorsed by Google.
 
@@ -49,7 +49,11 @@ Click the image below to see the screencast:
 # Quick start
 
 ```bash
+# For VLC:
 sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo vlc keybinder python-keybinder
+# For MPV:
+sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo mpv keybinder python-keybinder
+
 pip install --user clay-player
 clay
 ```
@@ -64,7 +68,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - [gmusicapi] (PYPI)
 - [urwid] (PYPI)
 - [PyYAML] (PYPI)
-- lib[VLC] (native, distributed with VLC player)
+- lib[VLC] (native, distributed with VLC player) OR libMPV (native, distributed with MPV)
 - [PyGObject] (optional) (native, used for global X keybinds)
 - [Keybinder] (optional) (native, used for global X keybinds)
 - [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
@@ -107,7 +111,7 @@ confusion. So if you get a `Namespace Keybinder not available` warning
 it is probably caused by this. So, for example, on Arch Linux you need
 the `libkeybinder3` package instead.
 
-1. Install Python 3, and VLC from your package manager.
+1. Install Python 3, and VLC or MPV from your package manager.
 2. Optionally, you can install PyGObject, DBus for Python and keybinder plus bindings
    if you want global X keybinds.
 
@@ -176,6 +180,14 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - You will also need to know your Device ID. Thanks to [gmusicapi], the app should display possible IDs once you enter a wrong one.
 - Please be aware that this app has not been tested with 2FA yet.
 - For people with 2FA, you can just create an app password in Google accounts page and proceed normally. (Thanks @j605)
+- By default VLC is used. If you want to use MPV instead, add the following line to your Clay config file (`~/.config/clay/config.yaml`) in `clay_settings` section:
+
+    ```yaml
+    # ...
+    clay_settings:
+      player_class: clay.playback.mpv:MPVPlayer
+    # ...
+    ```
 
 # Controls
 

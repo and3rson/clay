@@ -9,8 +9,12 @@ sys.path.insert(0, '.')  # noqa
 import argparse
 
 from clay.core import meta, settings_manager
-from clay.playback.vlc import player
+from clay.playback.player import get_player
 import clay.ui.urwid as urwid
+
+
+player = get_player()  # pylint: disable=invalid-name
+
 
 class MultilineVersionAction(argparse.Action):
     """

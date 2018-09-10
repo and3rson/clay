@@ -3,7 +3,7 @@ import sys
 import threading
 
 from clay.core import gp, settings_manager
-from clay.playback.vlc import player
+from clay.playback.player import get_player
 
 from .clipboard import copy
 from .hotkeys import hotkey_manager
@@ -11,6 +11,9 @@ from .notifications import notification_area
 from .playbar import PlayBar
 from .songlist import SongListBox
 from .pages import *
+
+
+player = get_player()  # pylint: disable=invalid-name
 
 
 class AppWidget(urwid.Frame):

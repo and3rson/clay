@@ -6,92 +6,67 @@ Copyright (c) 2018, Clay Contributors
 from ctypes import CFUNCTYPE, c_void_p, c_int, c_char_p
 from clay.core import osd_manager, logger, meta, settings_manager
 
-from . import libvlc as vlc
+import mpv
 from .abstract import AbstractPlayer
 
 
-#+pylint: disable=unused-argument
-def _dummy_log(data, level, ctx, fmt, args):
+class MPVPlayer(AbstractPlayer):
     """
-    A dummy callback function for VLC so it doesn't write to stdout.
-    Should probably do something in the future
-    """
-    pass
-#+pylint: enable=unused-argument
-
-
-class VLCPlayer(AbstractPlayer):
-    """
-    Interface to libVLC. Uses Queue as a playback plan.
+    Interface to MPV. Uses Queue as a playback plan.
     Emits various events if playback state, tracks or play flags change.
 
     Singleton.
     """
 
     def __init__(self):
-        self.instance = vlc.Instance()
-        print_func = CFUNCTYPE(c_void_p,
-                               c_void_p,  # data
-                               c_int,     # level
-                               c_void_p,  # context
-                               c_char_p,  # fmt
-                               c_void_p)  # args
+        # self.instance = mpv.MPV()
 
-        self.instance.log_set(print_func(_dummy_log), None)
+        # self.instance.set_user_agent(
+        #     meta.APP_NAME,
+        #     meta.USER_AGENT
+        # )
 
-        self.instance.set_user_agent(
-            meta.APP_NAME,
-            meta.USER_AGENT
-        )
+        self.media_player = mpv.MPV()
 
-        self.media_player = self.instance.media_player_new()
+        self.media_player.observe_property('pause', self._media_state_changed)
+        self.media_player.observe_property('stream-open-filename', self._media_state_changed)
+        # self.media_player.observe_property('end', self._media_end_reached)
+        # self.media_player.observe_property('time-pos', self._media_position_changed)
+        self.media_player.observe_property('stream-pos', self._media_position_changed)
+        self.media_player.observe_property('idle-active', self._media_end_reached)
 
-        self.media_player.event_manager().event_attach(
-            vlc.EventType.MediaPlayerPlaying,
-            self._media_state_changed
-        )
-        self.media_player.event_manager().event_attach(
-            vlc.EventType.MediaPlayerPaused,
-            self._media_state_changed
-        )
-        self.media_player.event_manager().event_attach(
-            vlc.EventType.MediaPlayerEndReached,
-            self._media_end_reached
-        )
-        self.media_player.event_manager().event_attach(
-            vlc.EventType.MediaPlayerPositionChanged,
-            self._media_position_changed
-        )
+        # self.media_player.event_manager().event_attach(
+        #     vlc.EventType.MediaPlayerPositionChanged,
+        #     self._media_position_changed
+        # )
 
-        self.equalizer = vlc.libvlc_audio_equalizer_new()
-        self.media_player.set_equalizer(self.equalizer)
-        self._create_station_notification = None
+        # self.equalizer = vlc.libvlc_audio_equalizer_new()
+        # self.media_player.set_equalizer(self.equalizer)
+        # self._create_station_notification = None
         AbstractPlayer.__init__(self)
 
 
-    def _media_state_changed(self, event):
+    def _media_state_changed(self, *_):
         """
         Called when a libVLC playback state changes.
         Broadcasts playback state & fires :attr:`media_state_changed` event.
         """
-        assert event
         self.broadcast_state()
         self.media_state_changed.fire(self.is_loading, self.is_playing)
 
-    def _media_end_reached(self, event):
+    def _media_end_reached(self, event, value):
         """
         Called when end of currently played track is reached.
         Advances to the next track.
         """
-        assert event
-        self.next()
+        if value:
+            self.next()
 
-    def _media_position_changed(self, event):
+    def _media_position_changed(self, *_):
         """
         Called when playback position changes (this happens few times each second.)
         Fires :attr:`.media_position_changed` event.
         """
-        assert event
         self.broadcast_state()
         self.media_position_changed.fire(
             self.get_play_progress()
@@ -166,10 +141,12 @@ class VLCPlayer(AbstractPlayer):
             )
             return
         assert track
-        media = vlc.Media(url)
-        self.media_player.set_media(media)
+        # media = vlc.Media(url)
+        # self.media_player.set_media(media)
 
-        self.media_player.play()
+        # self.media_player.play()
+
+        self.media_player.play(url)
 
         osd_manager.notify(track)
 
@@ -185,93 +162,80 @@ class VLCPlayer(AbstractPlayer):
         """
         True if current libVLC state is :attr:`vlc.State.Playing`
         """
-        return self.media_player.get_state() == vlc.State.Playing
+        return not (self.media_player.pause or self.is_loading)
 
     def play_pause(self):
         """
         Toggle playback, i.e. play if paused or pause if playing.
         """
-        if self.is_playing:
-            self.media_player.pause()
-        else:
-            self.media_player.play()
+        self.media_player.pause = not self.media_player.pause
 
     def get_play_progress(self):
         """
         Return current playback position in range ``[0;1]`` (``float``).
         """
-        return self.media_player.get_position()
+        try:
+            return self.media_player.playback_time / self.media_player.duration
+        except TypeError:
+            return 0
 
     def get_play_progress_seconds(self):
         """
         Return current playback position in seconds (``int``).
         """
-        return int(self.media_player.get_position() * self.media_player.get_length() / 1000)
+        progress = self.media_player.playback_time
+        if progress is None:
+            return 0
+        return int(progress)
 
     def get_length_seconds(self):
         """
         Return currently played track's length in seconds (``int``).
         """
-        return int(self.media_player.get_length() // 1000)
+        duration = self.media_player.duration
+        if duration is None:
+            duration = 0
+        return int(duration)
 
     def seek(self, delta):
         """
         Seek to relative position.
         *delta* must be a ``float`` in range ``[-1;1]``.
         """
-        self.media_player.set_position(self.get_play_progress() + delta)
+        try:
+            self.media_player.seek(int(self.get_length_seconds() * delta))
+        except:
+            pass
 
     def seek_absolute(self, position):
         """
         Seek to absolute position.
         *position* must be a ``float`` in range ``[0;1]``.
         """
-        self.media_player.set_position(position)
+        try:
+            self.media_player.seek(int(self.get_length_seconds() * position), reference='absolute')
+        except:
+            pass
 
     @staticmethod
     def get_equalizer_freqs():
         """
         Return a list of equalizer frequencies for each band.
         """
-        return [
-            vlc.libvlc_audio_equalizer_get_band_frequency(index)
-            for index
-            in range(vlc.libvlc_audio_equalizer_get_band_count())
-        ]
+        return [0] * 8
 
     def get_equalizer_amps(self):
         """
         Return a list of equalizer amplifications for each band.
         """
-        return [
-            vlc.libvlc_audio_equalizer_get_amp_at_index(
-                self.equalizer,
-                index
-            )
-            for index
-            in range(vlc.libvlc_audio_equalizer_get_band_count())
-        ]
+        return [0] * 8
 
     def set_equalizer_value(self, index, amp):
         """
         Set equalizer amplification for specific band.
         """
-        assert vlc.libvlc_audio_equalizer_set_amp_at_index(
-            self.equalizer,
-            amp,
-            index
-        ) == 0
-        self.media_player.set_equalizer(self.equalizer)
 
     def set_equalizer_values(self, amps):
         """
         Set a list of equalizer amplifications for each band.
         """
-        assert len(amps) == vlc.libvlc_audio_equalizer_get_band_count()
-        for index, amp in enumerate(amps):
-            assert vlc.libvlc_audio_equalizer_set_amp_at_index(
-                self.equalizer,
-                amp,
-                index
-            ) == 0
-        self.media_player.set_equalizer(self.equalizer)

@@ -4,8 +4,12 @@ Components for "Queue" page.
 import urwid
 
 from .page import AbstractPage
-from clay.playback.vlc import player
+from clay.playback.player import get_player
 from clay.ui.urwid import SongListBox
+
+
+player = get_player()  # pylint: disable=invalid-name
+
 
 class QueuePage(urwid.Columns, AbstractPage):
     """
