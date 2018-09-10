@@ -4,7 +4,9 @@ Changelog
 Clay 1.2.0
 ==========
 
-TBA
+* Support the MPRIS2 protocol (by Valentijn)
+* Remove X keybinds and drop the Gtk dependency (by Valentijn)
+* Fix the hanging thread issue when enabling X keybinds (by Valentijn)
 
 Clay 1.1.0
 ==========

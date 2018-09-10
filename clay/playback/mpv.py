@@ -19,30 +19,13 @@ class MPVPlayer(AbstractPlayer):
     """
 
     def __init__(self):
-        # self.instance = mpv.MPV()
-
-        # self.instance.set_user_agent(
-        #     meta.APP_NAME,
-        #     meta.USER_AGENT
-        # )
-
         self.media_player = mpv.MPV()
 
         self.media_player.observe_property('pause', self._media_state_changed)
         self.media_player.observe_property('stream-open-filename', self._media_state_changed)
-        # self.media_player.observe_property('end', self._media_end_reached)
-        # self.media_player.observe_property('time-pos', self._media_position_changed)
         self.media_player.observe_property('stream-pos', self._media_position_changed)
         self.media_player.observe_property('idle-active', self._media_end_reached)
 
-        # self.media_player.event_manager().event_attach(
-        #     vlc.EventType.MediaPlayerPositionChanged,
-        #     self._media_position_changed
-        # )
-
-        # self.equalizer = vlc.libvlc_audio_equalizer_new()
-        # self.media_player.set_equalizer(self.equalizer)
-        # self._create_station_notification = None
         AbstractPlayer.__init__(self)
 
 
@@ -52,7 +35,7 @@ class MPVPlayer(AbstractPlayer):
         Broadcasts playback state & fires :attr:`media_state_changed` event.
         """
         self.broadcast_state()
-        self.media_state_changed.fire(self.is_loading, self.is_playing)
+        self.media_state_changed.fire(self.loading, self.playing)
 
     def _media_end_reached(self, event, value):
         """
@@ -69,16 +52,8 @@ class MPVPlayer(AbstractPlayer):
         """
         self.broadcast_state()
         self.media_position_changed.fire(
-            self.get_play_progress()
+            self.play_progress
         )
-
-#    def create_station_from_track(self, track):
-#        """
-#        Request creation of new station from some track.
-#        Runs in background.
-#        """
-#        #self._create_station_notification = notification_area.notify('Creating station...')
-#        track.create_station_async(callback=self._create_station_from_track_ready)
 
     def _create_station_ready(self, station, error):
         """
@@ -141,28 +116,19 @@ class MPVPlayer(AbstractPlayer):
             )
             return
         assert track
-        # media = vlc.Media(url)
-        # self.media_player.set_media(media)
-
-        # self.media_player.play()
 
         self.media_player.play(url)
 
-        osd_manager.notify(track)
+        osd_manager.notify(track.title, "by {}\nfrom {}\n".format(track.artist, track.album_name),
+                           ("media-skip-backward", "media-playback-pause", "media-skip-forward"),
+                           track.get_artist_art_filename())
 
     @property
-    def is_loading(self):
+    def playing(self):
         """
-        True if current libVLC state is :attr:`vlc.State.Playing`
+        True if a song is being played at the moment.
         """
-        return self._is_loading
-
-    @property
-    def is_playing(self):
-        """
-        True if current libVLC state is :attr:`vlc.State.Playing`
-        """
-        return not (self.media_player.pause or self.is_loading)
+        return not (self.media_player.pause or self.loading)
 
     def play_pause(self):
         """
@@ -170,7 +136,8 @@ class MPVPlayer(AbstractPlayer):
         """
         self.media_player.pause = not self.media_player.pause
 
-    def get_play_progress(self):
+    @property
+    def play_progress(self):
         """
         Return current playback position in range ``[0;1]`` (``float``).
         """
@@ -179,7 +146,8 @@ class MPVPlayer(AbstractPlayer):
         except TypeError:
             return 0
 
-    def get_play_progress_seconds(self):
+    @property
+    def play_progress_seconds(self):
         """
         Return current playback position in seconds (``int``).
         """
@@ -188,7 +156,8 @@ class MPVPlayer(AbstractPlayer):
             return 0
         return int(progress)
 
-    def get_length_seconds(self):
+    @property
+    def length_seconds(self):
         """
         Return currently played track's length in seconds (``int``).
         """
@@ -203,7 +172,7 @@ class MPVPlayer(AbstractPlayer):
         *delta* must be a ``float`` in range ``[-1;1]``.
         """
         try:
-            self.media_player.seek(int(self.get_length_seconds() * delta))
+            self.media_player.seek(int(self.length_seconds * delta))
         except:
             pass
 
@@ -213,7 +182,7 @@ class MPVPlayer(AbstractPlayer):
         *position* must be a ``float`` in range ``[0;1]``.
         """
         try:
-            self.media_player.seek(int(self.get_length_seconds() * position), reference='absolute')
+            self.media_player.seek(int(self.length_seconds * position), reference='absolute')
         except:
             pass
 

@@ -2,11 +2,6 @@
 hotkeys:
   mod_key: ctrl
 
-  x_hotkeys:
-    play_pause: XF86AudioPlay
-    next: XF86AudioNext
-    prev: XF86AudioPrev
-
   clay_hotkeys:
     global:
       seek_start: mod + q
@@ -21,10 +16,11 @@ hotkeys:
       handle_escape: esc, mod + _
       show_debug: meta + 0
       show_library: meta + 1
-      show_playlists: meta + 2
+      show_artists: meta + 2
       show_stations: meta + 3
-      show_queue: meta + 4
+      show_playlists: meta + 4
       show_search: meta + 5
+      show_queue: meta + 6
       show_settings: meta + 9
 
     library_item:
@@ -55,12 +51,17 @@ hotkeys:
     search_page:
       send_query: enter
 
+    artist_page:
+      get_albums: enter
+
+    albums_list:
+      load_tracks: enter
+
     settings_page:
       equalizer_up: "+"
       equalizer_down: "-"
 
 clay_settings:
-  x_keybinds: false
   unicode: true
   player_class: clay.playback.vlc:VLCPlayer
 

@@ -30,6 +30,7 @@ class VLCPlayer(AbstractPlayer):
 
     def __init__(self):
         self.instance = vlc.Instance()
+
         print_func = CFUNCTYPE(c_void_p,
                                c_void_p,  # data
                                c_int,     # level
@@ -68,7 +69,6 @@ class VLCPlayer(AbstractPlayer):
         self._create_station_notification = None
         AbstractPlayer.__init__(self)
 
-
     def _media_state_changed(self, event):
         """
         Called when a libVLC playback state changes.
@@ -76,7 +76,7 @@ class VLCPlayer(AbstractPlayer):
         """
         assert event
         self.broadcast_state()
-        self.media_state_changed.fire(self.is_loading, self.is_playing)
+        self.media_state_changed.fire(self.loading, self.playing)
 
     def _media_end_reached(self, event):
         """
@@ -94,16 +94,8 @@ class VLCPlayer(AbstractPlayer):
         assert event
         self.broadcast_state()
         self.media_position_changed.fire(
-            self.get_play_progress()
+            self.play_progress
         )
-
-#    def create_station_from_track(self, track):
-#        """
-#        Request creation of new station from some track.
-#        Runs in background.
-#        """
-#        #self._create_station_notification = notification_area.notify('Creating station...')
-#        track.create_station_async(callback=self._create_station_from_track_ready)
 
     def _create_station_ready(self, station, error):
         """
@@ -133,7 +125,7 @@ class VLCPlayer(AbstractPlayer):
         track = self.queue.get_current_track()
         if track is None:
             return
-        self._is_loading = True
+        self._loading = True
         self.broadcast_state()
         self.track_changed.fire(track)
 
@@ -156,7 +148,7 @@ class VLCPlayer(AbstractPlayer):
         Called once track's media stream URL request completes.
         If *error* is ``None``, tell libVLC to play media by *url*.
         """
-        self._is_loading = False
+        self._loading = False
         if error:
             #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
@@ -168,20 +160,12 @@ class VLCPlayer(AbstractPlayer):
         assert track
         media = vlc.Media(url)
         self.media_player.set_media(media)
-
         self.media_player.play()
-
-        osd_manager.notify(track)
-
+        osd_manager.notify(track.title, "by {}\nfrom {}\n".format(track.artist, track.album_name),
+                           ("media-skip-backward", "media-playback-pause", "media-skip-forward"),
+                           track.get_artist_art_filename())
     @property
-    def is_loading(self):
-        """
-        True if current libVLC state is :attr:`vlc.State.Playing`
-        """
-        return self._is_loading
-
-    @property
-    def is_playing(self):
+    def playing(self):
         """
         True if current libVLC state is :attr:`vlc.State.Playing`
         """
@@ -191,35 +175,103 @@ class VLCPlayer(AbstractPlayer):
         """
         Toggle playback, i.e. play if paused or pause if playing.
         """
-        if self.is_playing:
+        track = self.get_current_track()
+        body = "Currently playing {}\nby {}\n".format(track.title, track.artist)
+
+        if self.playing:
             self.media_player.pause()
+            osd_manager.notify("Paused", body, ("media-skip-backward", "media-playback-start",
+                                                "media-skip-forward"), "media-playback-pause")
         else:
+            osd_manager.notify("Playing", body, ("media-skip-backward", "media-playback-pause",
+                                                 "media-skip-forward"), "media-playback-start")
             self.media_player.play()
 
-    def get_play_progress(self):
+    @property
+    def play_progress(self):
         """
-        Return current playback position in range ``[0;1]`` (``float``).
+        Returns:
+            A float of the current playback position in range of 0 to 1.
         """
         return self.media_player.get_position()
 
-    def get_play_progress_seconds(self):
+    @property
+    def play_progress_seconds(self):
         """
-        Return current playback position in seconds (``int``).
-        """
-        return int(self.media_player.get_position() * self.media_player.get_length() / 1000)
+        Returns:
+            The current playback position in seconds.
 
-    def get_length_seconds(self):
         """
-        Return currently played track's length in seconds (``int``).
+        return int(self.play_progress * self.media_player.get_length() / 1000)
+
+    @property
+    def time(self):
         """
-        return int(self.media_player.get_length() // 1000)
+        Returns:
+           Get their current movie length in microseconds
+        """
+        return self.media_player.get_time()
+
+    @time.setter
+    def time(self, time):
+        """
+        Sets the current time in microseconds.
+        This is a pythonic alternative to seeking using absolute times instead of percentiles.
+
+        Args:
+           time: Time in microseconds.
+        """
+        self.media_player.set_time(time)
+        self._seeked()
+
+    @property
+    def volume(self):
+        """
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        return self.media_player.audio_get_volume()
+
+    @volume.setter
+    def volume(self, volume):
+        """
+        Args:
+           volume: the volume in percentiles (0 = mute, 1000 = 0dB)
+
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        return self.media_player.audio_set_volume(volume)
+
+    def mute(self):
+        """
+        Mutes or unmutes the volume
+        """
+        self.media_player.set_mute(not self.media_player.audio_get_mute())
+
+    @property
+    def length(self):
+        """
+        Returns:
+            The current playback position in microseconds
+        """
+        return self.media_player.get_length()
+
+    @property
+    def length_seconds(self):
+        """
+        Returns:
+           The current playback in position in seconds
+        """
+        return self.length // 1000
 
     def seek(self, delta):
         """
         Seek to relative position.
         *delta* must be a ``float`` in range ``[-1;1]``.
         """
-        self.media_player.set_position(self.get_play_progress() + delta)
+        self.media_player.set_position(self.play_progress + delta)
+        self._seeked()
 
     def seek_absolute(self, position):
         """
@@ -227,6 +279,7 @@ class VLCPlayer(AbstractPlayer):
         *position* must be a ``float`` in range ``[0;1]``.
         """
         self.media_player.set_position(position)
+        self._seeked()
 
     @staticmethod
     def get_equalizer_freqs():

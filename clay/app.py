@@ -51,28 +51,10 @@ def main():
 
     parser.add_argument("-v", "--version", action=MultilineVersionAction)
 
-    keybinds_group = parser.add_mutually_exclusive_group()
-
-    keybinds_group.add_argument(
-        "--with-x-keybinds",
-        help="define global X keybinds (requires Keybinder and PyGObject)",
-        action='store_true'
-    )
-
-    keybinds_group.add_argument(
-        "--without-x-keybinds",
-        help="Don't define global keybinds (overrides configuration file)",
-        action='store_true'
-    )
-
     args = parser.parse_args()
 
     if args.version:
         exit(0)
-
-    if (args.with_x_keybinds or settings_manager.get('x_keybinds', 'clay_settings')) \
-       and not args.without_x_keybinds:
-        player.enable_xorg_bindings()
 
     urwid.main()
 

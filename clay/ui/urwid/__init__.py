@@ -57,10 +57,11 @@ class AppWidget(urwid.Frame):
         self.pages = [
             DebugPage(self),
             LibraryPage(self),
-            PlaylistsPage(self),
+            ArtistsPage(self),
             StationsPage(self),
-            QueuePage(self),
+            PlaylistsPage(self),
             SearchPage(self),
+            QueuePage(self),
             SettingsPage(self)
         ]
         self.tabs = [AppWidget.Tab(page) for page in self.pages]
@@ -213,11 +214,6 @@ class AppWidget(urwid.Frame):
         Handle keypress.
         Can switch tabs, control playback, flags, notifications and app state.
         """
-        # for tab in self.tabs:
-        #     if 'meta {}'.format(tab.page.key) == key:
-        #         self.set_page(tab.page.__class__.__name__)
-        #         return
-
         hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
 
     def show_debug(self):
@@ -227,6 +223,10 @@ class AppWidget(urwid.Frame):
     def show_library(self):
         """ Show library page. """
         self.set_page('library')
+
+    def show_artists(self):
+        """ Show artist page"""
+        self.set_page('artists')
 
     def show_playlists(self):
         """ Show playlists page. """
@@ -295,21 +295,20 @@ class AppWidget(urwid.Frame):
         """
         Toggle random playback.
         """
-        player.set_random(not player.get_is_random())
+        player.random = not player.random
 
     @staticmethod
     def toggle_repeat_one():
         """
         Toggle repeat mode.
         """
-        player.set_repeat_one(not player.get_is_repeat_one())
+        player.repeat_one = not player.repeat_one
 
     def quit(self):
         """
         Quit app.
         """
         self.loop = None
-        hotkey_manager.quit()
         sys.exit(0)
 
     def handle_escape(self):
@@ -338,7 +337,7 @@ def main():
 
     # Run the actual program
     app_widget = AppWidget()
-    loop = urwid.MainLoop(app_widget, palette)
+    loop = urwid.MainLoop(app_widget, palette, event_loop=urwid.GLibEventLoop())
     app_widget.set_loop(loop)
     loop.screen.set_terminal_properties(256)
     loop.run()

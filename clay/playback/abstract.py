@@ -13,7 +13,7 @@ except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
 
-from clay.core import meta, settings_manager, logger, EventHook
+from clay.core import meta, settings_manager, logger, EventHook, osd_manager, mpris2
 
 class _Queue(object):
     """
@@ -106,7 +106,7 @@ class _Queue(object):
 
     def prev(self, force=False):
         """
-        Revert to their last song and return it.
+        Revert to the last song and return it.
 
         If *force* is ``True`` then tracks will be changed event if
         tracks repition is enabled. Otherwise current tracks may be
@@ -118,6 +118,7 @@ class _Queue(object):
             return None
 
         if self.repeat_one and not force:
+            mpris2.mpris2_manager.Seeked.emit(0)
             return self.get_current_track()
 
         self.current_track_index = self._played_tracks.pop()
@@ -143,9 +144,16 @@ class AbstractPlayer:
 
     def __init__(self):
         self._create_station_notification = None
-        self._is_loading = False
-        self._is_playing = False
+        self._loading = False
+        self._playing = False
         self.queue = _Queue()
+
+        # Add notification actions that we are going to use.
+        osd_manager.add_to_action("media-skip-backward", "Previous", lambda: self.prev(force=True))
+        osd_manager.add_to_action("media-playback-pause", "Pause", self.play_pause)
+        osd_manager.add_to_action("media-playback-start", "Play", self.play_pause)
+        osd_manager.add_to_action("media-skip-forward", "next", self.next)
+
 
     def broadcast_state(self):
         """
@@ -162,28 +170,17 @@ class AbstractPlayer:
             )
         else:
             data = dict(
-                loading=self._is_loading,
-                playing=self._is_playing,
-                artist=track.artist,
+                loading=self._loading,
+                playing=self._playing,
+                artist=track.artist.name,
                 title=track.title,
-                progress=self.get_play_progress_seconds(),
-                length=self.get_length_seconds(),
+                progress=self.play_progress_seconds,
+                length=self.length_seconds,
                 album_name=track.album_name,
                 album_url=track.album_url
             )
         with open('/tmp/clay.json', 'w') as statefile:
             statefile.write(json.dumps(data, indent=4))
-
-    def enable_xorg_bindings(self):
-        """Enable the global X bindings using keybinder"""
-        if os.environ.get("DISPLAY") is None:
-            logger.debug("X11 isn't running so we can't load the global keybinds")
-            return
-
-        from clay.ui.urwid.hotkeys import hotkey_manager
-        hotkey_manager.play_pause += self.play_pause
-        hotkey_manager.next += self.next
-        hotkey_manager.prev += lambda: self.seek_absolute(0)
 
     def load_queue(self, data, current_index=None):
         """
@@ -224,29 +221,37 @@ class AbstractPlayer:
         track.create_station_async(callback=self._create_station_ready)
         #raise NotImplementedError
 
-    # Enum containing all these values?
-    def get_is_random(self):
+    @property
+    def random(self):
         """
-        Return whether the track selection from the queue is random
+        Returns:
+           Whether the track selection is random
         """
         return self.queue.random
 
-    def get_is_repeat_one(self):
-        """
-        Return whether single track repition is enabled.
-        """
-        return self.queue.repeat_one
-
-    def set_random(self, value):
+    @random.setter
+    def random(self, value):
         """
         Enable or disable random track selection
+
+        Args:
+           value (`bool`):  Whether random track selection should be enabled or disabled.
         """
         self.queue.random = value
         self.playback_flags_changed.fire()
 
-    def set_repeat_one(self, value):
+    @property
+    def repeat_one(self):
         """
-        Enable or disable random track selection
+        Returns:
+           Whether single track repition is enabled.
+        """
+        return self.queue.repeat_one
+
+    @repeat_one.setter
+    def repeat_one(self, value):
+        """
+        Enables or disabled single track repition
         """
         self.queue.repeat_one = value
         self.playback_flags_changed.fire()
@@ -264,12 +269,6 @@ class AbstractPlayer:
         """
         raise NotImplementedError
 
-    def get_play_progress(self):
-        """
-        Return the current playback position in range ``[0;1]`` (``float``)
-        """
-        raise NotImplementedError
-
     def _download_track(self, url, error, track):
         if error:
             logger.error(
@@ -284,32 +283,91 @@ class AbstractPlayer:
         self._ready_track(path, None, track)
 
     @property
-    def is_loading(self):
-        return self._is_loading
+    def loading(self):
+        return self._loading
 
     @property
-    def is_playing(self):
+    def playing(self):
         raise NotImplementedError
 
+    # Implement as a setter instead?
     def play_pause(self):
         """
         Toggle playback, i.e. play if pause or pause if playing.
         """
         raise NotImplementedError
 
-    def get_play_progress(self):
+    @property
+    def play_progress(self):
         """
         Return current playback position in range ``[0;1]`` (``float``)
         """
         raise NotImplementedError
 
-    def get_play_progress_seconds(self):
+    @property
+    def play_progress_seconds(self):
         """
         Return the current playback position in seconds (``int``)
         """
         raise NotImplementedError
 
-    def get_length_seconds(self):
+    @property
+    def time(self):
+        """
+        Returns:
+           Get their current movie length in microseconds
+e        """
+        raise NotImplementedError
+
+    def _seeked(self):
+        mpris2.mpris2_manager.Seeked.emit(self.time)
+
+    @time.setter
+    def time(self, time):
+        """
+        Sets the current time in microseconds.
+        This is a pythonic alternative to seeking using absolute times instead of percentiles.
+
+        Args:
+           time: Time in microseconds.
+        """
+        raise NotImplementedError
+
+    @property
+    def volume(self):
+        """
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        raise NotImplementedError
+
+    @volume.setter
+    def volume(self, volume):
+        """
+        Args:
+           volume: the volume in percentiles (0 = mute, 1000 = 0dB)
+
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        raise NotImplementedError
+
+    def mute(self):
+        """
+        Mutes or unmutes the volume
+        """
+        raise NotImplementedError
+
+    @property
+    def length(self):
+        """
+        Returns:
+          The current playback position in microseconds
+        """
+        raise NotImplementedError
+
+    @property
+    def length_seconds(self):
         """
         Return currently played track's length in seconds (``int``).
         """

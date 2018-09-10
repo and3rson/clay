@@ -1,4 +1,4 @@
-
+from .artists import ArtistsPage
 from .debug import DebugPage
 from .library import LibraryPage
 from .playlists import PlaylistsPage

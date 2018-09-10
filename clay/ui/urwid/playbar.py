@@ -121,7 +121,7 @@ class PlayBar(urwid.Pile):
         """
         Return the style for current playback state.
         """
-        if player.is_loading or player.is_playing:
+        if player.loading or player.playing:
             return 'title-playing'
         return 'title-idle'
 
@@ -135,13 +135,13 @@ class PlayBar(urwid.Pile):
                 meta.APP_NAME,
                 meta.VERSION_WITH_CODENAME
             )
-        progress = player.get_play_progress_seconds()
-        total = player.get_length_seconds()
+        progress = player.play_progress_seconds
+        total = player.length_seconds
         return (self.get_style(), u' {} {} - {} {} [{:02d}:{:02d} / {:02d}:{:02d}]'.format(
             # u'|>' if player.is_playing else u'||',
             # self.get_rotating_bar(),
-            u'\u2505' if player.is_loading
-            else u'\u25B6' if player.is_playing
+            u'\u2505' if player.loading
+            else u'\u25B6' if player.playing
             else u'\u25A0',
             track.artist,
             track.title,
@@ -159,17 +159,17 @@ class PlayBar(urwid.Pile):
         e.g. current track or playback flags.
         """
         self.text.set_text(self.get_text())
-        self.progressbar.set_progress(player.get_play_progress())
+        self.progressbar.set_progress(player.play_progress)
         self.progressbar.set_done_style(
             'progressbar_done'
-            if player.is_playing
+            if player.playing
             else 'progressbar_done_paused'
         )
         self.shuffle_el.attr = 'flag-active' \
-            if player.get_is_random() \
+            if player.random \
             else 'flag'
         self.repeat_el.attr = 'flag-active' \
-            if player.get_is_repeat_one() \
+            if player.repeat_one \
             else 'flag'
         self.app.redraw()
 

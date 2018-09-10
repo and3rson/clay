@@ -49,11 +49,8 @@ Click the image below to see the screencast:
 # Quick start
 
 ```bash
-# For VLC:
-sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo vlc keybinder python-keybinder
-# For MPV:
-sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo mpv keybinder python-keybinder
-
+sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo
+vlc
 pip install --user clay-player
 clay
 ```
@@ -65,14 +62,12 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 # Requirements
 
 - Python 3.x (native)
-- [gmusicapi] (PYPI)
-- [urwid] (PYPI)
-- [PyYAML] (PYPI)
+- [gmusicapi] (PyPI)
+- [urwid] (PyPI)
+- [PyYAML] (PyPI)
 - lib[VLC] (native, distributed with VLC player) OR libMPV (native, distributed with MPV)
-- [PyGObject] (optional) (native, used for global X keybinds)
-- [Keybinder] (optional) (native, used for global X keybinds)
-- [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
-- python-dbus (optional)
+- [setproctitle] (optional) PyPI, used to change clay process name from 'python' to 'clay')
+- [pydbus] (PyPI)
 
 # What works
 - Audio equalizer
@@ -80,16 +75,17 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Configurable keybinds and colours
 - Configuration UI
 - Filtering results
-- Global hotkeys
+- Global hotkeys (via MPRIS2/DBus)
 - Like/dislike tracks
 - Liked songs playlist
 - Music library browsing & management
 - Notifications - in-app & OSD (via DBus)
-- PYPI package
+- PyPI package
 - Playback
 - Playlists
 - Queue management
 - Radio stations
+- I'm Feeling Lucky station
 - Song file caching
 - Song operations (add to library, start station etc.)
 - Song search
@@ -100,20 +96,11 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
 - Playlist editing
+- Different playback transports
 
 # Installation
 
-**Warning:** The AUR and PyPy packages called `python3-keybinder` will
-not work with Clay since you need to use the official bindings. Since
-Ubuntu seperated the official bindings into a different package but
-with the same name as the unofficial one it can cause some
-confusion. So if you get a `Namespace Keybinder not available` warning
-it is probably caused by this. So, for example, on Arch Linux you need
-the `libkeybinder3` package instead.
-
-1. Install Python 3, and VLC or MPV from your package manager.
-2. Optionally, you can install PyGObject, DBus for Python and keybinder plus bindings
-   if you want global X keybinds.
+1. Install Python 3, pydbus, PyGObject, and VLC or MPV from your package manager.
 
 ## Method 1 (PyPi, automatic)
 
@@ -174,6 +161,12 @@ Here's how you do it:
 
 You *should* get the sound working. Also docker will reuse the Clay config file from host (if you have one).
 
+# Remote control
+Clay supports the MPRIS2 protocol which allows users to remote control
+their Clay instances using generic tools like [playerctl]. This
+replaces the old X Hotkeys systems but does require you to manually
+bind the keys to your windowing system of choice.
+
 # Configuration
 
 - Once you launch the app, use the "Settings" page to enter your login and password.
@@ -225,12 +218,6 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - `<CTRL> x` - exit app
 - To filter songs just start typing words. Hit `<ESC>` to cancel.
 
-## X keybinds
-**NOTE:** you need to pass the `--with-x-keybinds` flag for these to work
-- `<XF86AudioPlay>` - play/pause the song
-- `<XF86AudioNext>` - play the next song
-- `<XF86AudioPrev>` - play previous song
-
 # Troubleshooting
 
 At some point, the app may fail. Possible reasons are app bugs,
@@ -263,3 +250,4 @@ People who contribute to this project:
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
 [Keybinder]: https://github.com/kupferlauncher/keybinder
 [setproctitle]: https://pypi.org/project/setproctitle/
+[pydbus]: https://github.com/LEW21/pydbus
