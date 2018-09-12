@@ -184,6 +184,7 @@ class Track(object):
                 image = Image.open(BytesIO(data))
                 image.thumbnail((128, 128))
                 out = BytesIO()
+                image = image.convert('RGB')
                 image.save(out, format='JPEG')
                 data = out.getvalue()
             settings_manager.save_file_to_cache(self.artist_art_filename, data)
