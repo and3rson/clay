@@ -157,6 +157,13 @@ class MPVPlayer(AbstractPlayer):
         return int(progress)
 
     @property
+    def length(self):
+        """
+        Return currently played track's length in microseconds (``int``).
+        """
+        return self.length_seconds * 1e6
+
+    @property
     def length_seconds(self):
         """
         Return currently played track's length in seconds (``int``).
@@ -165,6 +172,33 @@ class MPVPlayer(AbstractPlayer):
         if duration is None:
             duration = 0
         return int(duration)
+
+    @property
+    def time(self):
+        """
+        Returns:
+           Get their current movie length in microseconds
+        """
+        try:
+            return int(self.media_player.duration * 1e6)
+        except TypeError:
+            return 0
+
+    @time.setter
+    def time(self, time):
+        """
+        Sets the current time in microseconds.
+        This is a pythonic alternative to seeking using absolute times instead of percentiles.
+
+        Args:
+           time: Time in microseconds.
+        """
+        try:
+            self.media_player.playback_time = int(time / 1e6)
+        except TypeError:
+            pass
+        else:
+            self._seeked()
 
     def seek(self, delta):
         """
