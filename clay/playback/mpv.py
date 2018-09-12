@@ -180,7 +180,7 @@ class MPVPlayer(AbstractPlayer):
            Get their current movie length in microseconds
         """
         try:
-            return int(self.media_player.duration * 1e6)
+            return int(self.media_player.playback_time * 1e6)
         except TypeError:
             return 0
 

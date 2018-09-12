@@ -236,9 +236,7 @@ class MPRIS2:
 
     @property
     def Position(self):
-        # TODO: Some weird microseconds/seconds stuff. `playerctl progress` shows weird values
-        # for both VLC & MPV.
-        return player.play_progress
+        return player.time
 
     # The following are custom additions to the protocol for features that clay supports
     def Mute(self):
