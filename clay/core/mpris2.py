@@ -178,13 +178,16 @@ class MPRIS2:
         try:
             track = player.get_current_track()
         except AttributeError:
+            track = None
+
+        if track is None:
             return {}
 
         return {
             'mpris:trackid': Variant('o', '/org/clay/' + str(track.store_id)),
             'mpris:artUrl': Variant('s', track.artist_art_url),
             'xesam:title': Variant('s', track.title),
-            'xesam:artist': Variant('s', track.artist),
+            'xesam:artist': Variant('s', track.artist.name),
             'xesam:album': Variant('s', track.album_name),
             'xesam:url': Variant('s', track.cached_url),
         }

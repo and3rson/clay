@@ -208,3 +208,29 @@ class MPVPlayer(AbstractPlayer):
         """
         Set a list of equalizer amplifications for each band.
         """
+
+    @property
+    def volume(self):
+        """
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        return self.media_player.volume
+
+    @volume.setter
+    def volume(self, volume):
+        """
+        Args:
+           volume: the volume in percentiles (0 = mute, 1000 = 0dB)
+
+        Returns:
+           The current volume of in percentiles (0 = mute, 100 = 0dB)
+        """
+        self.media_player.volume = volume
+
+    def mute(self):
+        """
+        Mutes or unmutes the volume
+        """
+        self.media_player.mute = not self.media_player.mute
+
