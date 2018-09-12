@@ -83,7 +83,7 @@ class MPVPlayer(AbstractPlayer):
         track = self.queue.get_current_track()
         if track is None:
             return
-        self._is_loading = True
+        self._loading = True
         self.broadcast_state()
         self.track_changed.fire(track)
 
@@ -106,7 +106,7 @@ class MPVPlayer(AbstractPlayer):
         Called once track's media stream URL request completes.
         If *error* is ``None``, tell libVLC to play media by *url*.
         """
-        self._is_loading = False
+        self._loading = False
         if error:
             #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
@@ -128,7 +128,7 @@ class MPVPlayer(AbstractPlayer):
         """
         True if a song is being played at the moment.
         """
-        return not (self.media_player.pause or self.loading)
+        return not self.media_player.pause
 
     def play_pause(self):
         """

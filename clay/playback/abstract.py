@@ -144,8 +144,6 @@ class AbstractPlayer:
 
     def __init__(self):
         self._create_station_notification = None
-        self._loading = False
-        self._playing = False
         self.queue = _Queue()
 
         # Add notification actions that we are going to use.
@@ -170,8 +168,8 @@ class AbstractPlayer:
             )
         else:
             data = dict(
-                loading=self._loading,
-                playing=self._playing,
+                loading=self.loading,
+                playing=self.playing,
                 artist=track.artist.name,
                 title=track.title,
                 progress=self.play_progress_seconds,
