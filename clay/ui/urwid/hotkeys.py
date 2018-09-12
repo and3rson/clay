@@ -28,11 +28,9 @@ class _HotkeyManager(object):
 
         for hotkey_name, hotkey_dict in hotkey_config.items():
             hotkeys[hotkey_name] = {}
-            print(hotkey_dict.keys())
             for action in hotkey_dict.keys():
                 key_seq = settings_manager.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)
 
-                print(hotkey_name, key_seq)
                 for key in key_seq.split(', '):
                     hotkey = key.split(' + ')
 
