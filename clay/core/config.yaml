@@ -63,6 +63,7 @@ hotkeys:
 
 clay_settings:
   unicode: true
+  player_class: clay.playback.vlc:VLCPlayer
 
 play_settings:
   authtoken:

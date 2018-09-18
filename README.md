@@ -27,7 +27,7 @@
 
 Standalone command line player for Google Play Music.
 
-This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] libraries.
+This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] & MPV libraries.
 
 This project is neither affiliated nor endorsed by Google.
 
@@ -65,7 +65,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - [gmusicapi] (PyPI)
 - [urwid] (PyPI)
 - [PyYAML] (PyPI)
-- lib[VLC] (native, distributed with VLC player)
+- lib[VLC] (native, distributed with VLC player) OR libMPV (native, distributed with MPV)
 - [setproctitle] (optional) PyPI, used to change clay process name from 'python' to 'clay')
 - [pydbus] (PyPI)
 
@@ -100,8 +100,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 
 # Installation
 
-1. Install Python 3, pydbus, PyGObject, and VLC from your package manager.
-
+1. Install Python 3, pydbus, PyGObject, and VLC or MPV from your package manager.
 
 ## Method 1 (PyPi, automatic)
 
@@ -174,6 +173,14 @@ bind the keys to your windowing system of choice.
 - You will also need to know your Device ID. Thanks to [gmusicapi], the app should display possible IDs once you enter a wrong one.
 - Please be aware that this app has not been tested with 2FA yet.
 - For people with 2FA, you can just create an app password in Google accounts page and proceed normally. (Thanks @j605)
+- By default VLC is used. If you want to use MPV instead, add the following line to your Clay config file (`~/.config/clay/config.yaml`) in `clay_settings` section:
+
+    ```yaml
+    # ...
+    clay_settings:
+      player_class: clay.playback.mpv:MPVPlayer
+    # ...
+    ```
 
 # Controls
 

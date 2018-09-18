@@ -328,6 +328,3 @@ class VLCPlayer(AbstractPlayer):
                 index
             ) == 0
         self.media_player.set_equalizer(self.equalizer)
-
-
-player = VLCPlayer() # pylint: disable=invalid-name

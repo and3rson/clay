@@ -16,11 +16,14 @@ except ImportError:
 import urwid
 
 from clay.core import gp, settings_manager
-from clay.playback.vlc import player
+from clay.playback.player import get_player
 
 from .notifications import notification_area
 from .hotkeys import hotkey_manager
 from .clipboard import copy
+
+
+player = get_player()  # pylint: disable=invalid-name
 
 
 class SongListItem(urwid.Pile):

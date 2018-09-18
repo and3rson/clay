@@ -5,8 +5,12 @@ import urwid
 
 from .page import AbstractPage
 from clay.core import settings_manager
-from clay.playback.vlc import player
+from clay.playback.player import get_player
 from clay.ui.urwid import hotkey_manager
+
+
+player = get_player()  # pylint: disable=invalid-name
+
 
 class Slider(urwid.Widget):
     """

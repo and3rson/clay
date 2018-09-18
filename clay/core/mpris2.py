@@ -7,7 +7,10 @@ import pkg_resources
 from pydbus import SessionBus, Variant
 from pydbus.generic import signal
 from clay.core import meta
-from clay.playback.vlc import player
+from clay.playback.player import get_player
+
+
+player = get_player()  # pylint: disable=invalid-name
 
 
 # pylint: disable=invalid-name,missing-docstring
@@ -175,13 +178,16 @@ class MPRIS2:
         try:
             track = player.get_current_track()
         except AttributeError:
+            track = None
+
+        if track is None:
             return {}
 
         return {
             'mpris:trackid': Variant('o', '/org/clay/' + str(track.store_id)),
             'mpris:artUrl': Variant('s', track.artist_art_url),
             'xesam:title': Variant('s', track.title),
-            'xesam:artist': Variant('s', track.artist),
+            'xesam:artist': Variant('s', track.artist.name),
             'xesam:album': Variant('s', track.album_name),
             'xesam:url': Variant('s', track.cached_url),
         }
@@ -230,7 +236,7 @@ class MPRIS2:
 
     @property
     def Position(self):
-        return player.play_progress
+        return player.time
 
     # The following are custom additions to the protocol for features that clay supports
     def Mute(self):

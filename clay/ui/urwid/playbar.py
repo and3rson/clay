@@ -5,7 +5,11 @@ PlayBar widget.
 import urwid
 
 from clay.core import settings_manager, meta
-from clay.playback.vlc import player
+from clay.playback.player import get_player
+
+
+player = get_player()  # pylint: disable=invalid-name
+
 
 class ProgressBar(urwid.Widget):
     """
