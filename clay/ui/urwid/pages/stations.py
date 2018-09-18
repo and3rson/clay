@@ -3,60 +3,17 @@ Components for " stations" page.
 """
 import urwid
 
-from .page import AbstractPage
+from .page import AbstractPage, AbstractListItem, AbstractListBox
 from clay.core import gp
 from clay.ui.urwid import SongListBox, notification_area, hotkey_manager
 
-class StationListItem(urwid.Columns):
-    """
-    One station in the list of stations.
-    """
-    signals = ['activate']
 
-    def __init__(self, station):
-        self.station = station
-        self.text = urwid.SelectableIcon(u' \u2708 {} '.format(
-            self.station.name
-        ), cursor_position=3)
-        self.text.set_layout('left', 'clip', None)
-        self.content = urwid.AttrWrap(
-            self.text,
-            'default',
-            'selected'
-        )
-        super(StationListItem, self).__init__([self.content])
-
-    def keypress(self, size, key):
-        """
-        Handle keypress.
-        """
-        return hotkey_manager.keypress("station_page", self, super(StationListItem, self),
-                                       size, key)
-
-    def start_station(self):
-        """
-        Start playing the selected station
-        """
-        urwid.emit_signal(self, 'activate', self)
-
-
-class StationListBox(urwid.ListBox):
+class StationListBox(AbstractListBox):
     """
     List of stations.
     """
-    signals = ['activate']
-
-    def __init__(self, app):
-        self.app = app
-
-        self.walker = urwid.SimpleListWalker([
-            urwid.Text('Not ready')
-        ])
-        self.notification = None
-
-        gp.auth_state_changed += self.auth_state_changed
-
-        super(StationListBox, self).__init__(self.walker)
+    def __init__(self, app, icon):
+        super(StationListBox, self).__init__(app, icon)
 
     def auth_state_changed(self, is_auth):
         """
@@ -68,35 +25,7 @@ class StationListBox(urwid.ListBox):
                 urwid.Text(u'\n \uf01e Loading stations...', align='center')
             ]
 
-            gp.get_all_user_station_contents_async(callback=self.on_get_stations)
-
-    def on_get_stations(self, stations, error):
-        """
-        Called when a list of stations fetch completes.
-        Populates list of stations.
-        """
-        if error:
-            notification_area.notify('Failed to get stations: {}'.format(str(error)))
-
-        items = []
-        for station in stations:
-            stationlistitem = StationListItem(station)
-            urwid.connect_signal(
-                stationlistitem, 'activate', self.item_activated
-            )
-            items.append(stationlistitem)
-
-        self.walker[:] = items
-
-        self.app.redraw()
-
-    def item_activated(self, stationlistitem):
-        """
-        Called when a specific station  is selected.
-        Re-emits this event.
-        """
-        urwid.emit_signal(self, 'activate', stationlistitem)
-
+            gp.get_all_user_station_contents_async(callback=self.populate)
 
 class StationsPage(urwid.Columns, AbstractPage):
     """
@@ -125,12 +54,12 @@ class StationsPage(urwid.Columns, AbstractPage):
     def __init__(self, app):
         self.app = app
 
-        self.stationlist = StationListBox(app)
+        self.stationlist = StationListBox(app, '\u2708')
         self.songlist = SongListBox(app)
         self.songlist.set_placeholder('\n Select a station.')
 
         urwid.connect_signal(
-            self.stationlist, 'activate', self.stationlistitem_activated
+            self.stationlist, 'activate', self.station_activated
         )
 
         super(StationsPage, self).__init__([
@@ -138,13 +67,13 @@ class StationsPage(urwid.Columns, AbstractPage):
             self.songlist
         ])
 
-    def stationlistitem_activated(self, stationlistitem):
+    def station_activated(self, station):
         """
         Called when specific station  is selected.
         Requests fetching of station tracks
         """
         self.songlist.set_placeholder(u'\n \uf01e Loading station tracks...')
-        stationlistitem.station.load_tracks_async(callback=self.on_station_loaded)
+        station.load_tracks_async(callback=self.on_station_loaded)
 
     def on_station_loaded(self, station, error):
         """

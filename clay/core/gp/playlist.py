@@ -28,6 +28,9 @@ class Playlist(object):
         self.name = name
         self.tracks = tracks
 
+    def __str__(self):
+        return "{} ({})".format(self.name, len(self.tracks))
+
     @property
     def id(self):  # pylint: disable=invalid-name
         """
@@ -62,6 +65,9 @@ class LikedSongs(object):
         self.name = "Liked Songs"
         self._tracks = []
         self._sorted = False
+
+    def __str__(self):
+        return "{} ({})".format(self.name, len(self._tracks))
 
     @property
     def tracks(self):

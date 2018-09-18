@@ -1,4 +1,4 @@
-<"""
+"""
 An abstract class for playback
 
 Copyright (c) 2018, Valentijn van de Beek

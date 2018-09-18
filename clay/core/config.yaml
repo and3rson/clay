@@ -39,23 +39,14 @@ hotkeys:
       move_down: down
       hide_context_menu: meta + p
 
-    playlist_page:
-      start_playlist: enter
-
-    station_page:
-      start_station: enter
+    general_page:
+      activate: enter
 
     debug_page:
       copy_message: enter
 
     search_page:
       send_query: enter
-
-    artist_page:
-      get_albums: enter
-
-    albums_list:
-      load_tracks: enter
 
     settings_page:
       equalizer_up: "+"

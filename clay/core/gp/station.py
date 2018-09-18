@@ -31,6 +31,9 @@ class Station(object):
         self._tracks = []
         self._tracks_loaded = False
 
+    def __str__(self):
+        return self.name
+
     @property
     def id(self):  # pylint: disable=invalid-name
         """
