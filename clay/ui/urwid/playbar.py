@@ -107,6 +107,7 @@ class PlayBar(urwid.Pile):
 
         player.media_position_changed += self.update
         player.media_state_changed += self.update
+        player.media_state_stopped += self.stop
         player.track_changed += self.update
         player.playback_flags_changed += self.update
 
@@ -172,6 +173,23 @@ class PlayBar(urwid.Pile):
             if player.repeat_one \
             else 'flag'
         self.app.redraw()
+
+    def stop(self, *_):
+        """
+        Force update of this widget.
+        Only runs when the queue is entirely cleared.
+        """
+        self.text.set_text("")
+        self.progressbar.set_progress(0)
+        self.progressbar.set_done_style('progressbar_done')
+        self.shuffle_el.attr = 'flag-active' \
+            if player.random \
+            else 'flag'
+        self.repeat_el.attr = 'flag-active' \
+            if player.repeat_one \
+            else 'flag'
+        self.app.redraw()
+
 
     def tick(self):
         """

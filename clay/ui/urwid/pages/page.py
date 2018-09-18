@@ -12,6 +12,13 @@ class AbstractPage(object):
     Represents app page.
     """
     @property
+    def append(self):
+        """
+        Returns whether activate should append a song add the entire queue.
+        """
+        return False
+
+    @property
     def name(self):
         """
         Return page name.

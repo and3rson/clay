@@ -50,6 +50,10 @@ class SearchPage(urwid.Pile, AbstractPage):
     Allows to perform searches & displays search results.
     """
     @property
+    def append(self):
+        return True
+
+    @property
     def name(self):
         return 'Search'
 

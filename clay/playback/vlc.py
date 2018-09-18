@@ -52,6 +52,10 @@ class VLCPlayer(AbstractPlayer):
             self._media_state_changed
         )
         self.media_player.event_manager().event_attach(
+            vlc.EventType.MediaPlayerStopped,
+            self._media_state_stopped
+        )
+        self.media_player.event_manager().event_attach(
             vlc.EventType.MediaPlayerPaused,
             self._media_state_changed
         )
@@ -68,6 +72,15 @@ class VLCPlayer(AbstractPlayer):
         self.media_player.set_equalizer(self.equalizer)
         self._create_station_notification = None
         AbstractPlayer.__init__(self)
+
+    def _media_state_stopped(self, _):
+        """
+        Called when a libVLC playback state changes.
+        Fires the :attr:`media_state_changed` event.
+        """
+        self.broadcast_state()
+        self.media_state_stopped.fire()
+#        self.media_state_changed.fire(self.loading, self.playing)
 
     def _media_state_changed(self, event):
         """
@@ -171,11 +184,21 @@ class VLCPlayer(AbstractPlayer):
         """
         return self.media_player.get_state() == vlc.State.Playing
 
+    def stop(self):
+        """
+        Stop playing the current song outright.
+        """
+        self.media_player.stop()
+
     def play_pause(self):
         """
         Toggle playback, i.e. play if paused or pause if playing.
         """
         track = self.get_current_track()
+        if track is None and self.queue.tracks != []:
+            self.load_queue(self.queue.tracks, 0)
+            track = self.get_current_track()
+
         body = "Currently playing {}\nby {}\n".format(track.title, track.artist)
 
         if self.playing:

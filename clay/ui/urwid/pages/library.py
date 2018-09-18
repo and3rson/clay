@@ -15,6 +15,10 @@ class LibraryPage(urwid.Columns, AbstractPage):
     Displays :class:`clay.songlist.SongListBox` with all songs in library.
     """
     @property
+    def append(self):
+        return True
+
+    @property
     def name(self):
         return 'Library'
 

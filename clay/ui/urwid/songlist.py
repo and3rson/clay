@@ -25,7 +25,6 @@ from .clipboard import copy
 
 player = get_player()  # pylint: disable=invalid-name
 
-
 class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
@@ -36,7 +35,9 @@ class SongListItem(urwid.Pile):
         'play',
         'append-requested',
         'unappend-requested',
-        'station-requested', 'context-menu-requested'
+        'clear-queue',
+        'station-requested',
+        'context-menu-requested'
     ]
 
     STATE_IDLE = 0
@@ -175,7 +176,7 @@ class SongListItem(urwid.Pile):
         """
         Handle keypress.
         """
-        return hotkey_manager.keypress("library_item", self, super(SongListItem, self), size, key)
+        return hotkey_manager.keypress("song_item", self, super(SongListItem, self), size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
@@ -207,6 +208,12 @@ class SongListItem(urwid.Pile):
         """
         self._send_signal("activate")
 
+    def clear_queue(self):
+        """
+        Removes all the songs from the queue.
+        """
+        self._send_signal("clear-queue")
+
     def play(self):
         """
         Play this song.
@@ -218,7 +225,6 @@ class SongListItem(urwid.Pile):
         Add this song to the queue.
         """
         self._send_signal("append-requested")
-        self.play()
 
     def unappend(self):
         """
@@ -527,6 +533,9 @@ class SongListBox(urwid.Frame):
                 songitem, 'unappend-requested', self.item_unappend_requested
             )
             urwid.connect_signal(
+                songitem, 'clear-queue', self.clear_queue
+            )
+            urwid.connect_signal(
                 songitem, 'station-requested', self.item_station_requested
             )
             urwid.connect_signal(
@@ -550,6 +559,8 @@ class SongListBox(urwid.Frame):
         """
         if songitem.is_currently_played:
             player.play_pause()
+        elif self.app.current_page.append:
+            self.item_append_requested(songitem)
         else:
             player.load_queue(self.tracks, songitem.index)
 
@@ -651,6 +662,14 @@ class SongListBox(urwid.Frame):
         elif len(self.walker) >= 1:
             self.walker.set_focus(0)
 
+    def clear_queue(self, _):
+        """
+        Removes all tracks from the queue
+        """
+        self.walker.set_focus(0)
+        player.load_queue([])
+        player.stop()
+
     def append_track(self, track):
         """
         Convert a track into :class:`.SongListItem` instance and appends it into this song list.
@@ -682,7 +701,7 @@ class SongListBox(urwid.Frame):
             self.perform_filtering(key)
         elif self._is_filtering:
             try:
-                return hotkey_manager.keypress("library_view", self, super(SongListBox, self),
+                return hotkey_manager.keypress("song_view", self, super(SongListBox, self),
                                                size, key)
             except IndexError:
                 pass

@@ -23,7 +23,7 @@ hotkeys:
       show_queue: meta + 6
       show_settings: meta + 9
 
-    library_item:
+    song_item:
       activate: enter
       append: mod + a
       unappend: mod + u
@@ -31,8 +31,9 @@ hotkeys:
       show_context_menu: meta + p
       thumbs_up: meta + u
       thumbs_down: meta + d
+      clear_queue: meta + c
 
-    library_view:
+    song_view:
       move_to_beginning: home
       move_to_end: end
       move_up: up

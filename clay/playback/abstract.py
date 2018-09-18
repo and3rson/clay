@@ -49,6 +49,8 @@ class _Queue(object):
         """
         Append track to playlist.
         """
+        #if self.current_track_index is None:
+            #self.current_track_index = 0
         self.tracks.append(track)
 
     def remove(self, track):
@@ -71,6 +73,7 @@ class _Queue(object):
         """
         if self.current_track_index is None:
             return None
+
         return self.tracks[self.current_track_index]
 
     def next(self, force=False):
@@ -136,6 +139,7 @@ class AbstractPlayer:
     """
     media_position_changed = EventHook()
     media_state_changed = EventHook()
+    media_state_stopped = EventHook()
     track_changed = EventHook()
     playback_flags_changed = EventHook()
     queue_changed = EventHook()
@@ -182,7 +186,7 @@ class AbstractPlayer:
 
     def load_queue(self, data, current_index=None):
         """
-        Load queue & start playbac
+        Load queue & start playback
 
         See :meth:`._Queue.load`
         """
