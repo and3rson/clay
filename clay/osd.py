@@ -5,6 +5,7 @@ from threading import Thread
 
 from clay.notifications import notification_area
 from clay import meta
+from clay.log import logger
 
 IS_INIT = False
 
@@ -17,8 +18,7 @@ except Exception as exception:  # pylint: disable=broad-except
     ERROR_MESSAGE = 'Error while importing dbus: \'{}\''.format(str(exception))
 
 if not IS_INIT:
-    notification_area.notify(ERROR_MESSAGE)
-
+    logger.error(ERROR_MESSAGE)
 
 class _OSDManager(object):
     """
@@ -29,11 +29,14 @@ class _OSDManager(object):
 
         if IS_INIT:
             self.bus = SessionBus()
-            self.notifcations = self.bus.get_object(
-                "org.freedesktop.Notifications",
-                "/org/freedesktop/Notifications"
-            )
-            self.notify_interface = Interface(self.notifcations, "org.freedesktop.Notifications")
+            try:
+                self.notifcations = self.bus.get_object(
+                    "org.freedesktop.Notifications",
+                    "/org/freedesktop/Notifications"
+                )
+                self.notify_interface = Interface(self.notifcations, "org.freedesktop.Notifications")
+            except Exception as exception:  # pylint: disable=broad-except
+                logger.error('Error while importing dbus: \'%s\'', str(exception))
 
     def notify(self, track):
         """
