@@ -128,7 +128,8 @@ class Track(object):
             self.artist_art_filename = sha1(
                 self.artist_art_url.encode('utf-8')
             ).hexdigest() + u'.jpg'
-        self.explicit_rating = (int(data['explicitType']))
+
+        self.explicit_rating = (int(data['explicitType']) if 'explicitType' in data else 0)
 
         if self.rating == 5:
             gp.cached_liked_songs.add_liked_song(self)
@@ -217,7 +218,7 @@ class Track(object):
         if gp.is_subscribed:
             track_id = self.store_id
         else:
-            track_id = self.library_id
+            track_id = str(self.library_id)
         gp.get_stream_url_async(track_id, callback=on_get_url)
 
     @synchronized
