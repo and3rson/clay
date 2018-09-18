@@ -51,7 +51,10 @@ class _OSDManager(object):
                      hints={"action-icons": Variant('b', 1)},  # only display icons
                      icon=icon if icon is not None else 'audio-headphones')
 
-    def _on_action(self, _, action):
+    def _on_action(self, id_, action):
+        if id_ != self._last_id:
+            return
+
         if action in self._actions:
             self._actions[action][1]()
         else:
