@@ -165,7 +165,7 @@ class Track(object):
         if client.gp.is_subscribed:
             track_id = self.store_id
         else:
-            track_id = self.library_id
+            track_id = str(self.library_id)
         client.gp.get_stream_url_async(track_id, callback=on_get_url)
 
     @synchronized
