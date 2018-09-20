@@ -1,9 +1,12 @@
 """
 On-screen display stuff.
 """
-from threading import Thread
 from pydbus import SessionBus, Variant
 from clay.core import meta, logger
+from gi.repository import GLib
+
+NOTIFICATION_BUS_NAME = ".Notifications"
+BASE_NAME = "org.freedesktop"
 
 
 class _OSDManager(object):
@@ -13,8 +16,13 @@ class _OSDManager(object):
     def __init__(self):
         self._last_id = 0
         self.bus = SessionBus()
-        self.notifications = self.bus.get(".Notifications")
-        self.notifications.onActionInvoked = self._on_action
+
+        self.notifications = None
+        self.bus.watch_name(BASE_NAME + NOTIFICATION_BUS_NAME,
+                            name_appeared=self._register_bus_name,
+                            name_vanished=self._deregister_bus_name)
+        self._register_bus_name(None)
+
         self._actions = {"default": print}
 
     def add_to_action(self, action, action_name, function):
@@ -66,6 +74,7 @@ class _OSDManager(object):
         An implementation of Desktop Notifications Specification 1.2.
         For a detailed explanation see: https://developer.gnome.org/notification-spec/
 
+        Does not fire if notifications were not properly set up
         Args:
            summary (`str`): A single line overview of the notification
            body (`str`): A mutli-line body of the text
@@ -79,10 +88,44 @@ class _OSDManager(object):
         Returns:
            Nothing.
         """
-        self._last_id = self.notifications.Notify(meta.APP_NAME, self._last_id if replace else 0,
-                                                  icon, summary, body,
-                                                  actions if actions is not None else list(),
-                                                  hints if hints is not None else dict(),
-                                                  expiration)
+        if self.notifications is None:
+            return
+
+        try:
+            self._last_id = self.notifications.Notify(meta.APP_NAME, self._last_id if replace else 0,
+                                                      icon, summary, body,
+                                                      actions if actions is not None else list(),
+                                                      hints if hints is not None else dict(),
+                                                      expiration)
+        except GLib.Error as exception:
+            logger.error('Failed to post notification %s', exception)
+
+    def _register_bus_name(self, name_owner):
+        """
+        Registers a bus for sending notifications over dbus
+
+        Args:
+            name_owner (`str`) (unused): The owner of the bus
+
+        Returns:
+            Nothing.
+        """
+        try:
+            self.notifications = self.bus.get(NOTIFICATION_BUS_NAME)
+            self.notifications.onActionInvoked = self._on_action
+        except GLib.Error:
+            # Bus name did not exist
+            logger.error('Attempted bus name registration failed, %s', NOTIFICATION_BUS_NAME)
+
+    def _deregister_bus_name(self):
+        """
+        Deregisters a bus for sending notifications over dbus.
+        Once run, notifications cannot be sent
+
+        Returns:
+            Nothing.
+        """
+        self.notifications = None
+
 
 osd_manager = _OSDManager()  # pylint: disable=invalid-name
