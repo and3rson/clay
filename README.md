@@ -18,6 +18,7 @@
   * [Equalizer](#equalizer)
   * [Misc](#misc)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](./CONTRIBUTING.rst)
 - [Credits](#credits)
 - [Changelog](./CHANGELOG.rst)
 
@@ -27,7 +28,7 @@
 
 Standalone command line player for Google Play Music.
 
-This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] & MPV libraries.
+This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] & [MPV] libraries.
 
 This project is neither affiliated nor endorsed by Google.
 
@@ -162,10 +163,8 @@ Here's how you do it:
 You *should* get the sound working. Also docker will reuse the Clay config file from host (if you have one).
 
 # Remote control
-Clay supports the MPRIS2 protocol which allows users to remote control
-their Clay instances using generic tools like [playerctl]. This
-replaces the old X Hotkeys systems but does require you to manually
-bind the keys to your windowing system of choice.
+Clay supports the MPRIS2 protocol which allows users to remote control their Clay instances using generic tools like [playerctl].
+This replaces the old X Hotkeys systems but does require you to manually bind the keys to your windowing system of choice.
 
 # Configuration
 
@@ -191,7 +190,8 @@ bind the keys to your windowing system of choice.
 
 ## Songs
 
-- `<ENTER>` - play highlighted track
+- `<ENTER>` - add highlighted track to the queue
+- `<CTRL> p` - start or pause the queue
 - `<CTRL> w` - play/pause
 - `<CTRL> e` - play next song
 - `<CTRL> a` - append highlighted song to the queue
@@ -242,9 +242,11 @@ People who contribute to this project:
 - [@ValentijnvdBeek (Valentijn)](https://github.com/ValentijnvdBeek)
 - [@Fluctuz](https://github.com/Fluctuz)
 - [@sjkingo (Sam Kingston)](https://github.com/sjkingo)
+- [@agg23 (Adam Gastineau)](https://github.com/agg23)
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
+[MPV]: https://mpv.io/
 [urwid]: http://www.urwid.org/
 [pyyaml]: https://github.com/yaml/pyyaml
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
