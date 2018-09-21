@@ -25,6 +25,13 @@ from .clipboard import copy
 
 player = get_player()  # pylint: disable=invalid-name
 
+FILTERING = False
+def filter_out(key):
+    """
+    Checks whether the keypress should be sent to the filter instead
+    """
+    return FILTERING and (key == 'backspace' or key in (ascii_letters + digits + ' _-.,?!()[]\''))
+
 class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
@@ -176,6 +183,9 @@ class SongListItem(urwid.Pile):
         """
         Handle keypress.
         """
+        if filter_out(key):
+            return super(SongListItem, self).keypress(size, key)
+
         return hotkey_manager.keypress("song_item", self, super(SongListItem, self), size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
@@ -449,32 +459,39 @@ class SongListBox(urwid.Frame):
             height='pack'
         )
 
-        self._is_filtering = False
         self.popup = None
 
         super(SongListBox, self).__init__(
             body=self.content
         )
 
-    def perform_filtering(self, char):
+    def start_filtering(self):
         """
-        Enter filtering mode (if not entered yet) and filter stuff.
+        Starts filtering the song view
         """
-        if not self._is_filtering:
+        global FILTERING
+
+        if not FILTERING:
             self.content.contents = [
                 (self.list_box, ('weight', 1)),
                 (self.filter_panel, ('pack', None))
             ]
             self.app.append_cancel_action(self.end_filtering)
             self.filter_query = ''
-            self._is_filtering = True
+            FILTERING = True
             self.tracks_walker[:] = self.walker
 
+            self.filter_box.set_text(self.filter_prefix)
+
+    def perform_filtering(self, char):
+        """
+        Enter filtering mode (if not entered yet) and filter stuff.
+        """
         if char == 'backspace':
-            self.filter_query = self.filter_query[:-1]
             if self.filter_query == "":
                 self.end_filtering()
                 return
+            self.filter_query = self.filter_query[:-1]
         else:
             self.filter_query += char
         self.filter_box.set_text(self.filter_prefix + self.filter_query)
@@ -503,10 +520,14 @@ class SongListBox(urwid.Frame):
         """
         Exit filtering mode.
         """
+        global FILTERING
+        if not FILTERING:
+            return
+
         self.content.contents = [
             (self.list_box, ('weight', 1))
         ]
-        self._is_filtering = False
+        FILTERING = False
         self.filter_box.set_text('')
         self.filter_info.set_text('')
         self.walker[:] = self.tracks_walker
@@ -575,12 +596,12 @@ class SongListBox(urwid.Frame):
         # There are some pages like search library where overwriting the queue
         # doesn't make much sense. We can also assume that someone searching
         # for a specific song also wants to append.
-        elif (page.append or self._is_filtering) and page.name != 'Queue':
+        elif (page.append or FILTERING) and page.name != 'Queue':
             self.item_append_requested(songitem)
         else:
             player.load_queue(self.tracks, songitem.index)
 
-        if self._is_filtering:
+        if FILTERING:
             self.walker[:] = self.get_filtered_items()
 
     @staticmethod
@@ -715,20 +736,10 @@ class SongListBox(urwid.Frame):
             songlistitem.set_index(i)
 
     def keypress(self, size, key):
-        if key in ascii_letters + digits + ' _-.,?!()[]/':
+        if filter_out(key):
             self.perform_filtering(key)
-        elif key == 'backspace':
-            self.perform_filtering(key)
-        elif self._is_filtering:
-            try:
-                return hotkey_manager.keypress("song_view", self, super(SongListBox, self),
-                                               size, key)
-            except IndexError:
-                pass
-        else:
-            return super(SongListBox, self).keypress(size, key)
 
-        return None
+        return hotkey_manager.keypress("song_view", self, super(SongListBox, self), size, key)
 
     def move_to_beginning(self):
         """Move to the focus to beginning of the songlist"""

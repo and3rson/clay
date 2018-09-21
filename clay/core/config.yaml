@@ -4,41 +4,43 @@ hotkeys:
 
   clay_hotkeys:
     global:
-      seek_start: mod + q
-      play_pause: mod + p
+      seek_start: q
+      play_pause: p
       seek_backward: shift + left
       seek_forward: shift + right
-      quit: mod + x
-      toggle_shuffle: mod + r
-      next_song: mod + d
-      prev_song: mod + a
-      toggle_repeat_one: mod + o
+      quit: x
+      toggle_shuffle: r
+      prev_song: n
+      next_song: m
+      toggle_repeat_one: o
       handle_escape: esc, mod + _
-      show_debug: meta + 0
-      show_library: meta + 1
-      show_artists: meta + 2
-      show_stations: meta + 3
-      show_playlists: meta + 4
-      show_search: meta + 5
-      show_queue: meta + 6
-      show_settings: meta + 9
+      show_debug: '0'
+      show_library: '1'
+      show_artists: '2'
+      show_stations: '3'
+      show_playlists: '4'
+      show_search: '5'
+      show_queue: '6'
+      show_settings: '9'
 
     song_item:
       activate: enter
-      append: mod + a
-      unappend: mod + u
-      request_station: meta + s
-      show_context_menu: meta + p
-      thumbs_up: meta + u
-      thumbs_down: meta + d
-      clear_queue: meta + c
+      append: a
+      unappend: u
+      request_station: s
+      show_context_menu: m
+      thumbs_up: "+"
+      thumbs_down: "-"
+      clear_queue: c
 
     song_view:
+      start_filtering: /
+      end_filtering: esc
       move_to_beginning: home
       move_to_end: end
       move_up: up
       move_down: down
-      hide_context_menu: meta + p
+      hide_context_menu: m
 
     general_page:
       activate: enter
