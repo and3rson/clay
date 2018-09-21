@@ -421,6 +421,7 @@ class SongListBox(urwid.Frame):
 
         self.current_item = None
         self.tracks = []
+        self.tracks_walker = urwid.SimpleFocusListWalker([])
         self.walker = urwid.SimpleFocusListWalker([])
 
         player.track_changed += self.track_changed
@@ -467,24 +468,31 @@ class SongListBox(urwid.Frame):
             self.app.append_cancel_action(self.end_filtering)
             self.filter_query = ''
             self._is_filtering = True
+            self.tracks_walker[:] = self.walker
 
         if char == 'backspace':
             self.filter_query = self.filter_query[:-1]
+            if self.filter_query == "":
+                self.end_filtering()
+                return
         else:
             self.filter_query += char
         self.filter_box.set_text(self.filter_prefix + self.filter_query)
 
         matches = self.get_filtered_items()
         self.filter_info.set_text('{} matches'.format(len(matches)))
-        if matches:
-            self.walker.set_focus(matches[0].index)
+        self.walker[:] = matches
+        self.walker.set_focus(0)
+
+        if self.app.current_page.name == 'Library':
+            self.update_indexes()
 
     def get_filtered_items(self):
         """
         Get song items that match the search query.
         """
         matches = []
-        for songitem in self.walker:
+        for songitem in self.tracks_walker:
             if not isinstance(songitem, SongListItem):
                 continue
             if self.filter_query.lower() in songitem.full_title.lower():
@@ -499,6 +507,9 @@ class SongListBox(urwid.Frame):
             (self.list_box, ('weight', 1))
         ]
         self._is_filtering = False
+        self.filter_box.set_text('')
+        self.filter_info.set_text('')
+        self.walker[:] = self.tracks_walker
 
     def set_placeholder(self, text):
         """
@@ -557,12 +568,20 @@ class SongListBox(urwid.Frame):
         Toggles track playback state or loads entire playlist
         that contains current track into player queue.
         """
+        page = self.app.current_page
+
         if songitem.is_currently_played:
             player.play_pause()
-        elif self.app.current_page.append:
+        # There are some pages like search library where overwriting the queue
+        # doesn't make much sense. We can also assume that someone searching
+        # for a specific song also wants to append.
+        elif (page.append or self._is_filtering) and page.name != 'Queue':
             self.item_append_requested(songitem)
         else:
             player.load_queue(self.tracks, songitem.index)
+
+        if self._is_filtering:
+            self.walker[:] = self.get_filtered_items()
 
     @staticmethod
     def item_append_requested(songitem):
@@ -678,13 +697,14 @@ class SongListBox(urwid.Frame):
         self.walker.append(tracks[0])
         self.update_indexes()
 
-    def remove_track(self, track):
+    def remove_track(self, track, ):
         """
         Remove a song item that matches *track* from this song list (if found).
         """
         for songlistitem in self.walker:
             if songlistitem.track == track:
                 self.walker.remove(songlistitem)
+
         self.update_indexes()
 
     def update_indexes(self):
@@ -710,55 +730,43 @@ class SongListBox(urwid.Frame):
 
         return None
 
-    def _get_filtered(self):
-        """Get filtered list of items"""
-        matches = self.get_filtered_items()
-        _, index = self.walker.get_focus()
-        return (matches, index)
-
     def move_to_beginning(self):
         """Move to the focus to beginning of the songlist"""
-        matches, _ = self._get_filtered()
-        self.list_box.set_focus(matches[0].index, 'below')
+        self.list_box.set_focus(0, 'below')
         return False
 
     def move_to_end(self):
         """Move to the focus to end of the songlist"""
-        matches, _ = self._get_filtered()
-        self.list_box.set_focus(matches[-1].index, 'above')
+        self.list_box.set_focus(-1, 'above')
         return False
 
     def move_up(self):
         """Move the focus an item up in the playlist"""
-        matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_item(matches, index, lt))
+        _, index = self.walker.get_focus()
+
+        if index is None:
+            return False
+
+        if index <= 0:
+            self.list_box.set_focus(len(self.walker) - 1, 'below')
+        else:
+            self.list_box.set_focus(index - 1, 'above')
+
         return False
 
     def move_down(self):
         """Move the focus an item down in the playlist """
-        matches, index = self._get_filtered()
-        self.list_box.set_focus(*self.get_item(matches, index, gt))
+        _, index = self.walker.get_focus()
+
+        if index is None:
+            return False
+
+        if index >= len(self.walker) - 1:
+            self.list_box.set_focus(0, 'above')
+        else:
+            self.list_box.set_focus(index + 1, 'below')
+
         return False
-
-    @staticmethod
-    def get_item(matches, current_index, callback):
-        """
-        Get an item index from the matches list
-        """
-        # Some not so very nice code to get to be nice and generic
-        order = ['above', 'below']
-        if callback is lt:
-            order.reverse()
-
-        items = [item for item in matches if callback(item.index, current_index)]
-
-        # Please witness some terrible code below.
-
-        index = -1 if callback is lt else 0
-
-        if items:
-            return items[index].index, order[0]
-        return matches[index].index, order[1]
 
     def mouse_event(self, size, event, button, col, row, focus):
         """
