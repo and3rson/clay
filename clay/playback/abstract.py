@@ -102,7 +102,7 @@ class _Queue(object):
             return self.get_current_track()
 
         self.current_track_index += 1
-        if (self.current_track_index + 1) >= len(self.tracks):
+        if (self.current_track_index) >= len(self.tracks):
             self.current_track_index = 0
 
         return self.get_current_track()
