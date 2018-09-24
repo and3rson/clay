@@ -40,6 +40,7 @@ class SearchBox(urwid.Columns):
         """
         Send a message to urwid to search the filled in search query
         """
+
         urwid.emit_signal(self, 'search-requested', self.query.edit_text)
 
 
@@ -71,7 +72,7 @@ class SearchPage(urwid.Pile, AbstractPage):
     def __init__(self, app):
         self.app = app
         self.songlist = SongListBox(app)
-
+        self._focus_position = 0
         self.search_box = SearchBox()
 
         urwid.connect_signal(self.search_box, 'search-requested', self.perform_search)
@@ -102,9 +103,11 @@ class SearchPage(urwid.Pile, AbstractPage):
             self.app.redraw()
 
     def activate(self):
-        pass
+        hotkey_manager.filtering = True
 
     def keypress(self, size, key):
+        hotkey_manager.filtering = (self.focus == self.search_box)
+
         if key == 'tab':
             if self.focus == self.search_box:
                 self.focus_position = 2

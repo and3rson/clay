@@ -5,6 +5,8 @@ Requires "gi" package and "Gtk" & "Keybinder" modules.
 # pylint: disable=broad-except
 from clay.core import settings_manager, logger
 
+from string import ascii_letters, digits
+
 def report_error(exc):
     "Print an error message to the debug screen"
     logger.error("{0}: {1}".format(exc.__class__.__name__, exc))
@@ -17,6 +19,7 @@ class _HotkeyManager(object):
     def __init__(self):
         self._hotkeys = self._parse_hotkeys()
         self.config = None
+        self.filtering = False
 
     def _parse_hotkeys(self):
         """
@@ -42,6 +45,33 @@ class _HotkeyManager(object):
         return hotkeys
 
     def keypress(self, name, caller, super_, size, key):
+        """
+        Processes a key and sends the appropiated command back.
+
+        Returns:
+          the letter pressed if Clay is filtering, the command or, in case a modifier key is pressed,
+          the command associated with the letter after the modifier key.
+        """
+        split_keys = key.split()
+        if split_keys[0] == 'meta' or split_keys[0] == 'ctrl':
+            self.filtering = False
+            return self._lookup_key(name, caller, super_, size, ''.join(split_keys[1:]))
+
+        if not self.filtering:
+            return self._lookup_key(name, caller, super_, size, key)
+
+        if key == 'backspace' or key == 'tab' or key in ascii_letters + digits + ' _-.,?()[]\'':
+            if name == 'song_view':
+                ret = caller.perform_filtering(key)
+            else:
+                ret = super_.keypress(size, key)
+
+        else:
+            ret = self._lookup_key(name, caller, super_, size, key)
+
+        return ret
+
+    def _lookup_key(self, name, caller, super_, size, key):
         """
         Process the pressed key by looking it up in the configuration file
 

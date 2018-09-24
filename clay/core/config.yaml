@@ -36,10 +36,6 @@ hotkeys:
     song_view:
       start_filtering: /
       end_filtering: esc
-      move_to_beginning: home
-      move_to_end: end
-      move_up: up
-      move_down: down
       hide_context_menu: m
 
     general_page:

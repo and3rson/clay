@@ -25,13 +25,6 @@ from .clipboard import copy
 
 player = get_player()  # pylint: disable=invalid-name
 
-FILTERING = False
-def filter_out(key):
-    """
-    Checks whether the keypress should be sent to the filter instead
-    """
-    return FILTERING and (key == 'backspace' or key in (ascii_letters + digits + ' _-.,?!()[]\''))
-
 class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
@@ -183,9 +176,6 @@ class SongListItem(urwid.Pile):
         """
         Handle keypress.
         """
-        if filter_out(key):
-            return super(SongListItem, self).keypress(size, key)
-
         return hotkey_manager.keypress("song_item", self, super(SongListItem, self), size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
@@ -440,7 +430,7 @@ class SongListBox(urwid.Frame):
         self.list_box = urwid.ListBox(self.walker)
         self.filter_prefix = '> '
         self.filter_query = ''
-        self.filter_box = urwid.Text(self.filter_prefix)
+        self.filter_box = urwid.Text('')
         self.filter_info = urwid.Text('')
         self.filter_panel = urwid.Columns([
             self.filter_box,
@@ -469,16 +459,14 @@ class SongListBox(urwid.Frame):
         """
         Starts filtering the song view
         """
-        global FILTERING
-
-        if not FILTERING:
+        if not hotkey_manager.filtering:
             self.content.contents = [
                 (self.list_box, ('weight', 1)),
                 (self.filter_panel, ('pack', None))
             ]
             self.app.append_cancel_action(self.end_filtering)
             self.filter_query = ''
-            FILTERING = True
+            hotkey_manager.filtering = True
             self.tracks_walker[:] = self.walker
 
             self.filter_box.set_text(self.filter_prefix)
@@ -501,7 +489,7 @@ class SongListBox(urwid.Frame):
         self.walker[:] = matches
         self.walker.set_focus(0)
 
-        if self.app.current_page.name == 'Library':
+        if self.app.current_page.slug == 'library':
             self.update_indexes()
 
     def get_filtered_items(self):
@@ -520,14 +508,12 @@ class SongListBox(urwid.Frame):
         """
         Exit filtering mode.
         """
-        global FILTERING
-        if not FILTERING:
+        if self.filter_box.text == '':
             return
-
         self.content.contents = [
             (self.list_box, ('weight', 1))
         ]
-        FILTERING = False
+        hotkey_manager.filtering = False
         self.filter_box.set_text('')
         self.filter_info.set_text('')
         self.walker[:] = self.tracks_walker
@@ -596,12 +582,12 @@ class SongListBox(urwid.Frame):
         # There are some pages like search library where overwriting the queue
         # doesn't make much sense. We can also assume that someone searching
         # for a specific song also wants to append.
-        elif (page.append or FILTERING) and page.name != 'Queue':
+        elif (page.append or hotkey_manager.filtering) and page.slug != 'queue':
             self.item_append_requested(songitem)
         else:
             player.load_queue(self.tracks, songitem.index)
 
-        if FILTERING:
+        if hotkey_manager.filtering and page.slug != 'search':
             self.walker[:] = self.get_filtered_items()
 
     @staticmethod
@@ -736,48 +722,7 @@ class SongListBox(urwid.Frame):
             songlistitem.set_index(i)
 
     def keypress(self, size, key):
-        if filter_out(key):
-            self.perform_filtering(key)
-
         return hotkey_manager.keypress("song_view", self, super(SongListBox, self), size, key)
-
-    def move_to_beginning(self):
-        """Move to the focus to beginning of the songlist"""
-        self.list_box.set_focus(0, 'below')
-        return False
-
-    def move_to_end(self):
-        """Move to the focus to end of the songlist"""
-        self.list_box.set_focus(-1, 'above')
-        return False
-
-    def move_up(self):
-        """Move the focus an item up in the playlist"""
-        _, index = self.walker.get_focus()
-
-        if index is None:
-            return False
-
-        if index <= 0:
-            self.list_box.set_focus(len(self.walker) - 1, 'below')
-        else:
-            self.list_box.set_focus(index - 1, 'above')
-
-        return False
-
-    def move_down(self):
-        """Move the focus an item down in the playlist """
-        _, index = self.walker.get_focus()
-
-        if index is None:
-            return False
-
-        if index >= len(self.walker) - 1:
-            self.list_box.set_focus(0, 'above')
-        else:
-            self.list_box.set_focus(index + 1, 'below')
-
-        return False
 
     def mouse_event(self, size, event, button, col, row, focus):
         """

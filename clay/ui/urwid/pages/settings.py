@@ -197,4 +197,4 @@ class SettingsPage(urwid.Columns, AbstractPage):
         self.app.log_in()
 
     def activate(self):
-        pass
+        hotkey_manager.filtering = True

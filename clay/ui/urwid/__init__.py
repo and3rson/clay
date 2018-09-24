@@ -9,7 +9,7 @@ from .clipboard import copy
 from .hotkeys import hotkey_manager
 from .notifications import notification_area
 from .playbar import PlayBar
-from .songlist import SongListBox, filter_out
+from .songlist import SongListBox
 from .pages import *
 
 
@@ -174,6 +174,11 @@ class AppWidget(urwid.Frame):
         """
         Switch to a different tab.
         """
+        try:
+            self.current_page.songlist.end_filtering()
+        except AttributeError as e:
+            pass
+
         page = [page for page in self.pages if page.slug == slug][0]
         self.current_page = page
         self.contents['body'] = (page, None)
@@ -214,9 +219,6 @@ class AppWidget(urwid.Frame):
         Handle keypress.
         Can switch tabs, control playback, flags, notifications and app state.
         """
-        if filter_out(key):
-            return super(AppWidget, self).keypress(size, key)
-
         hotkey_manager.keypress("global", self, super(AppWidget, self), size, key)
         return None
 
@@ -250,6 +252,7 @@ class AppWidget(urwid.Frame):
 
     def show_settings(self):
         """ Show settings page. """
+
         self.set_page('settings')
 
     @staticmethod
