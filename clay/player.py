@@ -251,9 +251,10 @@ class _Player(object):
     def _media_end_reached(self, event):
         """
         Called when end of currently played track is reached.
-        Advances to the next track.
+        Increments the play count and advances to the next track.
         """
         assert event
+        self.queue.get_current_track().increment_playcount_async()
         self.next()
 
     def _media_position_changed(self, event):
