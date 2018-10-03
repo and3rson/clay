@@ -25,14 +25,17 @@ class _HotkeyManager(object):
         """
         Reads out the configuration file and parse them into a hotkeys for urwid.
         """
-        hotkey_config = settings_manager.get_default_config_section('hotkeys', 'clay_hotkeys')
-        mod_key = settings_manager.get('mod_key', 'hotkeys')
+        hotkey_config = settings_manager.get_default_config_section('hotkeys')
+        mod_key = settings_manager.get('mod_key', 'clay_settings')
         hotkeys = {}
 
         for hotkey_name, hotkey_dict in hotkey_config.items():
             hotkeys[hotkey_name] = {}
-            for action in hotkey_dict.keys():
-                key_seq = settings_manager.get(action, 'hotkeys', 'clay_hotkeys', hotkey_name)
+            for action, sequence in hotkey_dict.items():
+                key_seq = settings_manager.get(action, 'hotkeys', hotkey_name)
+
+                if key_seq is None:
+                    key_seq = sequence
 
                 for key in key_seq.split(', '):
                     hotkey = key.split(' + ')
@@ -49,10 +52,11 @@ class _HotkeyManager(object):
         Processes a key and sends the appropiated command back.
 
         Returns:
-          the letter pressed if Clay is filtering, the command or, in case a modifier key is pressed,
-          the command associated with the letter after the modifier key.
+          the letter pressed if Clay is filtering, the command or, in case a modifier key is
+          pressed, the command associated with the letter after the modifier key.
         """
-        split_keys = key.split()
+        split_keys = key.split() if key != ' ' else key
+
         if split_keys[0] == 'meta' or split_keys[0] == 'ctrl':
             self.filtering = False
             return self._lookup_key(name, caller, super_, size, ''.join(split_keys[1:]))

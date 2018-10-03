@@ -1,57 +1,55 @@
 #: pylint:skip-file
 hotkeys:
-  mod_key: ctrl
+  global:
+    seek_start: q
+    play_pause: p
+    seek_backward: shift + left
+    seek_forward: shift + right
+    quit: x
+    toggle_shuffle: r
+    prev_song: n
+    next_song: m
+    toggle_repeat_one: o
+    handle_escape: esc, mod + _
+    show_debug: '0'
+    show_library: '1'
+    show_artists: '2'
+    show_stations: '3'
+    show_playlists: '4'
+    show_search: '5'
+    show_queue: '6'
+    show_settings: '9'
 
-  clay_hotkeys:
-    global:
-      seek_start: q
-      play_pause: p
-      seek_backward: shift + left
-      seek_forward: shift + right
-      quit: x
-      toggle_shuffle: r
-      prev_song: n
-      next_song: m
-      toggle_repeat_one: o
-      handle_escape: esc, mod + _
-      show_debug: '0'
-      show_library: '1'
-      show_artists: '2'
-      show_stations: '3'
-      show_playlists: '4'
-      show_search: '5'
-      show_queue: '6'
-      show_settings: '9'
+  song_item:
+    activate: enter
+    append: a
+    unappend: u
+    request_station: s
+    show_context_menu: m
+    thumbs_up: "+"
+    thumbs_down: "-"
+    clear_queue: c
 
-    song_item:
-      activate: enter
-      append: a
-      unappend: u
-      request_station: s
-      show_context_menu: m
-      thumbs_up: "+"
-      thumbs_down: "-"
-      clear_queue: c
+  song_view:
+    start_filtering: /
+    end_filtering: esc
+    hide_context_menu: m
 
-    song_view:
-      start_filtering: /
-      end_filtering: esc
-      hide_context_menu: m
+  general_page:
+    activate: enter
 
-    general_page:
-      activate: enter
+  debug_page:
+    copy_message: enter
 
-    debug_page:
-      copy_message: enter
+  search_page:
+    send_query: enter
 
-    search_page:
-      send_query: enter
-
-    settings_page:
-      equalizer_up: "+"
-      equalizer_down: "-"
+  settings_page:
+    equalizer_up: "+"
+    equalizer_down: "-"
 
 clay_settings:
+  mod_key: ctrl
   unicode: true
   player_class: clay.playback.vlc:VLCPlayer
 

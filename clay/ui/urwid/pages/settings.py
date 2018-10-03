@@ -193,7 +193,7 @@ class SettingsPage(urwid.Columns, AbstractPage):
             config['play_settings']['device_id'] = self.device_id.edit_text
             config['play_settings']['download_tracks'] = self.download_tracks.state
 
-        self.app.set_page('MyLibraryPage')
+        self.app.set_page('library')
         self.app.log_in()
 
     def activate(self):
