@@ -199,6 +199,15 @@ class Track(object):
 
         raise AssertionError()
 
+    def increment_playcount(self, callback=None):
+        """
+        Increments the gmusic playcount of the track (by one).
+
+        "callback" is called with "(track_id, error)" args after the
+        placount is incremented. (Optional)
+        """
+        gp.increment_song_playcount_async(self.id, callback=lambda id_, error: callback(id_, error) if callback else None)
+
     def get_url(self, callback):
         """
         Gets playable stream URL for this track.
@@ -615,6 +624,15 @@ class _GP(object):
         return self.mobile_client.get_stream_url(stream_id)
 
     get_stream_url_async = asynchronous(get_stream_url)
+
+    def increment_song_playcount(self, track_id):
+        """
+        Increments the playcount of the song given by track_id
+        by one.
+        """
+        return gp.mobile_client.increment_song_playcount(track_id)
+
+    increment_song_playcount_async = asynchronous(increment_song_playcount)
 
     @synchronized
     def get_all_user_station_contents(self, **_):
