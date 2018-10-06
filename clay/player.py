@@ -254,7 +254,7 @@ class _Player(object):
         Increments the play count and advances to the next track.
         """
         assert event
-        self.queue.get_current_track().increment_playcount_async()
+        self.queue.get_current_track().increment_playcount()
         self.next()
 
     def _media_position_changed(self, event):

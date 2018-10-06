@@ -206,18 +206,7 @@ class Track(object):
         "callback" is called with "(track_id, error)" args after the
         placount is incremented. (Optional)
         """
-        if gp.is_subscribed:
-            track_id = self.store_id
-        else:
-            track_id = self.library_id
-
-        def on_playcount_incremented(track_id, error):
-            if callback:
-                callback(track_id, error)
-            else:
-                pass
-
-        gp.increment_song_playcount_async(track_id, callback=on_playcount_incremented)
+        gp.increment_song_playcount_async(self.id, callback=lambda id_, error: callback(id_, error) if callback else None)
 
     def get_url(self, callback):
         """
