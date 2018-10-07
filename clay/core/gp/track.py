@@ -38,9 +38,9 @@ class Track(object):
     """
     def __init__(self, source, data):
         # In playlist items and user uploaded songs the storeIds are missing so
-        self.store_id = (data['storeId'] if 'storeId' in data else data.get('id'))
-        self.playlist_item_id = (UUID(data['id']) if source == Source.playlist else None)
-        self.library_id = (UUID(data['id']) if source == Source.library else None)
+        self.id_ = data.get('id')
+        self.nid = data.get('nid')  # I am  not sure what this is for.
+        self.store_id = data.get('storeId')
 
         # To filter out the playlist items we need to reassign the store_id when fetching the track
         if 'track' in data:
@@ -57,6 +57,8 @@ class Track(object):
         )), None)
         self.title = data['title']
         self.artist = data['artist']
+        self.genre = data.get('genre', '')
+        self.play_count = data.get('playCount')
 
         if 'artistId' in data and data['artistId'] != "" and source == Source.library:
             if 'albumArtist' not in data or data['albumArtist'] == "":
@@ -73,7 +75,7 @@ class Track(object):
 
         #self.artist = client.gp.add_artist(data['artistId'][0])
         self.duration = int(data['durationMillis'])
-        self.rating = (int(data['rating']) if 'rating' in data else 0)
+        self.rating = int(data.get('rating', 0))
         self.source = source
         self.cached_url = None
         self.artist_art_url = None
@@ -83,7 +85,7 @@ class Track(object):
             self.artist_art_filename = sha1(
                 self.artist_art_url.encode('utf-8')
             ).hexdigest() + u'.jpg'
-        self.explicit_rating = (int(data['explicitType'] if 'explicitType' in data else 0))
+        self.explicit_rating = int(data.get('explicitType',0))
 
         if self.rating == 5:
             client.gp.cached_liked_songs.add_liked_song(self)
@@ -100,23 +102,24 @@ class Track(object):
         """
         Return ID for this track.
         """
-        if self.library_id:
-            return self.library_id
-        return self.store_id
+        if self.source == Source.library:
+            id_ = self.id_
+        elif self.store_id is None:
+            id_ = self.nid
+        else:
+            id_ = self.store_id
+
+        return id_
 
     @property
     def filename(self):
         """
         Return a filename for this track.
         """
-        return self.store_id + '.mp3'
+        return self.id + '.mp3'
 
     def __eq__(self, other):
-        return (
-            (self.library_id and self.library_id == other.library_id) or
-            (self.store_id and self.store_id == other.store_id) or
-            (self.playlist_item_id and self.playlist_item_id == other.playlist_item_id)
-        )
+        return self.id == other.id
 
     @classmethod
     def from_data(cls, data, source, many=False):
@@ -170,11 +173,7 @@ class Track(object):
             self.cached_url = url
             callback(url, error, self)
 
-        if client.gp.is_subscribed:
-            track_id = self.store_id
-        else:
-            track_id = str(self.library_id)
-        client.gp.get_stream_url_async(track_id, callback=on_get_url)
+        client.gp.get_stream_url_async(self.id, callback=on_get_url)
 
     @synchronized
     def get_artist_art_filename(self):
@@ -213,9 +212,9 @@ class Track(object):
             name=station_name,
             track_id=self.store_id
         )
-        station = station.Station(station_id, station_name)
-        station.load_tracks()
-        return station
+        station_ = station.Station(station_id, station_name)
+        station_.load_tracks()
+        return station_
 
     create_station_async = asynchronous(create_station)
 

@@ -291,7 +291,7 @@ class SongListBoxPopup(urwid.LineBox):
                 'panel_divider'
             ),
             urwid.AttrWrap(
-                urwid.Text(' StoreID: {}'.format(songitem.track.store_id)),
+                urwid.Text(' StoreID: {}'.format(songitem.track.id)),
                 'panel_divider'
             )
         ]

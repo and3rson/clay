@@ -184,7 +184,7 @@ class MPRIS2:
             return {}
 
         return {
-            'mpris:trackid': Variant('o', '/org/clay/' + str(track.store_id)),
+            'mpris:trackid': Variant('o', '/org/clay/' + str(track.id)),
             'mpris:artUrl': Variant('s', track.artist_art_url),
             'xesam:title': Variant('s', track.title),
             'xesam:artist': Variant('s', track.artist.name),

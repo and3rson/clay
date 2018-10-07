@@ -244,7 +244,7 @@ class _GP(object):
         Return track by id or store_id.
         """
         for track in self.cached_tracks:
-            if any_id in (track.library_id, track.store_id, track.playlist_item_id):
+            if any_id in (track.id_, track.nid, track.store_id):
                 return track
         return None
 

@@ -92,13 +92,13 @@ class MPVPlayer(AbstractPlayer):
             path = settings_manager.get_cached_file_path(track.filename)
 
             if path is None:
-                logger.debug('Track %s not in cache, downloading...', track.store_id)
+                logger.debug('Track %s not in cache, downloading...', track.id)
                 track.get_url(callback=self._download_track)
             else:
-                logger.debug('Track %s in cache, playing', track.store_id)
+                logger.debug('Track %s in cache, playing', track.id)
                 self._play_ready(path, None, track)
         else:
-            logger.debug('Starting to stream %s', track.store_id)
+            logger.debug('Starting to stream %s', track.id)
             track.get_url(callback=self._play_ready)
 
     def _play_ready(self, url, error, track):
@@ -267,4 +267,3 @@ class MPVPlayer(AbstractPlayer):
         Mutes or unmutes the volume
         """
         self.media_player.mute = not self.media_player.mute
-

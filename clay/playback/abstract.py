@@ -282,7 +282,7 @@ class AbstractPlayer:
 
         response = urlopen(url)
         path = settings_manager.save_file_to_cache(track.filename, response.read())
-        self._ready_track(path, None, track)
+        self._play_ready(path, None, track)
 
     @property
     def loading(self):
