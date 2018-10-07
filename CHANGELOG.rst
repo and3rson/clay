@@ -14,6 +14,7 @@ TBA
 * Rework of the internals
 * Enter appending songs in library or search view
 * Dropping of x keybinds
+* Add playcount incrementation (by @vale981)
 * Fix #37: clay crashing without a running notification daemon (by @agg23)
 * Fix #38: no tracks displaying (by @agg3)
 * Fix #43: queue doesn't move to the next track (by @agg23)

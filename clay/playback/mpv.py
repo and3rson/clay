@@ -43,6 +43,7 @@ class MPVPlayer(AbstractPlayer):
         Advances to the next track.
         """
         if value:
+            self.queue.get_current_track().increment_playcount()
             self.next()
 
     def _media_position_changed(self, *_):

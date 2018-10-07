@@ -60,6 +60,9 @@ def asynchronous(func):
         callback = kwargs.pop('callback')
         extra = kwargs.pop('extra', dict())
 
+        if callback is None:
+            callback = lambda *_, **__: None
+
         def process():
             """
             Thread body.

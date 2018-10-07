@@ -240,6 +240,7 @@ Regards to [gmusicapi] and [VLC] who made this possible.
 People who contribute to this project:
 
 - [@ValentijnvdBeek (Valentijn)](https://github.com/ValentijnvdBeek)
+- [@Vale981 (Valentin Boettcher)](https://github.com/vale981)
 - [@Fluctuz](https://github.com/Fluctuz)
 - [@sjkingo (Sam Kingston)](https://github.com/sjkingo)
 - [@agg23 (Adam Gastineau)](https://github.com/agg23)

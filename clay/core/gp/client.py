@@ -192,6 +192,20 @@ class _GP(object):
 
     get_stream_url_async = asynchronous(get_stream_url)
 
+    def increment_song_playcount(self, track_id):
+        """
+        increments the playcount of a song with a given `track_id` by one
+
+        Args:
+           track_id (`int`): The track id of the song to increment the playcount
+
+        Returns:
+           Nothing
+        """
+        gp.mobile_client.increment_song_playcount(track_id)
+
+    increment_song_playcount_async = asynchronous(increment_song_playcount)
+
     @synchronized
     def get_all_user_station_contents(self, **_):
         """
