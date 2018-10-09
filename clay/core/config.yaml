@@ -1,14 +1,14 @@
 #: pylint:skip-file
 hotkeys:
   global:
-    seek_start: q
+    seek_start: s
     play_pause: p
     seek_backward: shift + left
     seek_forward: shift + right
     quit: x
     toggle_shuffle: r
-    prev_song: n
-    next_song: m
+    prev_song: q
+    next_song: e
     toggle_repeat_one: o
     handle_escape: esc, mod + _
     show_debug: '0'

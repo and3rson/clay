@@ -23,7 +23,6 @@ class PlaylistListBox(AbstractListBox):
             self.walker[:] = [
                 urwid.Text(u'\n \uf01e Loading playlists...', align='center')
             ]
-
             gp.get_all_user_playlist_contents_async(callback=self.populate)
 
 class PlaylistsPage(urwid.Columns, AbstractPage):

@@ -49,11 +49,11 @@ class _GP(object):
         #     self.debug_file = open('/tmp/clay-api-log.json', 'w')
         #     self._last_call_index = 0
         self.cached_tracks = None
-        self.cached_liked_songs = LikedSongs()
         self.cached_playlists = None
         self.cached_stations = None
         self.cached_artists = {}
         self.cached_albums = {}
+        self.liked_songs = LikedSongs()
 
         self.invalidate_caches()
 
@@ -232,7 +232,7 @@ class _GP(object):
         Return list of :class:`.Playlist` instances.
         """
         if self.cached_playlists:
-            return [self.cached_liked_songs] + self.cached_playlists
+            return self.cached_playlists
 
         self.get_all_tracks()
 
@@ -240,11 +240,21 @@ class _GP(object):
             self.mobile_client.get_all_user_playlist_contents(),
             True
         )
-        return [self.cached_liked_songs] + self.cached_playlists
+        self.refresh_liked_songs()
+        self.cached_playlists.insert(0, self.liked_songs)
+        return self.cached_playlists
 
     get_all_user_playlist_contents_async = (  # pylint: disable=invalid-name
         asynchronous(get_all_user_playlist_contents)
     )
+
+    def refresh_liked_songs(self, **_):
+        """
+        Refresh the liked songs playlist
+        """
+        self.liked_songs.refresh_tracks(self.mobile_client.get_promoted_songs())
+
+    refresh_liked_songs_async = asynchronous(refresh_liked_songs)
 
     def get_cached_tracks_map(self):
         """

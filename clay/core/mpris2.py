@@ -185,9 +185,9 @@ class MPRIS2:
 
         return {
             'mpris:trackid': Variant('o', '/org/clay/' + str(track.id)),
-            'mpris:artUrl': Variant('s', track.artist_art_url),
+            'mpris:artUrl': Variant('s', track.artist_art_url ),
             'xesam:title': Variant('s', track.title),
-            'xesam:artist': Variant('s', track.artist.name),
+            'xesam:artist': Variant('s', track.artist),
             'xesam:album': Variant('s', track.album_name),
             'xesam:url': Variant('s', track.cached_url),
         }

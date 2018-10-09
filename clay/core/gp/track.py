@@ -78,17 +78,19 @@ class Track(object):
         self.rating = int(data.get('rating', 0))
         self.source = source
         self.cached_url = None
-        self.artist_art_url = None
+        self.artist_art_url = ''
         self.artist_art_filename = None
         if artist_art_ref is not None:
             self.artist_art_url = artist_art_ref['url']
             self.artist_art_filename = sha1(
                 self.artist_art_url.encode('utf-8')
             ).hexdigest() + u'.jpg'
-        self.explicit_rating = int(data.get('explicitType',0))
+        self.explicit_rating = int(data.get('explicitType', 0))
 
-        if self.rating == 5:
-            client.gp.cached_liked_songs.add_liked_song(self)
+        # Songs that are uploaded are not send in the promoted_songs
+        # call so we need to manually add them.
+        if self.store_id is None and 'lastRatingChangeTimestamp'  in data:
+            client.gp.liked_songs.add_liked_song(self)
 
         # User uploaded songs miss a store_id
         self.album_name = data['album']
@@ -253,9 +255,8 @@ class Track(object):
         """
         self.original_data['rating'] = rating
         self.rating = rating
-
-        if rating == 5:
-            client.gp.cached_liked_songs.add_liked_song(self)
+        client.gp.mobile_client.rate_songs(self.original_data, rating)
+        client.gp.refresh_liked_songs()
 
     def __repr__(self):
         return u'<Track "{} - {}" from {}>'.format(

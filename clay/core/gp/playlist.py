@@ -16,6 +16,7 @@
 """
 This file contains the classes and methods for dealing with Google Play Playlists
 """
+from . import client
 from .utils import Source
 from .track import Track
 
@@ -63,35 +64,39 @@ class LikedSongs(object):
     def __init__(self):
         self._id = None  # pylint: disable=invalid-name
         self.name = "Liked Songs"
+        self._uploaded_tracks = []  # uploaded songs
         self._tracks = []
         self._sorted = False
 
-    def __str__(self):
-        return "{} ({})".format(self.name, len(self._tracks))
+    def refresh_tracks(self, tracks):
+        """
+        Calls the Google Music API to get the liked songs already in the store.
+        """
+        self._tracks = self._uploaded_tracks + Track.from_data(tracks, None, True)
 
     @property
     def tracks(self):
         """
-        Get a sorted list of liked tracks.
+        Return the tracks
         """
-        if self._sorted:
-            tracks = self._tracks
-        else:
+        if not self._sorted:
             self._tracks.sort(key=lambda k: k.original_data.get('lastRatingChangeTimestamp', '0'),
                               reverse=True)
             self._sorted = True
-            tracks = self._tracks
 
-        return tracks
-
+        return self._tracks
+#
     def add_liked_song(self, song):
         """
-        Add a liked song to the list.
-        """
-        self._tracks.insert(0, song)
+        Add an uploaded song the liked songs playlist
 
-    def remove_liked_song(self, song):
+        Args:
+          song (`core.gp.track.Track`): The song to add to the playlist
+
+        Returns:
+          Nothing
         """
-        Remove a liked song from the list
-        """
-        self._tracks.remove(song)
+        self._uploaded_tracks.insert(0, song)
+
+    def __str__(self):
+        return "{} ({})".format(self.name, len(self.tracks))
