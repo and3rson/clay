@@ -1,10 +1,11 @@
 <node>
   <interface name="org.mpris.MediaPlayer2.TrackList">
-    <property name="Tracks" type="oa" access="read"/>
+    <property name="Tracks" type="ao" access="read"/>
     <property name="CanEditTracks" type="b" access="read"/>
 
     <method name="GetTracksMetadata">
       <arg type="ao" direction="in"/>
+      <arg type="aa{sv}" name="tracks" direction="out"/>
     </method>
 
     <method name="AddTrack">
@@ -20,5 +21,24 @@
     <method name="GoTo">
       <arg type="o" direction="in"/>
     </method>
+
+    <signal name="TrackListReplaced">
+      <arg type="ao" direction="out"/>
+      <arg type="o" direction="out"/>
+    </signal>
+
+    <signal name="TrackAdded">
+      <arg type="a{sv}" direction="out"/>
+      <arg type="o" direction="out"/>
+    </signal>
+
+    <signal name="TrackRemoved">
+      <arg type="o" direction="out"/>
+    </signal>
+
+    <signal name="TrackMetadataChanged">
+      <arg type="o" direction="out"/>
+      <arg type="a{sv}" direction="out"/>
+    </signal>
   </interface>
 </node>

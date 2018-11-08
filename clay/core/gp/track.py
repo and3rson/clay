@@ -76,10 +76,12 @@ class Track(object):
         #self.artist = client.gp.add_artist(data['artistId'][0])
         self.duration = int(data['durationMillis'])
         self.rating = int(data.get('rating', 0))
+        self.queue_id = None
         self.source = source
         self.cached_url = None
         self.artist_art_url = ''
         self.artist_art_filename = None
+
         if artist_art_ref is not None:
             self.artist_art_url = artist_art_ref['url']
             self.artist_art_filename = sha1(
@@ -121,7 +123,7 @@ class Track(object):
         return self.id + '.mp3'
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and self.queue_id == other.queue_id
 
     @classmethod
     def from_data(cls, data, source, many=False):
@@ -195,7 +197,7 @@ class Track(object):
         Return artist art filename, None if this track doesn't have any.
         Downloads if necessary.
         """
-        if self.artist_art_url is None:
+        if self.artist_art_url == '':
             return None
 
         if not settings_manager.get_is_file_cached(self.artist_art_filename):

@@ -7,6 +7,7 @@ import urwid
 from clay.core import gp
 from clay.ui.urwid import hotkey_manager, notification_area
 
+
 class AbstractPage(object):
     """
     Represents app page.
@@ -38,6 +39,7 @@ class AbstractPage(object):
         """
         raise NotImplementedError()
 
+
 class AbstractListItem(urwid.Columns):
     signals = ['activate']
 
@@ -54,6 +56,7 @@ class AbstractListItem(urwid.Columns):
 
     def activate(self):
         urwid.emit_signal(self, 'activate', self._value)
+
 
 class AbstractListBox(urwid.ListBox):
     signals = ['activate']

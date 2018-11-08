@@ -163,12 +163,12 @@ class VLCPlayer(AbstractPlayer):
         If *error* is ``None``, tell libVLC to play media by *url*.
         """
         self._loading = False
+
         if error:
             #notification_area.notify('Failed to request media URL: {}'.format(str(error)))
             logger.error(
-                'Failed to request media URL for track %s: %s',
-                track.original_data,
-                str(error)
+                'Failed to request media URL (%s) for track %s: %s',
+                url, track.original_data, str(error)
             )
             return
         assert track

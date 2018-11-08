@@ -5,7 +5,8 @@ Copyright (c) 2018, Valentijn van de Beek
 """
 from random import randint
 import json
-import os
+from copy import copy
+from uuid import uuid1
 
 try:  # Python 3.x
     from urllib.request import urlopen
@@ -40,10 +41,31 @@ class _Queue(object):
 
         *current_track_index* can be either ``None`` or ``int`` (zero-indexed).
         """
-        self.tracks = tracks[:]
+        self.tracks = []
+        for track in tracks:
+            track = copy(track)
+            track.queue_id = '/org/clay/queue/' + str(uuid1().hex[:6])
+            self.tracks.append(track)
+
         if (current_track_index is None) and self.tracks:
             current_track_index = 0
+        mpris2.mpris2_manager.TrackListReplaced.emit([track.queue_id for track in self.tracks],
+                                                     self.tracks[current_track_index].queue_id)
         self.current_track_index = current_track_index
+
+    def goto_track(self, target):
+        """
+        Goto a specific track in the queue
+
+        Args:
+           target (`clay.core.gp.Track`): The track you want to goto
+        """
+        if self.current_track_index is None:
+            self.current_track_index = 0
+
+        for index, track in enumerate(self.tracks):
+            if track == target:
+                self.current_track_index = index
 
     def append(self, track):
         """
@@ -51,6 +73,16 @@ class _Queue(object):
         """
         #if self.current_track_index is None:
             #self.current_track_index = 0
+        track = copy(track)
+        track.queue_id = '/org/clay/queue/' + str(uuid1().hex[:6])
+
+        if self.tracks == []:
+            mpris2.mpris2_manager.TrackAdded.emit(mpris2.mpris2_manager.get_metadata(track),
+                                                  mpris2.mpris2_manager.notrack)
+        else:
+            mpris2.mpris2_manager.TrackAdded.emit(mpris2.mpris2_manager.get_metadata(track),
+                                                  self.tracks[-1].queue_id)
+
         self.tracks.append(track)
 
     def remove(self, track):
@@ -62,6 +94,7 @@ class _Queue(object):
 
         index = self.tracks.index(track)
         self.tracks.remove(track)
+        mpris2.mpris2_manager.TrackRemoved.emit(track.queue_id)
         if self.current_track_index is None:
             return
         if index < self.current_track_index:
@@ -133,6 +166,7 @@ class _Queue(object):
         """
         return self.tracks
 
+
 class AbstractPlayer:
     """
     Defines the basic functions used by every player.
@@ -191,6 +225,14 @@ class AbstractPlayer:
         See :meth:`._Queue.load`
         """
         self.queue.load(data, current_index)
+        self.queue_changed.fire()
+        self.play()
+
+    def goto_track(self, track):
+        """
+        Go to a specific track in the queue
+        """
+        self.queue.goto_track(track)
         self.queue_changed.fire()
         self.play()
 

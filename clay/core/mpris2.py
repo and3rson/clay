@@ -18,10 +18,32 @@ class MPRIS2:
     """
     An object that defines and implements the MPRIS2 protocol for Clay
     """
+    notrack = '/org/mpris/MediaPlayer2/TrackList/NoTrack'
+
     def __init__(self):
         self._stopped = False
 
-    # MediaPlayer2 interface
+    @staticmethod
+    def get_metadata(track):
+        """
+        Returns the metadata for a specific track
+        """
+        if not track:
+            return {'mpris:trackid': Variant('s', MPRIS2TrackList.notrack),
+                    'mpris:artUrl': Variant('s', "file://"),
+                    'mpris:title': Variant('s', 'None'),
+                    'mpris:artist': Variant('s', 'None'),
+                    'mpris:album': Variant('s', 'None'),
+                    'mpris:url': Variant('s', 'https://')}
+        else:
+            return {'mpris:trackid': Variant('s', track.queue_id),
+                    'mpris:artUrl': Variant('s', track.artist_art_url),
+                    'xesam:title': Variant('s', track.title),
+                    'xesam:artist': Variant('s', track.artist),
+                    'xesam:album': Variant('s', track.album_name),
+                    'xesam:url': Variant('s', track.cached_url if track.cached_url else 'https://')}
+
+    # The following is an implementation of the MediaPlayer2 interface
     def Raise(self):
         pass
 
@@ -70,7 +92,10 @@ class MPRIS2:
     def SupportedUriSchemes(self):
         return []
 
-    # MediaPlayer2 Player interface
+    ####################################################################
+    # The following is an implementation of the MPRIS2 Player Protocol #
+    ####################################################################
+
     def Next(self):
         """
         Goes to the next song in the queue.
@@ -184,8 +209,8 @@ class MPRIS2:
             return {}
 
         return {
-            'mpris:trackid': Variant('o', '/org/clay/' + str(track.id)),
-            'mpris:artUrl': Variant('s', track.artist_art_url ),
+            'mpris:trackid': Variant('o', '/org/clay/tracks/' + str(track.id)),
+            'mpris:artUrl': Variant('s', track.artist_art_url),
             'xesam:title': Variant('s', track.title),
             'xesam:artist': Variant('s', track.artist),
             'xesam:album': Variant('s', track.album_name),
@@ -206,7 +231,7 @@ class MPRIS2:
 
     @property
     def CanGoPrevious(self):
-        #TODO fix
+        # TODO fix
         return len(player.queue.get_tracks()) > 1
 
     @property
@@ -245,6 +270,88 @@ class MPRIS2:
         """
         player.mute()
 
+    ######################################################
+    # An implementation of the MPRIS2 tracklist protocol #
+    ######################################################
+
+    def GetTracksMetadata(self, track_ids):
+        """
+        Gets all the metadata avaliable for a set of tracks.
+        """
+        queue = player.get_queue_tracks()
+
+        if queue == [] or track_ids == []:
+            return [{}]
+
+        return [self.get_metadata(track_ids) for track in queue
+                if track.queue_id in track_ids]
+
+    def AddTrack(uri, after_track, set_as_current):
+        """!!Warning!!
+
+        This method doesn't do anything since it doesn't make any
+        sense in the context of Clay.
+        """
+        pass
+
+    def RemoveTrack(self, track_id):
+        """
+        Removes track from the current queue
+        """
+        if track_id == self.notrack:
+            return
+
+        track_id = track_id[16:]
+        tracks = player.get_queue_tracks()
+
+        for track in tracks:
+            if track_id == track.queue_id:
+                player.remove_from_queue(track)
+                return
+
+    def GoTo(self, track_id):
+        """
+        Skip to the specified track to skip to.
+
+        If the track is not in the queue it does nothing.
+        """
+        if track_id == self.notrack:
+            return
+
+        track_id = track_id[16:]
+        tracks = player.get_queue_tracks()
+
+        for index, track in enumerate(tracks):
+            if track_id == track.queue_id:
+                player.load_queue(tracks, index)
+
+    TrackListReplaced = signal()
+    TrackAdded = signal()
+    TrackRemoved = signal()
+    TrackMetadataChanged = signal()
+
+    @property
+    def Tracks(self):
+        """
+        A property which returns only the queue ids
+        """
+        tracks = player.get_queue_tracks()
+
+        if tracks == []:
+            return [self.notrack]
+        else:
+            return [track.queue_id for track in tracks]
+
+    def CanEditTracks(self):
+        """
+        If this is false, calling AddTrack or RemoveTrack will have no effect.
+        """
+        return True
+
+    ##################################################################################
+    # Extensions to the MPRIS2 protocol for extra features or idiosyncronies of Clay. #
+    ##################################################################################
+
     @property
     def Rating(self):
         """
@@ -278,16 +385,23 @@ class MPRIS2:
         else:
             return track.explicit_rating != 0
 
+
+def load_xml(name):
+    return pkg_resources.resource_string(__name__, "mpris/org.mpris.MediaPlayer2" + name + ".xml")\
+        .decode("utf-8")
+
+
 bus = SessionBus()
-MPRIS2.dbus = [pkg_resources.resource_string(__name__, "mpris/org.mpris.MediaPlayer2" +name+ ".xml")
-               .decode("utf-8")
-               for name in ("", ".Player", ".Playlists", ".TrackList")]
+MPRIS2.dbus = [load_xml(file_) for file_ in ["", ".Player", ".TrackList", ".Playlists"]]
 mpris2_manager = MPRIS2()
 
 try:
-
     bus.publish("org.mpris.MediaPlayer2.clay", mpris2_manager,
-                ('/org/mpris/MediaPlayer2', mpris2_manager))
+                ('/org/mpris/MediaPlayer2', mpris2_manager),
+                ('/org/mpris/MediaPlayer2/Player', mpris2_manager),
+                ('/org/mpris/MediaPlayer2/TrackList', mpris2_manager))
+             #   ('Clay', clay))
+
 except RuntimeError as e:
     print(e)
     print("An another instance of Clay is already running so we can't start MPRIS2")

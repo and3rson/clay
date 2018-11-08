@@ -25,6 +25,7 @@ from .clipboard import copy
 
 player = get_player()  # pylint: disable=invalid-name
 
+
 class SongListItem(urwid.Pile):
     """
     Widget that represents single song item.
@@ -579,10 +580,12 @@ class SongListBox(urwid.Frame):
 
         if songitem.is_currently_played:
             player.play_pause()
+        elif page.slug == 'queue':
+            player.goto_track(songitem.track)
         # There are some pages like search library where overwriting the queue
         # doesn't make much sense. We can also assume that someone searching
         # for a specific song also wants to append.
-        elif (page.append or hotkey_manager.filtering) and page.slug != 'queue':
+        elif page.append or hotkey_manager.filtering:
             self.item_append_requested(songitem)
         else:
             player.load_queue(self.tracks, songitem.index)
