@@ -69,6 +69,7 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - lib[VLC] (native, distributed with VLC player) OR libMPV (native, distributed with MPV)
 - [setproctitle] (optional) PyPI, used to change clay process name from 'python' to 'clay')
 - [pydbus] (PyPI)
+- [Pillow] (PyPI, optional) used to resize album art before displaying it in notifications
 
 # What works
 - Audio equalizer
@@ -254,3 +255,4 @@ People who contribute to this project:
 [Keybinder]: https://github.com/kupferlauncher/keybinder
 [setproctitle]: https://pypi.org/project/setproctitle/
 [pydbus]: https://github.com/LEW21/pydbus
+[Pillow]: https://pillow.readthedocs.io/en/5.3.x/
