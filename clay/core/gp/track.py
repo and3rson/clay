@@ -23,13 +23,13 @@ except ImportError:
 
 from urllib.request import urlopen
 from io import BytesIO
-from uuid import UUID
 from hashlib import sha1
+from uuid import UUID
 
 from clay.core.settings import settings_manager
 from clay.core.log import logger
 from . import station, client
-from .utils import synchronized, asynchronous, Type, Source
+from .utils import synchronized, asynchronous, Source
 
 
 class Track(object):
@@ -60,20 +60,14 @@ class Track(object):
         self.genre = data.get('genre', '')
         self.play_count = data.get('playCount')
 
-        if 'artistId' in data and data['artistId'] != "" and source == Source.library:
-            if 'albumArtist' not in data or data['albumArtist'] == "":
-                self.album_artist = client.gp.add_artist(data['artistId'][0], data['artist'])
+        if source == Source.library:
+            name = (data['albumArtist'] if data['albumArtist'] != '' else self.artist)
 
-            self.album_artist = client.gp.add_artist(data['artistId'][0], data['albumArtist'])
-        #elif source == Source.library:
-         #   import sys
-          #  print(data['artist'], file=sys.stderr)
-         #   self.album_artist = client.gp.add_artist(data.get('albumArtist', self.artist))
+            if 'artistId' in data and data['artistId'] != "":
+                self.album_artist = client.gp.add_artist(data['artistId'][0], name)
+            else:
+                self.album_artist = client.gp.add_artist(None, name)
 
-        # TODO: How to deal with uploaded music
-            # client.gp.add_artist(UUID().hex, data['artist'])
-
-        #self.artist = client.gp.add_artist(data['artistId'][0])
         self.duration = int(data['durationMillis'])
         self.rating = int(data.get('rating', 0))
         self.queue_id = None
@@ -91,15 +85,18 @@ class Track(object):
 
         # Songs that are uploaded are not send in the promoted_songs
         # call so we need to manually add them.
-        if self.store_id is None and 'lastRatingChangeTimestamp'  in data:
+        if self.store_id is None and 'lastRatingChangeTimestamp' in data:
             client.gp.liked_songs.add_liked_song(self)
 
         # User uploaded songs miss a store_id
-        self.album_name = data['album']
+        self.album_name = data.get('album', '')
+        self.album_id = data.get('albumId', '')
         self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
 
-        self.original_data = data
+        if source == Source.library:
+            client.gp.add_album_song(self.album_name, self.album_name, self)
 
+        self.original_data = data
 
     @property
     def id(self):  # pylint: disable=invalid-name

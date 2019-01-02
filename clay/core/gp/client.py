@@ -22,6 +22,7 @@ from clay.core import EventHook
 from clay.core.log import logger
 
 from .artist import Artist
+from .album import Album
 from .track import Track
 from .playlist import Playlist, LikedSongs
 from .station import Station, IFLStation
@@ -101,8 +102,8 @@ class _GP(object):
         """
         self.mobile_client.logout()
         self.invalidate_caches()
-        # prev_auth_state = self.is_authenticated
         result = self.mobile_client.login(email, password, device_id)
+        # prev_auth_state = self.is_authenticated
         # if prev_auth_state != self.is_authenticated:
         self.auth_state_changed.fire(self.is_authenticated)
         return result
@@ -122,6 +123,27 @@ class _GP(object):
         Get album tracks
         """
         return self.mobile_client.get_album_info(album_id, include_tracks=True)['tracks']
+
+    @synchronized
+    def add_album_song(self, id_, album_name, track):
+        """
+        Adds an album to an artist and adds the specified track to it
+
+        Args:
+            id_ (`str`): the album ID (currently the same as the album title)
+            album_name (`str`): the name of the album
+            track (`clay.gp.Track`): the track in the album
+        """
+        if album_name == '':
+            id_ = track.artist
+            album_name = "Unknown Album"
+
+        if id_ not in self.cached_albums:
+            self.cached_albums[id_] = Album(track.album_artist, {'albumId': id_, 'name': album_name})
+
+        self.cached_albums[id_].add_track(track)
+
+        return self.cached_albums[id_]
 
     @synchronized
     def add_artist(self, artist_id, name):

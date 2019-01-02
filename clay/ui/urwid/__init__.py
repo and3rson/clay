@@ -58,6 +58,7 @@ class AppWidget(urwid.Frame):
             DebugPage(self),
             LibraryPage(self),
             ArtistsPage(self),
+            AlbumsPage(self),
             StationsPage(self),
             PlaylistsPage(self),
             SearchPage(self),
@@ -233,6 +234,10 @@ class AppWidget(urwid.Frame):
     def show_artists(self):
         """ Show artist page"""
         self.set_page('artists')
+
+    def show_albums(self):
+        """Show album page"""
+        self.set_page('albums')
 
     def show_playlists(self):
         """ Show playlists page. """

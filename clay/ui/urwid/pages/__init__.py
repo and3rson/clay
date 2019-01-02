@@ -6,3 +6,4 @@ from .stations import StationsPage
 from .playerqueue import QueuePage
 from .search import SearchPage
 from .settings import SettingsPage
+from .album import AlbumsPage

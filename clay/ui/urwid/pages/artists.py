@@ -7,6 +7,7 @@ from .page import AbstractPage, AbstractListItem, AbstractListBox
 from clay.core import gp
 from clay.ui.urwid import SongListBox, hotkey_manager
 
+
 class ArtistListBox(AbstractListBox):
     def populate(self, artists):
         items = []
@@ -17,6 +18,7 @@ class ArtistListBox(AbstractListBox):
         self.walker[:] = items
         self.app.redraw()
 
+
 class AlbumListBox(AbstractListBox):
     def populate(self, albums):
         items = []
@@ -26,6 +28,7 @@ class AlbumListBox(AbstractListBox):
             items.append(album)
         self.walker[:] = items
         self.app.redraw()
+
 
 class ArtistsPage(urwid.Columns, AbstractPage):
     """

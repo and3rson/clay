@@ -651,7 +651,8 @@ class SongListBox(urwid.Frame):
         for i, songitem in enumerate(self.walker):
             if isinstance(songitem, urwid.Text):
                 continue
-            if songitem.track == track:
+            if songitem.track == track or \
+               (self.app.current_page.slug != 'queue' and songitem.track.id is track.id):
                 songitem.set_state(SongListItem.STATE_LOADING)
                 self.walker.set_focus(i)
             elif songitem.state != SongListItem.STATE_IDLE:

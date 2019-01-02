@@ -14,10 +14,11 @@ hotkeys:
     show_debug: '0'
     show_library: '1'
     show_artists: '2'
-    show_stations: '3'
-    show_playlists: '4'
-    show_search: '5'
-    show_queue: '6'
+    show_albums: '3'
+    show_stations: '4'
+    show_playlists: '5'
+    show_search: '6'
+    show_queue: '7'
     show_settings: '9'
 
   song_item:
@@ -51,7 +52,7 @@ hotkeys:
 clay_settings:
   mod_key: ctrl
   unicode: true
-  player_class: clay.playback.vlc:VLCPlayer
+  player_class: clay.playback.mpv:MPVPlayer
 
 play_settings:
   authtoken:

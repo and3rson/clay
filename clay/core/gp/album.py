@@ -20,6 +20,7 @@ from . import client
 from .track import Track
 from .utils import Source
 
+
 class Album(object):
     """
     A model that represents Google Play Music albums
@@ -41,6 +42,15 @@ class Album(object):
     def __lt__(self, other):
         return self.name < other.name
 
+    def add_track(self, track):
+        """
+        Adds an track to the album
+        """
+        if self._tracks is None:
+            self._tracks = []
+
+        self._tracks.append(track)
+
     @property
     def tracks(self):
         """
@@ -54,6 +64,7 @@ class Album(object):
                                            Source.album,
                                            many=True)
         return self._tracks
+
 
 class AllSongs(Album):
     """
@@ -90,5 +101,5 @@ class TopSongs(Album):
         self.artist = artist
         self.icon = '\u2605'
         self.year = 2018  # TODO
-        self.album_url = None # TODO
+        self.album_url = None  # TODO
         self.name = "Top Songs"

@@ -42,7 +42,7 @@ class StationsPage(urwid.Columns, AbstractPage):
 
     @property
     def key(self):
-        return 3
+        return 4
 
     @property
     def slug(self):

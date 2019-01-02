@@ -29,7 +29,7 @@ class MPRIS2:
         Returns the metadata for a specific track
         """
         if not track:
-            return {'mpris:trackid': Variant('s', MPRIS2TrackList.notrack),
+            return {'mpris:trackid': Variant('s', MPRIS2.notrack),
                     'mpris:artUrl': Variant('s', "file://"),
                     'mpris:title': Variant('s', 'None'),
                     'mpris:artist': Variant('s', 'None'),

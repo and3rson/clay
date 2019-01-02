@@ -21,7 +21,7 @@ class QueuePage(urwid.Columns, AbstractPage):
 
     @property
     def key(self):
-        return 6
+        return 7
 
     @property
     def slug(self):

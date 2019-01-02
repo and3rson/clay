@@ -21,6 +21,7 @@ from .track import Track
 from .album import Album, AllSongs, TopSongs
 from .utils import Source
 
+
 class Artist(object):
     """
     Model that represents an artist.
@@ -28,7 +29,7 @@ class Artist(object):
     def __init__(self, artist_id, name):
         self._id = artist_id
         self._original_data = None
-        self._albums = None
+        self._albums = []
         self.name = name
 
     def __str__(self):
@@ -42,6 +43,9 @@ class Artist(object):
         """
         Return the albums by an artist
         """
+        if self._id is None:
+            return
+
         if self._original_data is None:
             self._original_data = client.gp.get_artist_info(self._id)
             albums = [Album(self, album) for album in self._original_data['albums']]
@@ -51,7 +55,6 @@ class Artist(object):
                                                             Source.album, many=True)))
 
             self._albums = albums
-
         return self._albums  #: Warning: passes by reference for efficiency
 
     @property

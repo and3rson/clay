@@ -16,9 +16,9 @@
 """
 This file contains the classes and methods for dealing with Google Play Playlists
 """
-from . import client
 from .utils import Source
 from .track import Track
+
 
 class Playlist(object):
     """
@@ -85,7 +85,7 @@ class LikedSongs(object):
             self._sorted = True
 
         return self._tracks
-#
+
     def add_liked_song(self, song):
         """
         Add an uploaded song the liked songs playlist

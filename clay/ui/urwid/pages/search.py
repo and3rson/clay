@@ -60,7 +60,7 @@ class SearchPage(urwid.Pile, AbstractPage):
 
     @property
     def key(self):
-        return 5
+        return 6
 
     @property
     def slug(self):
