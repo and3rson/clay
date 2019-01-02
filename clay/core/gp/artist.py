@@ -29,7 +29,8 @@ class Artist(object):
     def __init__(self, artist_id, name):
         self._id = artist_id
         self._original_data = None
-        self._albums = []
+        self._store_albums = []
+        self._library_albums = []
         self.name = name
 
     def __str__(self):
@@ -38,24 +39,49 @@ class Artist(object):
     def __lt__(self, other):
         return self.name < other.name
 
+    def add_album(self, album):
+        """
+        Adds a library added album to the artist.
+
+        Args:
+            album (`clay.gp.Album`): The album you want add
+        """
+        if album in self._library_albums:
+            return
+
+        self._library_albums.append(album)
+
+    def load_store_albums(self):
+        """
+        Fetch all albums that Google Music knows for this artist
+        """
+        # don't waste any time fetching the albums if we already loaded them
+        if self._original_data is not None:
+            return
+
+        self._original_data = client.gp.get_artist_info(self._id)
+
+        # Some uploaded artists have an artistId but don't have any associated albums
+        if 'albums' not in self._original_data:
+            return
+
+        albums = [Album(self, album) for album in self._original_data['albums']]
+        albums.sort()
+        albums.insert(0, AllSongs(self, albums.copy()))
+        albums.insert(0, TopSongs(self, Track.from_data(self._original_data['topTracks'],
+                                                        Source.album, many=True)))
+
+        self._store_albums = albums
+
     @property
     def albums(self):
         """
         Return the albums by an artist
         """
         if self._id is None:
-            return
+            return self._library_albums
 
-        if self._original_data is None:
-            self._original_data = client.gp.get_artist_info(self._id)
-            albums = [Album(self, album) for album in self._original_data['albums']]
-            albums.sort()
-            albums.insert(0, AllSongs(self, albums.copy()))
-            albums.insert(0, TopSongs(self, Track.from_data(self._original_data['topTracks'],
-                                                            Source.album, many=True)))
-
-            self._albums = albums
-        return self._albums  #: Warning: passes by reference for efficiency
+        return self._store_albums + self._library_albums  #: Warning: passes by reference for efficiency
 
     @property
     def id(self):  # pylint: disable=invalid-name

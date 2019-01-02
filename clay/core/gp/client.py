@@ -156,6 +156,7 @@ class _GP(object):
         Returns:
            The artist class
         """
+        name = ("Unknown Artist" if name == '' else name)
         lname = name.lower()
         if lname not in self.cached_artists:
             self.cached_artists[lname] = Artist(artist_id, name)

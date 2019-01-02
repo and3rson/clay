@@ -65,7 +65,8 @@ class ArtistsPage(urwid.Columns, AbstractPage):
         super(ArtistsPage, self).__init__([self.artistlist, self.albumlist, self.songlist])
 
     def item_activated(self, artist):
-        self.albumlist.populate(artist.albums)
+        if artist.albums is not None:
+            self.albumlist.populate(artist.albums)
 
     def activate(self):
         self.artistlist.populate(gp.cached_artists)

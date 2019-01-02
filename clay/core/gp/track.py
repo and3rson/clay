@@ -60,6 +60,11 @@ class Track(object):
         self.genre = data.get('genre', '')
         self.play_count = data.get('playCount')
 
+        # User uploaded songs miss a store_id
+        self.album_name = data.get('album', '')
+        self.album_id = data.get('albumId', '')
+        self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
+
         if source == Source.library:
             name = (data['albumArtist'] if data['albumArtist'] != '' else self.artist)
 
@@ -67,6 +72,9 @@ class Track(object):
                 self.album_artist = client.gp.add_artist(data['artistId'][0], name)
             else:
                 self.album_artist = client.gp.add_artist(None, name)
+
+            album = client.gp.add_album_song(self.album_name, self.album_name, self)
+            self.album_artist.add_album(album)
 
         self.duration = int(data['durationMillis'])
         self.rating = int(data.get('rating', 0))
@@ -87,14 +95,6 @@ class Track(object):
         # call so we need to manually add them.
         if self.store_id is None and 'lastRatingChangeTimestamp' in data:
             client.gp.liked_songs.add_liked_song(self)
-
-        # User uploaded songs miss a store_id
-        self.album_name = data.get('album', '')
-        self.album_id = data.get('albumId', '')
-        self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
-
-        if source == Source.library:
-            client.gp.add_album_song(self.album_name, self.album_name, self)
 
         self.original_data = data
 
