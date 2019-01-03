@@ -79,15 +79,18 @@ class AllSongs(Album):
         self.album_url = None  # TODO
         self.name = "All Songs"
         self._tracks = None
+        self.refresh = False
 
     @property
     def tracks(self):
         # Could this be done faster?
-        if self._tracks is None:
+        if self._tracks is None or self.refresh:
+            print(self._albums)
             tracks = []
             for album in self._albums:
                 tracks += album.tracks
             self._tracks = tracks
+            self.refresh = False
         return self._tracks
 
 

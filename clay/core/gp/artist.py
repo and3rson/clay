@@ -20,6 +20,7 @@ from . import client
 from .track import Track
 from .album import Album, AllSongs, TopSongs
 from .utils import Source
+from itertools import chain
 
 
 class Artist(object):
@@ -31,6 +32,7 @@ class Artist(object):
         self._original_data = None
         self._store_albums = []
         self._library_albums = []
+        self._special_albums = [AllSongs(self, chain(self._store_albums, self._library_albums)), None]
         self.name = name
 
     def __str__(self):
@@ -56,22 +58,17 @@ class Artist(object):
         Fetch all albums that Google Music knows for this artist
         """
         # don't waste any time fetching the albums if we already loaded them
-        if self._original_data is not None:
+        if self._store_albums == []:
             return
-
-        self._original_data = client.gp.get_artist_info(self._id)
 
         # Some uploaded artists have an artistId but don't have any associated albums
         if 'albums' not in self._original_data:
             return
 
-        albums = [Album(self, album) for album in self._original_data['albums']]
-        albums.sort()
-        albums.insert(0, AllSongs(self, albums.copy()))
-        albums.insert(0, TopSongs(self, Track.from_data(self._original_data['topTracks'],
-                                                        Source.album, many=True)))
+        self._store_albums = [Album(self, album) for album in self._original_data['albums']]
+        self._store_albums.sort()
+        self._all_songs.refresh = True
 
-        self._store_albums = albums
 
     @property
     def albums(self):
@@ -81,7 +78,14 @@ class Artist(object):
         if self._id is None:
             return self._library_albums
 
-        return self._store_albums + self._library_albums  #: Warning: passes by reference for efficiency
+        if self._original_data is None:
+            self._original_data = client.gp.get_artist_info(self._id)
+            if 'topTracks' in self._original_data:
+                self._special_albums[1] = TopSongs(self, Track.from_data(self._original_data['topTracks'],
+                                                                         Source.album, many=True))
+
+        #: Warning: passes by reference for efficiency
+        return chain(self._special_albums, self._store_albums, self._library_albums)
 
     @property
     def id(self):  # pylint: disable=invalid-name
