@@ -208,14 +208,7 @@ class MPRIS2:
         if track is None:
             return {}
 
-        return {
-            'mpris:trackid': Variant('o', '/org/clay/tracks/' + str(track.id)),
-            'mpris:artUrl': Variant('s', track.artist_art_url),
-            'xesam:title': Variant('s', track.title),
-            'xesam:artist': Variant('s', track.artist),
-            'xesam:album': Variant('s', track.album_name),
-            'xesam:url': Variant('s', track.cached_url),
-        }
+        return self.get_metadata(track)
 
     @property
     def CanPause(self):

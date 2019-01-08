@@ -14,7 +14,8 @@ except ImportError:  # Python 2.x
     from urllib2 import urlopen
 
 
-from clay.core import meta, settings_manager, logger, EventHook, osd_manager, mpris2
+from clay.core import settings_manager, logger, EventHook, osd_manager, mpris2
+
 
 class _Queue(object):
     """
@@ -35,7 +36,15 @@ class _Queue(object):
         self._played_tracks = []
         self.current_track_index = None
 
-    def load(self, tracks, current_track_index=None):
+    def clear(self):
+        """
+        Clears the queue
+        """
+        self.tracks = []
+        self.current_track_index = None
+        self._played_tracks = []
+
+    def load(self, tracks, current_track_index=0):
         """
         Load list of tracks into queue.
 
@@ -47,8 +56,6 @@ class _Queue(object):
             track.queue_id = '/org/clay/queue/' + str(uuid1().hex[:6])
             self.tracks.append(track)
 
-        if (current_track_index is None) and self.tracks:
-            current_track_index = 0
         mpris2.mpris2_manager.TrackListReplaced.emit([track.queue_id for track in self.tracks],
                                                      self.tracks[current_track_index].queue_id)
         self.current_track_index = current_track_index
@@ -71,8 +78,8 @@ class _Queue(object):
         """
         Append track to playlist.
         """
-        #if self.current_track_index is None:
-            #self.current_track_index = 0
+        # if self.current_track_index is None:
+        # self.current_track_index = 0
         track = copy(track)
         track.queue_id = '/org/clay/queue/' + str(uuid1().hex[:6])
 
@@ -135,7 +142,8 @@ class _Queue(object):
             return self.get_current_track()
 
         self.current_track_index += 1
-        if (self.current_track_index) >= len(self.tracks):
+        # Do add a repeat shortcut
+        if self.current_track_index >= len(self.tracks):
             self.current_track_index = 0
 
         return self.get_current_track()
@@ -190,7 +198,6 @@ class AbstractPlayer:
         osd_manager.add_to_action("media-playback-start", "Play", self.play_pause)
         osd_manager.add_to_action("media-skip-forward", "next", self.next)
 
-
     def broadcast_state(self):
         """
         Write current playback state into a ``/tmp/clay.json`` file.
@@ -218,7 +225,7 @@ class AbstractPlayer:
         with open('/tmp/clay.json', 'w') as statefile:
             statefile.write(json.dumps(data, indent=4))
 
-    def load_queue(self, data, current_index=None):
+    def load_queue(self, data, current_index=0):
         """
         Load queue & start playback
 
@@ -227,6 +234,14 @@ class AbstractPlayer:
         self.queue.load(data, current_index)
         self.queue_changed.fire()
         self.play()
+
+    def clear_queue(self):
+        """
+        Clear the queue and stop playback
+        """
+        self.queue.clear()
+        self.queue_changed.fire()
+        self.stop()
 
     def goto_track(self, track):
         """

@@ -20,7 +20,6 @@ class MPVPlayer(AbstractPlayer):
 
     def __init__(self):
         self.media_player = mpv.MPV()
-
         self.media_player.observe_property('pause', self._media_state_changed)
         self.media_player.observe_property('stream-open-filename', self._media_state_changed)
         self.media_player.observe_property('stream-pos', self._media_position_changed)
@@ -28,14 +27,13 @@ class MPVPlayer(AbstractPlayer):
 
         AbstractPlayer.__init__(self)
 
-
     def _media_state_changed(self, *_):
         """
         Called when a libVLC playback state changes.
         Broadcasts playback state & fires :attr:`media_state_changed` event.
         """
         self.broadcast_state()
-        self.media_state_changed.fire(self.loading, self.playing)
+        self.media_state_changed.fire(self._loading, self.playing)
 
     def _media_end_reached(self, event, value):
         """

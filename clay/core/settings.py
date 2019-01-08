@@ -95,7 +95,6 @@ class _Settings(object):
         else:
             self.colours_config = yaml.load(pkg_resources.resource_string(__name__, "colours.yaml"))
 
-
     def _load_cache(self):
         """
         Load cached files.

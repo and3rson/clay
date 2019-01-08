@@ -35,6 +35,7 @@ class Album(object):
         self.explicit_rating = int(data.get('explictType', 0))
         self.name = data['name']
         self.year = int(data.get('year', 1970))
+        self.sorted = False
 
     def __str__(self):
         return self.name
@@ -63,6 +64,10 @@ class Album(object):
             self._tracks = Track.from_data(client.gp.get_album_tracks(self._id),
                                            Source.album,
                                            many=True)
+        if not self.sorted:
+            self._tracks.sort(key=lambda track: track.track_number)
+            self.sorted = True
+
         return self._tracks
 
 
@@ -80,12 +85,12 @@ class AllSongs(Album):
         self.name = "All Songs"
         self._tracks = None
         self.refresh = False
+        self.sorted = True
 
     @property
     def tracks(self):
         # Could this be done faster?
         if self._tracks is None or self.refresh:
-            print(self._albums)
             tracks = []
             for album in self._albums:
                 tracks += album.tracks
@@ -106,3 +111,4 @@ class TopSongs(Album):
         self.year = 2018  # TODO
         self.album_url = None  # TODO
         self.name = "Top Songs"
+        self.sorted = True

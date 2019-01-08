@@ -52,6 +52,7 @@ hotkeys:
 clay_settings:
   mod_key: ctrl
   unicode: true
+  desktop_notifications: true
   player_class: clay.playback.mpv:MPVPlayer
 
 play_settings:

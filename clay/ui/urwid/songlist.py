@@ -577,14 +577,13 @@ class SongListBox(urwid.Frame):
         that contains current track into player queue.
         """
         page = self.app.current_page
-
         if songitem.is_currently_played:
             player.play_pause()
         elif page.slug == 'queue':
             player.goto_track(songitem.track)
         # There are some pages like search library where overwriting the queue
         # doesn't make much sense. We can also assume that someone searching
-        # for a specific song also wants to append.
+        # for a specific song also wants to append it.
         elif page.append or hotkey_manager.filtering:
             self.item_append_requested(songitem)
         else:

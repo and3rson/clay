@@ -30,7 +30,6 @@ class VLCPlayer(AbstractPlayer):
 
     def __init__(self):
         self.instance = vlc.Instance()
-
         print_func = CFUNCTYPE(c_void_p,
                                c_void_p,  # data
                                c_int,     # level

@@ -64,6 +64,7 @@ class Track(object):
         self.album_name = data.get('album', '')
         self.album_id = data.get('albumId', '')
         self.album_url = (data['albumArtRef'][0]['url'] if 'albumArtRef' in data else "")
+        self.track_number = data['trackNumber']
 
         if source == Source.library:
             name = (data['albumArtist'] if data['albumArtist'] != '' else self.artist)
@@ -183,6 +184,8 @@ class Track(object):
             """
             Called when URL is fetched.
             """
+            url = url.replace('https', 'http')
+            logger.debug(url)
             self.cached_url = url
             callback(url, error, self)
 

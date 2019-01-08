@@ -2,11 +2,12 @@
 On-screen display stuff.
 """
 from pydbus import SessionBus, Variant
-from clay.core import meta, logger
+from clay.core import meta, logger, settings_manager
 from gi.repository import GLib
 
 NOTIFICATION_BUS_NAME = ".Notifications"
 BASE_NAME = "org.freedesktop"
+ENABLED = settings_manager.get('desktop_notifications', 'clay_settings')
 
 
 class _OSDManager(object):
@@ -14,6 +15,10 @@ class _OSDManager(object):
     Manages OSD notifications via DBus.
     """
     def __init__(self):
+        if not ENABLED:
+            self._actions = {}
+            return
+
         self._last_id = 0
         self.bus = SessionBus()
 
@@ -23,7 +28,7 @@ class _OSDManager(object):
                             name_vanished=self._deregister_bus_name)
         self._register_bus_name(None)
 
-        self._actions = {"default": print}
+        self._actions = {"default": lambda *args: None}
 
     def add_to_action(self, action, action_name, function):
         """
@@ -46,6 +51,9 @@ class _OSDManager(object):
            track (`clay.gp.Track`): The track that you want to send the notification for
            actions (`list`): A list with the actions that you want the notification to react to.
         """
+        if not ENABLED:
+            return
+
         actions_ = []
         for action in actions:
             if action not in self._actions:
