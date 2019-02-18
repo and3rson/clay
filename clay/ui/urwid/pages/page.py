@@ -7,11 +7,11 @@ import urwid
 from clay.core import gp
 from clay.ui.urwid import hotkey_manager, notification_area
 
-
 class AbstractPage(object):
     """
     Represents app page.
     """
+
     @property
     def append(self):
         """
@@ -61,10 +61,10 @@ class AbstractListItem(urwid.Columns):
 class AbstractListBox(urwid.ListBox):
     signals = ['activate']
 
-    def __init__(self, app, icon=''):
+    def __init__(self, app, placeholder='Loading...', icon=''):
         self.app = app
         self._icon = icon
-        self.walker = urwid.SimpleListWalker([urwid.Text('Not Ready')])
+        self.walker = urwid.SimpleListWalker([urwid.Text('\n ' + placeholder)])
         self.notification = None
         gp.auth_state_changed += self.auth_state_changed
         super(AbstractListBox, self).__init__(self.walker)
@@ -80,14 +80,14 @@ class AbstractListBox(urwid.ListBox):
             notification_area.notify("Failed to fetch {}: {}"
                                      .format(str(error), self.__class__.__name__))
 
-        items = []
+        self._items = []
 
         for item in values:
             item = AbstractListItem(item, self._icon)
             urwid.connect_signal(item, 'activate', self.item_activated)
-            items.append(item)
+            self._items.append(item)
 
-        self.walker[:] = items
+        self.walker[:] = self._items
         self.app.redraw()
 
     def item_activated(self, value):

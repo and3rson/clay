@@ -1,6 +1,5 @@
 import urwid
 import sys
-import threading
 
 from clay.core import gp, settings_manager
 from clay.playback.player import get_player
@@ -261,13 +260,6 @@ class AppWidget(urwid.Frame):
         self.set_page('settings')
 
     @staticmethod
-    def seek_start():
-        """
-        Seek to the start of the song.
-        """
-        player.seek_absolute(0)
-
-    @staticmethod
     def play_pause():
         """
         Toggle play/pause.
@@ -315,6 +307,13 @@ class AppWidget(urwid.Frame):
         Toggle repeat mode.
         """
         player.repeat_one = not player.repeat_one
+
+    @staticmethod
+    def toggle_repeat_queue():
+        """
+        Toggle queue repeat
+        """
+        player.repeat_queue = not player.repeat_queue
 
     def quit(self):
         """

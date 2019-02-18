@@ -63,7 +63,6 @@ class LibraryPage(urwid.Columns, AbstractPage):
         """
         if gp.is_authenticated:
             self.songlist.set_placeholder(u'\n \uf01e Loading song list...')
-
             gp.get_all_tracks_async(callback=self.on_get_all_songs)
             self.app.redraw()
 

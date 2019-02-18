@@ -213,6 +213,8 @@ class SongListItem(urwid.Pile):
         """
         Removes all the songs from the queue.
         """
+        self.set_state(SongListItem.STATE_IDLE)
+        self.is_focused = False
         self._send_signal("clear-queue")
 
     def play(self):
@@ -417,7 +419,7 @@ class SongListBox(urwid.Frame):
     """
     signals = ['activate']
 
-    def __init__(self, app):
+    def __init__(self, app, ):
         self.app = app
 
         self.current_item = None
@@ -695,9 +697,9 @@ class SongListBox(urwid.Frame):
         """
         Removes all tracks from the queue
         """
+        self.current_item = None
         self.walker.set_focus(0)
-        player.load_queue([])
-        player.stop()
+        player.clear_queue()
 
     def append_track(self, track):
         """

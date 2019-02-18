@@ -92,11 +92,12 @@ class PlayBar(urwid.Pile):
 
         self.shuffle_el = urwid.AttrWrap(urwid.Text(u' \u22cd SHUF '), 'flag')
         self.repeat_el = urwid.AttrWrap(urwid.Text(u' \u27f2 REP '), 'flag')
+        self.repeat_one_el = urwid.AttrWrap(urwid.Text(' 1 ONE'), 'flag')
 
         self.infobar = urwid.Columns([
             self.text,
             ('pack', self.shuffle_el),
-            # ('pack', urwid.Text(' ')),
+            ('pack', self.repeat_one_el),
             ('pack', self.repeat_el)
         ])
         super(PlayBar, self).__init__([
@@ -169,8 +170,11 @@ class PlayBar(urwid.Pile):
         self.shuffle_el.attr = 'flag-active' \
             if player.random \
             else 'flag'
-        self.repeat_el.attr = 'flag-active' \
+        self.repeat_one_el.attr = 'flag-active' \
             if player.repeat_one \
+            else 'flag'
+        self.repeat_el.attr = 'flag-active' \
+            if player.repeat_queue \
             else 'flag'
         self.app.redraw()
 

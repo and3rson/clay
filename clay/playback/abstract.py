@@ -31,6 +31,7 @@ class _Queue(object):
     def __init__(self):
         self.random = False
         self.repeat_one = False
+        self.repeat_queue = False
 
         self.tracks = []
         self._played_tracks = []
@@ -111,7 +112,7 @@ class _Queue(object):
         """
         Return current :class:`clay.core.gp.Track`
         """
-        if self.current_track_index is None:
+        if self.current_track_index is None or self.current_track_index >= len(self.tracks):
             return None
 
         return self.tracks[self.current_track_index]
@@ -127,9 +128,12 @@ class _Queue(object):
         Manual track switching calls this method with ``force=True`` while
         :class:`.Player` end-of-track event will call it with ``force=False``.
         """
+        if self.current_track_index >= len(self.tracks):
+            return
+
         if self.current_track_index is None:
             if not self.tracks:
-                return None
+                return
             self.current_track_index = self.tracks[0]
         else:
             self._played_tracks.append(self.current_track_index)
@@ -142,8 +146,7 @@ class _Queue(object):
             return self.get_current_track()
 
         self.current_track_index += 1
-        # Do add a repeat shortcut
-        if self.current_track_index >= len(self.tracks):
+        if self.current_track_index >= len(self.tracks) and self.repeat_queue:
             self.current_track_index = 0
 
         return self.get_current_track()
@@ -315,6 +318,22 @@ class AbstractPlayer:
         self.queue.repeat_one = value
         self.playback_flags_changed.fire()
 
+    @property
+    def repeat_queue(self):
+        """
+        Returns:
+           Whether single track repition is enabled.
+        """
+        return self.queue.repeat_queue
+
+    @repeat_queue.setter
+    def repeat_queue(self, value):
+        """
+        Enables or disabled single track repition
+        """
+        self.queue.repeat_queue = value
+        self.playback_flags_changed.fire()
+
     def get_queue_tracks(self):
         """
         Return :attr:`.Queue.get_tracks`
@@ -437,8 +456,10 @@ e        """
         Advance to next track in queue.
         See :meth:`._Queue.next`
         """
-        self.queue.next(force)
-        self.play()
+        if self.queue.next(force):
+            self.play()
+        else:
+            self.stop()
 
     def prev(self, force=False):
         """

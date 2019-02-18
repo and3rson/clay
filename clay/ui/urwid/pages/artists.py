@@ -54,10 +54,10 @@ class ArtistsPage(urwid.Columns, AbstractPage):
 
     def __init__(self, app):
         self.app = app
-        self.artistlist = ArtistListBox(app, '\U0001F399')
-        self.albumlist = AlbumListBox(app)
+        self.artistlist = ArtistListBox(app, icon='\U0001F399')
+        self.albumlist = AlbumListBox(app, placeholder='Select an artist')
         self.songlist = SongListBox(app)
-        self.songlist.set_placeholder('\n Select an artist')
+        self.songlist.set_placeholder('\n Select an album')
 
         urwid.connect_signal(self.artistlist, 'activate', self.item_activated)
         urwid.connect_signal(self.albumlist, 'activate', self.album_activate)

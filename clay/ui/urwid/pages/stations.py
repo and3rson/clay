@@ -3,9 +3,9 @@ Components for " stations" page.
 """
 import urwid
 
-from .page import AbstractPage, AbstractListItem, AbstractListBox
+from .page import AbstractPage, AbstractListBox
 from clay.core import gp
-from clay.ui.urwid import SongListBox, notification_area, hotkey_manager
+from clay.ui.urwid import SongListBox, notification_area
 
 
 class StationListBox(AbstractListBox):
@@ -26,6 +26,7 @@ class StationListBox(AbstractListBox):
             ]
 
             gp.get_all_user_station_contents_async(callback=self.populate)
+
 
 class StationsPage(urwid.Columns, AbstractPage):
     """
