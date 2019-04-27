@@ -1,36 +1,50 @@
 Changelog
 ---------
 
-Clay 1.2.0
+Clay 2.0.0
 ==========
 
 TBA
+
+* Support the MPRIS2 protocol
+* Remove X keybinds and drop the Gtk dependency
+* Artist and Album view
+* Notification actions
+* libmpv support
+* Rework of the internals
+* Enter appending songs in library or search view
+* Dropping of x keybinds
+* Add playcount incrementation (by @vale981)
+* Fix #37: clay crashing without a running notification daemon (by @agg23)
+* Fix #38: no tracks displaying (by @agg3)
+* Fix #43: queue doesn't move to the next track (by @agg23)
+* Fix #55: Unsafe load() call disabled by Gentoo (by @guitmz)
 
 Clay 1.1.0
 ==========
 
 2018-08-09
 
-* Liked Songs Playlist (by Valentijn)
-* Thumbs Up / Thumbs Down (by Valentijn)
-* Alphabetical Sorting in Library View (by Valentijn)
-* Explicit Rating Icon (by Valentijn)
+* Liked Songs Playlist
+* Thumbs Up / Thumbs Down
+* Alphabetical Sorting in Library View
+* Explicit Rating Icon
 * OSD notifications
 * setproctitle to nicely display clay in process list
 * Various bugfixes
-* Fix #29 (customizable tab activation hotkeys)
-* Fix #31 (rating issues)
+* Fix #29: customizable tab activation hotkeys
+* Fix #31: rating issues
 
 Clay 1.0.0
 ==========
 
 2018-04-06
 
- * Configurable keybinds (by Valentijn)
- * Configurable colors (by Valentijn)
- * Pluggable X keybinds (by Valentijn)
+ * Configurable keybinds
+ * Configurable colors
+ * Pluggable X keybinds
  * "My stations" page (by @Fluctuz)
- * Better settings management (by Valentijn)
+ * Better settings management
  * Equalizer
  * Track caching indicator
  * Optimized settings & cache

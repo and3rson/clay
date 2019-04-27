@@ -1,0 +1,18 @@
+<node>
+  <interface name="org.mpris.MediaPlayer2.Playlists">
+    <property name="PlaylistCount" type="u" access="read"/>
+    <property name="Orderings" type="as" access="read"/>
+    <property name="ActivePlaylist" type="(b(oss))" access="read"/>
+
+    <method name="ActivatePlaylist">
+      <arg type="o" direction="in"/>
+    </method>
+
+    <method name="GetPlaylists">
+      <arg type="u" direction="in"/>
+      <arg type="u" direction="in"/>
+      <arg type="s" direction="in"/>
+      <arg type="b" direction="in"/>
+    </method>
+  </interface>
+</node>

@@ -1,0 +1,63 @@
+#: pylint:skip-file
+hotkeys:
+  global:
+    play_pause: p
+    seek_backward: shift + left
+    seek_forward: shift + right
+    quit: x
+    toggle_shuffle: s
+    prev_song: q
+    next_song: e
+    toggle_repeat_one: o
+    toggle_repeat_queue: r
+    handle_escape: esc, mod + _
+    show_debug: '0'
+    show_library: '1'
+    show_artists: '2'
+    show_albums: '3'
+    show_stations: '4'
+    show_playlists: '5'
+    show_search: '6'
+    show_queue: '7'
+    show_settings: '9'
+
+  song_item:
+    activate: enter
+    append: a
+    unappend: u
+    request_station: s
+    show_context_menu: m
+    thumbs_up: "+"
+    thumbs_down: "-"
+    clear_queue: c
+
+  song_view:
+    start_filtering: /
+    end_filtering: esc
+    hide_context_menu: m
+
+  general_page:
+    activate: enter
+
+  debug_page:
+    copy_message: enter
+
+  search_page:
+    send_query: enter
+
+  settings_page:
+    equalizer_up: "+"
+    equalizer_down: "-"
+
+clay_settings:
+  mod_key: ctrl
+  unicode: true
+  desktop_notifications: true
+  player_class: clay.playback.mpv:MPVPlayer
+
+play_settings:
+  authtoken:
+  device_id:
+  download_tracks: false
+  password:
+  username:

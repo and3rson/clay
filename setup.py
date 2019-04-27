@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-from clay.meta import VERSION
+from clay.core.meta import VERSION
 
 setup(
     name='clay-player',

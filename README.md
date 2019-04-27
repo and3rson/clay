@@ -18,6 +18,7 @@
   * [Equalizer](#equalizer)
   * [Misc](#misc)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](./CONTRIBUTING.rst)
 - [Credits](#credits)
 - [Changelog](./CHANGELOG.rst)
 
@@ -27,7 +28,7 @@
 
 Standalone command line player for Google Play Music.
 
-This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] libraries.
+This app wouldn't be possible without the wonderful [gmusicapi] and [VLC] & [MPV] libraries.
 
 This project is neither affiliated nor endorsed by Google.
 
@@ -49,7 +50,8 @@ Click the image below to see the screencast:
 # Quick start
 
 ```bash
-sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo vlc keybinder python-keybinder
+sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo
+vlc
 pip install --user clay-player
 clay
 ```
@@ -61,14 +63,13 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 # Requirements
 
 - Python 3.x (native)
-- [gmusicapi] (PYPI)
-- [urwid] (PYPI)
-- [PyYAML] (PYPI)
-- lib[VLC] (native, distributed with VLC player)
-- [PyGObject] (optional) (native, used for global X keybinds)
-- [Keybinder] (optional) (native, used for global X keybinds)
-- [setproctitle] (optional) PYPI, used to change clay process name from 'python' to 'clay')
-- python-dbus (optional)
+- [gmusicapi] (PyPI)
+- [urwid] (PyPI)
+- [PyYAML] (PyPI)
+- lib[VLC] (native, distributed with VLC player) OR libMPV (native, distributed with MPV)
+- [setproctitle] (optional) PyPI, used to change clay process name from 'python' to 'clay')
+- [pydbus] (PyPI)
+- [Pillow] (PyPI, optional) used to resize album art before displaying it in notifications
 
 # What works
 - Audio equalizer
@@ -76,16 +77,17 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Configurable keybinds and colours
 - Configuration UI
 - Filtering results
-- Global hotkeys
+- Global hotkeys (via MPRIS2/DBus)
 - Like/dislike tracks
 - Liked songs playlist
 - Music library browsing & management
 - Notifications - in-app & OSD (via DBus)
-- PYPI package
+- PyPI package
 - Playback
 - Playlists
 - Queue management
 - Radio stations
+- I'm Feeling Lucky station
 - Song file caching
 - Song operations (add to library, start station etc.)
 - Song search
@@ -96,20 +98,11 @@ Documentation is [available here](http://clay.readthedocs.io/en/latest/).
 - Artist/album search
 - Other functionality that is supported by [gmusicapi]
 - Playlist editing
+- Different playback transports
 
 # Installation
 
-**Warning:** The AUR and PyPy packages called `python3-keybinder` will
-not work with Clay since you need to use the official bindings. Since
-Ubuntu seperated the official bindings into a different package but
-with the same name as the unofficial one it can cause some
-confusion. So if you get a `Namespace Keybinder not available` warning
-it is probably caused by this. So, for example, on Arch Linux you need
-the `libkeybinder3` package instead.
-
-1. Install Python 3, and VLC from your package manager.
-2. Optionally, you can install PyGObject, DBus for Python and keybinder plus bindings
-   if you want global X keybinds.
+1. Install Python 3, pydbus, PyGObject, and VLC or MPV from your package manager.
 
 ## Method 1 (PyPi, automatic)
 
@@ -170,12 +163,24 @@ Here's how you do it:
 
 You *should* get the sound working. Also docker will reuse the Clay config file from host (if you have one).
 
+# Remote control
+Clay supports the MPRIS2 protocol which allows users to remote control their Clay instances using generic tools like [playerctl].
+This replaces the old X Hotkeys systems but does require you to manually bind the keys to your windowing system of choice.
+
 # Configuration
 
 - Once you launch the app, use the "Settings" page to enter your login and password.
 - You will also need to know your Device ID. Thanks to [gmusicapi], the app should display possible IDs once you enter a wrong one.
 - Please be aware that this app has not been tested with 2FA yet.
 - For people with 2FA, you can just create an app password in Google accounts page and proceed normally. (Thanks @j605)
+- By default VLC is used. If you want to use MPV instead, add the following line to your Clay config file (`~/.config/clay/config.yaml`) in `clay_settings` section:
+
+    ```yaml
+    # ...
+    clay_settings:
+      player_class: clay.playback.mpv:MPVPlayer
+    # ...
+    ```
 
 # Controls
 
@@ -186,7 +191,8 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 
 ## Songs
 
-- `<ENTER>` - play highlighted track
+- `<ENTER>` - add highlighted track to the queue
+- `<CTRL> p` - start or pause the queue
 - `<CTRL> w` - play/pause
 - `<CTRL> e` - play next song
 - `<CTRL> a` - append highlighted song to the queue
@@ -213,12 +219,6 @@ You *should* get the sound working. Also docker will reuse the Clay config file 
 - `<CTRL> x` - exit app
 - To filter songs just start typing words. Hit `<ESC>` to cancel.
 
-## X keybinds
-**NOTE:** you need to pass the `--with-x-keybinds` flag for these to work
-- `<XF86AudioPlay>` - play/pause the song
-- `<XF86AudioNext>` - play the next song
-- `<XF86AudioPrev>` - play previous song
-
 # Troubleshooting
 
 At some point, the app may fail. Possible reasons are app bugs,
@@ -241,13 +241,19 @@ Regards to [gmusicapi] and [VLC] who made this possible.
 People who contribute to this project:
 
 - [@ValentijnvdBeek (Valentijn)](https://github.com/ValentijnvdBeek)
+- [@Vale981 (Valentin Boettcher)](https://github.com/vale981)
 - [@Fluctuz](https://github.com/Fluctuz)
 - [@sjkingo (Sam Kingston)](https://github.com/sjkingo)
+- [@agg23 (Adam Gastineau)](https://github.com/agg23)
+- [@guitmz (Guilherme Thomazi Bonicontro)][https://github.com/guitmz]
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
+[MPV]: https://mpv.io/
 [urwid]: http://www.urwid.org/
 [pyyaml]: https://github.com/yaml/pyyaml
 [PyGObject]: https://pygobject.readthedocs.io/en/latest/getting_started.html
 [Keybinder]: https://github.com/kupferlauncher/keybinder
 [setproctitle]: https://pypi.org/project/setproctitle/
+[pydbus]: https://github.com/LEW21/pydbus
+[Pillow]: https://pillow.readthedocs.io/en/5.3.x/

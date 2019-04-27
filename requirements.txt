@@ -1,4 +1,5 @@
-gmusicapi==10.1.2
-PyYAML==3.12
+gmusicapi==11.0.1
+PyYAML==3.13
 urwid==2.0.0
 codename==1.1
+pydbus==0.6.0
