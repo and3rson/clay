@@ -86,14 +86,14 @@ class _Settings(object):
             self._config = yaml.load(settings_file.read())
 
         # Load the configuration from Setuptools' ResourceManager API
-        self._default_config = yaml.load(pkg_resources.resource_string(__name__, "config.yaml"))
+        self._default_config = yaml.safe_load(pkg_resources.resource_string(__name__, "config.yaml"))
 
         # We only either the user colour or the default colours to ease parsing logic.
         if os.path.exists(self._colours_file_path):
             with open(self._colours_file_path, 'r') as colours_file:
-                self.colours_config = yaml.load(colours_file.read())
+                self.colours_config = yaml.safe_load(colours_file.read())
         else:
-            self.colours_config = yaml.load(pkg_resources.resource_string(__name__, "colours.yaml"))
+            self.colours_config = yaml.safe_load(pkg_resources.resource_string(__name__, "colours.yaml"))
 
     def _load_cache(self):
         """
@@ -110,7 +110,7 @@ class _Settings(object):
         """
         self._config.update(config)
         with open(self._config_file_path, 'w') as settings_file:
-            settings_file.write(yaml.dump(self._config, default_flow_style=False))
+            settings_file.write(yaml.safe_dump(self._config, default_flow_style=False))
 
     def get(self, key, *sections):
         """

@@ -18,6 +18,7 @@ TBA
 * Fix #37: clay crashing without a running notification daemon (by @agg23)
 * Fix #38: no tracks displaying (by @agg3)
 * Fix #43: queue doesn't move to the next track (by @agg23)
+* Fix #55: Unsafe load() call disabled by Gentoo (by @guitmz)
 
 Clay 1.1.0
 ==========

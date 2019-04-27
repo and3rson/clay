@@ -245,6 +245,7 @@ People who contribute to this project:
 - [@Fluctuz](https://github.com/Fluctuz)
 - [@sjkingo (Sam Kingston)](https://github.com/sjkingo)
 - [@agg23 (Adam Gastineau)](https://github.com/agg23)
+- [@guitmz (Guilherme Thomazi Bonicontro)][https://github.com/guitmz]
 
 [gmusicapi]: https://github.com/simon-weber/gmusicapi
 [VLC]: https://wiki.videolan.org/python_bindings
