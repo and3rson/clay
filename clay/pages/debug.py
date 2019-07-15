@@ -114,4 +114,4 @@ class DebugPage(urwid.Pile, AbstractPage):
         """
         Notify page that it is activated.
         """
-        pass
+        return

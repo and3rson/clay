@@ -141,7 +141,7 @@ def _dummy_log(data, level, ctx, fmt, args):
     A dummy callback function for VLC so it doesn't write to stdout.
     Should probably do something in the future
     """
-    pass
+    return
 #+pylint: disable=unused-argument
 
 
