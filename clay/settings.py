@@ -111,7 +111,7 @@ class _Settings(object):
         """
         self._config.update(config)
         with open(self._config_file_path, 'w') as settings_file:
-            settings_file.write(yaml.dump(self._config, default_flow_style=False))
+            settings_file.write(yaml.safe_dump(self._config, default_flow_style=False))
 
     def get(self, key, *sections):
         """
