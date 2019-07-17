@@ -83,17 +83,17 @@ class _Settings(object):
         Read config from file.
         """
         with open(self._config_file_path, 'r') as settings_file:
-            self._config = yaml.load(settings_file.read())
+            self._config = yaml.safe_load(settings_file.read())
 
         # Load the configuration from Setuptools' ResourceManager API
-        self._default_config = yaml.load(pkg_resources.resource_string(__name__, "config.yaml"))
+        self._default_config = yaml.safe_load(pkg_resources.resource_string(__name__, "config.yaml"))
 
         # We only either the user colour or the default colours to ease parsing logic.
         if os.path.exists(self._colours_file_path):
             with open(self._colours_file_path, 'r') as colours_file:
-                self.colours_config = yaml.load(colours_file.read())
+                self.colours_config = yaml.safe_load(colours_file.read())
         else:
-            self.colours_config = yaml.load(pkg_resources.resource_string(__name__, "colours.yaml"))
+            self.colours_config = yaml.safe_load(pkg_resources.resource_string(__name__, "colours.yaml"))
 
 
     def _load_cache(self):
