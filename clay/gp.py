@@ -95,6 +95,7 @@ class Track(object):
     SOURCE_STATION = 'station'
     SOURCE_PLAYLIST = 'playlist'
     SOURCE_SEARCH = 'search'
+    SOURCE_TOP = 'top'
 
     def __init__(self, source, data):
         # In playlist items and user uploaded songs the storeIds are missing so
@@ -478,6 +479,10 @@ class LikedSongs(object):
         """
         Add a liked song to the list.
         """
+        for track in self._tracks:
+            if track.store_id == song.store_id:
+                return
+
         self._tracks.insert(0, song)
 
     def remove_liked_song(self, song):
@@ -601,6 +606,10 @@ class _GP(object):
         """
         if self.cached_tracks:
             return self.cached_tracks
+
+        for track in Track.from_data(self.mobile_client.get_top_songs(), Track.SOURCE_TOP, True):
+            pass
+
         data = self.mobile_client.get_all_songs()
         self.cached_tracks = Track.from_data(data, Track.SOURCE_LIBRARY, True)
 
