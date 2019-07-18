@@ -23,6 +23,8 @@ from clay.eventhook import EventHook
 from clay.log import logger
 from clay.settings import settings
 
+import traceback
+
 STATION_FETCH_LEN = 50
 
 
@@ -181,9 +183,10 @@ class Track(object):
             return track
         except Exception as error:  # pylint: disable=bare-except
             logger.error(
-                'Failed to parse track data: %s, failing data: %s',
+                'Failed to parse track data: %s, failing data: %s, from %s',
                 repr(error),
-                data
+                data,
+                traceback.format_exc()
             )
             # TODO: Fix this.
             # print('Failed to create track from data.')
